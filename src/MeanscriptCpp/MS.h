@@ -13,7 +13,7 @@
 
 #define CAT ).print(
 #define DEBUG(x) {x;}
-#define PR(a) printer().print(toString(a))
+#define PR(a) printer().print(a)
 #define VR(a) verbose().print(a)
 #define X(a) .print(a)
 #define XHEX(i) .printHex(i)

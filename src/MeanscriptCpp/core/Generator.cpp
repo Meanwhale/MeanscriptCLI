@@ -292,7 +292,8 @@ void Generator::generateAssignment(NodeIterator it)
 	}
 	else
 	{
-		singleArgumentPush(target.tag, it.copy(), -1);
+		NodeIterator cp = it;
+		singleArgumentPush(target.tag, cp, -1);
 	}
 
 	// WRITE values. This works like a callback call.
@@ -321,7 +322,8 @@ int32_t Generator::arrayPush (NodeIterator it, int32_t targetTag, int32_t arrayS
 	for (int32_t i=0; i<arraySize; i++)
 	{
 		it.toChild();
-		singleArgumentPush(itemTag, it.copy(), -1);
+		NodeIterator cp = it;
+		singleArgumentPush(itemTag, cp, -1);
 		it.toParent();
 		if (it.hasNext()) it.toNext();
 	}
@@ -417,7 +419,7 @@ bool Generator::isFunctionOrCallback (std::string name)
 	return true;
 }
 
-VarGen Generator::resolveMember (NodeIterator it) 
+VarGen Generator::resolveMember (NodeIterator & it) 
 {
 	bool isReference = false;
 	int32_t auxAddress = -1;
@@ -504,7 +506,8 @@ VarGen Generator::resolveMember (NodeIterator it)
 			{
 				// handle variable (or other expression) array index
 				// push index value
-				singleArgumentPush(OP_STRUCT_MEMBER | MS_TYPE_INT, it.copy(), -1);
+				NodeIterator cp = it;
+				singleArgumentPush(OP_STRUCT_MEMBER | MS_TYPE_INT, cp, -1);
 
 				if (auxAddress < 0)
 				{
@@ -559,7 +562,7 @@ VarGen Generator::resolveMember (NodeIterator it)
 	return VarGen (size, memberTag, srcAddress, arrayItemCount, isReference);
 }
 
-void Generator::singleArgumentPush (int32_t targetTag, NodeIterator it, int32_t arrayItemCount) 
+void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_t arrayItemCount) 
 {
 	VR("Assign an argument [")X(it.data())X("]")XO;
 	
@@ -571,7 +574,8 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator it, int32_t 
 	{
 		SYNTAX(!it.hasNext(), it, "argument syntax error");
 		it.toChild();
-		singleArgumentPush(targetTag, it.copy(), arrayItemCount);
+		NodeIterator cp = it;
+		singleArgumentPush(targetTag, cp, arrayItemCount);
 		it.toParent();
 		return;
 	}
@@ -653,7 +657,8 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator it, int32_t 
 	else if (it.type() == NT_PARENTHESIS)
 	{
 		it.toChild();
-		singleArgumentPush(targetTag, it.copy(), arrayItemCount);
+		NodeIterator cp = it;
+		singleArgumentPush(targetTag, cp, arrayItemCount);
 		it.toParent();
 		return;
 	}

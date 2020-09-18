@@ -7,7 +7,7 @@ SRC += $(wildcard $(MS_DIR)/core/*.cpp)
 SRC += $(wildcard $(MS_DIR)/pub/*.cpp)
 
 CC = g++
-FLAGS = -std=c++14 -I$(CMD_DIR) -I$(MS_DIR) -I$(MS_DIR)/core -I$(MS_DIR)/pub -Wfatal-errors -Wno-write-strings
+FLAGS = -std=c++14 -I$(CMD_DIR) -I$(MS_DIR) -I$(MS_DIR)/core -I$(MS_DIR)/pub -Wno-write-strings
 TARGET_EXE = mean
 RELEASE_FLAGS = -Os -s -DMS_RELEASE
 DEBUG_FLAGS = -fsanitize=leak -fsanitize=address -DMS_DEBUG
