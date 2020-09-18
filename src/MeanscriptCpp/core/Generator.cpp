@@ -426,13 +426,15 @@ VarGen Generator::resolveMember (NodeIterator & it)
 	int32_t lastOffsetCodeIndex = -1;
 	int32_t arrayItemCount = -1;
 	
+	std::string data = it.data();
+	
 	StructDef* currentStruct = (&((*currentContext).variables));
-	int32_t memberTag = (*currentStruct).getMemberTag(it.data());
-	int32_t size = (*currentStruct).getMemberSize(it.data());
-	int32_t srcAddress = (*currentStruct).getMemberAddress(it.data());
+	int32_t memberTag = (*currentStruct).getMemberTag(data);
+	int32_t size = (*currentStruct).getMemberSize(data);
+	int32_t srcAddress = (*currentStruct).getMemberAddress(data);
 
 	if ((memberTag & OPERATION_MASK) == OP_ARRAY_MEMBER) {
-		arrayItemCount = (*currentStruct).getMemberArrayItemCount(it.data());
+		arrayItemCount = (*currentStruct).getMemberArrayItemCount(data);
 	} else {
 		arrayItemCount = -1;
 	}
@@ -512,7 +514,9 @@ VarGen Generator::resolveMember (NodeIterator & it)
 				if (auxAddress < 0)
 				{
 					// create a auxiliar variable
-					auxAddress = (*currentStruct).addMember("~" + (*currentContext).variables.structSize, MS_TYPE_INT);
+					std::string auxAddressName = "~";
+					auxAddressName += (*currentContext).variables.structSize;
+					auxAddress = (*currentStruct).addMember(auxAddressName, MS_TYPE_INT);
 				}
 				
 				// write index value to variable

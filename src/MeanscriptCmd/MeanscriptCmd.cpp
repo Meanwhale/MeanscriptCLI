@@ -10,7 +10,10 @@
 // memory debug
 
 #include <stdlib.h>
-//#include <crtdbg.h>
+
+#ifdef _CRT_SECURE_NO_WARNINGS
+#include <crtdbg.h>
+#endif
 
 using namespace std;
 using namespace meanscript;
@@ -236,7 +239,10 @@ int execute(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	
+#ifdef _CRT_SECURE_NO_WARNINGS
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+#endif 
 
 	setVerbose(false);
 	

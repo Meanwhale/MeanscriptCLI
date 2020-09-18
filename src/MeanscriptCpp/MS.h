@@ -81,7 +81,11 @@ namespace meanscriptcore
 #error either MS_DEBUG or MS_RELEASE must be defined, not both
 #elif MS_DEBUG
 #define MS_BUILD_INFO "version 0.1 DEBUG"
+#ifdef _CRT_SECURE_NO_WARNINGS // VS memory debug
 #define HALT {__debugbreak(); std::exit(-1);}
+#else
+#define HALT {std::exit(-1);}
+#endif
 #elif MS_RELEASE
 #define MS_BUILD_INFO "version 0.1 RELEASE"
 #define HALT std::exit(-1)

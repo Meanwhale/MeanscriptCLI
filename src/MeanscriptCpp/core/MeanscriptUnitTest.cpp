@@ -75,7 +75,7 @@ void varArray()
 	std::string s = "struct person [text name, int [2] pos, int age];";
 	s += "func int summa [int a, int b] {return (sum a b)};";
 	s += "int a:2;int b;int c; int [5] numbers;";
-	s += "numbers[0]:111111; numbers[1]:1001; numbers[a]:1002; numbers[4]:222222;";
+	s += "numbers[a]:1002; numbers[0]:111111; numbers[1]:1001; numbers[4]:222222;";
 	s += "a: numbers[a]; b: numbers[4]; c: numbers[summa(2,2)]";
 		
 	MSCode* m = new MSCode();

@@ -69,7 +69,7 @@ constexpr int32_t OP_PUSH_LOCAL_REF = 0x23000000;
 constexpr int32_t OP_PUSH_GLOBAL_REF = 0x24000000;
 constexpr int32_t OP_MAX = 0x30000000;
 constexpr int32_t NUM_OP = 0x30;
-constexpr char * opName [] = {
+constexpr char const * opName [] = {
  "system", "---OLD---", "---OLD---", "call",
  "jump", "go back", "go end", "data",
  "struct definition", "struct member", "save base", "load base",
@@ -88,7 +88,7 @@ constexpr int32_t KEYWORD_STRUCT_ID = 1;
 constexpr int32_t KEYWORD_RETURN_ID = 2;
 constexpr int32_t KEYWORD_GLOBAL_ID = 3;
 constexpr int32_t NUM_KEYWORDS = 4;
-constexpr char * keywords [] = {
+constexpr char const * keywords [] = {
  "func",
  "struct",
  "return",

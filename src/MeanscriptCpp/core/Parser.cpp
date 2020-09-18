@@ -29,7 +29,7 @@ MNode* currentToken;
 TokenTree* tokenTree;
 
 
-constexpr char * nodeTypeName [] = { "root","expr","sub-call","struct","block","token" };
+constexpr char const * nodeTypeName [] = { "root","expr","sub-call","struct","block","token" };
 
 
 void next(uint8_t state)
