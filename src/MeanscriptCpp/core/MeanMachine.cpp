@@ -47,10 +47,10 @@ void MeanMachine::initVMArrays ()
 	ASSERT(!initialized, "VM arrays must be initialized before code initialization is finished.");
 	
 	{ stack.reset(			globalConfig.stackSize); stack.fill(0); };
-	{ ipStack.reset(		CFG_IP_STACK_SIZE); ipStack.fill(0); };
-	{ baseStack.reset(		CFG_BASE_STACK_SIZE); baseStack.fill(0); };
-	{ functions.reset(		CFG_MAX_FUNCTIONS); functions.fill(0); };
-	{ registerData.reset(	CFG_REGISTER_SIZE); registerData.fill(0); };
+	{ ipStack.reset(		globalConfig.ipStackSize); ipStack.fill(0); };
+	{ baseStack.reset(		globalConfig.baseStackSize); baseStack.fill(0); };
+	{ functions.reset(		globalConfig.maxFunctions); functions.fill(0); };
+	{ registerData.reset(	globalConfig.registerSize); registerData.fill(0); };
 }
 
 Array<int>* MeanMachine::getStructCode ()
@@ -77,7 +77,7 @@ void MeanMachine::gosub (int32_t address)
 
 void MeanMachine::pushIP (int32_t ip) 
 {
-	ASSERT(ipStackTop < CFG_IP_STACK_SIZE - 1, "call stack overflow");
+	ASSERT(ipStackTop < globalConfig.ipStackSize - 1, "call stack overflow");
 	ipStack[ipStackTop] = ip;
 	ipStackTop++;
 }
@@ -148,7 +148,7 @@ void MeanMachine::init ()
 	VERBOSE("--------------------------------");
 	VERBOSE("START INITIALIZING");
 	VERBOSE("--------------------------------");
-	if (globalConfig.verboseOn) printData((*byteCode).code, (*byteCode).codeTop, -1, true);
+	if (globalConfig.verboseOn()) printData((*byteCode).code, (*byteCode).codeTop, -1, true);
 
 	while (running())
 	{

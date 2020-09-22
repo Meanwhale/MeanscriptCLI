@@ -140,7 +140,7 @@ void ByteAutomata::stay ()
 
 std::string ByteAutomata::getString (int32_t start, int32_t length) 
 {
-	CHECK(length < CFG_MAX_NAME_LENGTH, 0, "name is too long");
+	CHECK(length < globalConfig.maxNameLength, 0, "name is too long");
 	
 	int32_t i = 0;
 	for (; i < length; i++)

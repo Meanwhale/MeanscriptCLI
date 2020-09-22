@@ -4,18 +4,22 @@
 #include <fstream>
 
 
+
 void msAssert(bool b, std::string m)
 {
-	if (!b) EXIT(m.c_str());
+	if (!b)
+	{
+		std::cout<<std::endl<<"ERROR: "<<m<<std::endl;
+		std::exit(-1);
+	}
 };
 
 void msAssert(bool b, std::string m, const char* expression, const char* sourceFile, int lineNumber)
 {
 	if (!b)
 	{
-		std::cout<<std::endl<<"ASSERTION FAILED"<<std::endl<<"FILE: "<<sourceFile<<std::endl<<"LINE: "<<lineNumber<<std::endl<<"EXPR: "<<expression<<std::endl;
-		HALT;
-		EXIT(m.c_str());
+		std::cout<<std::endl<<"FILE: "<<sourceFile<<std::endl<<"LINE: "<<lineNumber<<std::endl<<"EXPR: "<<expression;
+		msAssert(false, m);
 	}
 };
 
@@ -26,7 +30,7 @@ namespace meanscript
 	MSGlobal _globalConfig;
 	const MSGlobal& globalConfig = _globalConfig;
 	
-	void setVerbose(bool b) { _globalConfig.verboseOn = b; }
+	void setVerbose(bool b) { _globalConfig.verbose = b; }
 	
 	NullStream nullOut;
 
@@ -34,7 +38,7 @@ namespace meanscript
 	MStdOutPrint printOut;
 	MSNullPrint nullPrint;
 	
-	MSOutputPrint& verbose() { if (globalConfig.verboseOn) return verboseOut; return nullPrint; }
+	MSOutputPrint& verbose() { if (globalConfig.verboseOn()) return verboseOut; return nullPrint; }
 	MSOutputPrint& printer() { return printOut; }
 	
 	// Standard print

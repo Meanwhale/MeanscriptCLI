@@ -8,17 +8,18 @@ SRC += $(wildcard $(MS_DIR)/pub/*.cpp)
 
 CC = g++
 FLAGS = -std=c++14 -I$(CMD_DIR) -I$(MS_DIR) -I$(MS_DIR)/core -I$(MS_DIR)/pub
-TARGET_EXE = mean
+RELEASE_TARGET_EXE = mean
+DEBUG_TARGET_EXE = meandbg
 RELEASE_FLAGS = -Os -s -DMS_RELEASE
 DEBUG_FLAGS = -fsanitize=leak -fsanitize=address -DMS_DEBUG
 
 release: $(SRC)
 	@echo --- ByteAutomata RELEASE ---
-	$(CC) $(FLAGS) $(RELEASE_FLAGS) $(SRC) -o $(TARGET_EXE) 
+	$(CC) $(FLAGS) $(RELEASE_FLAGS) $(SRC) -o $(RELEASE_TARGET_EXE) 
 	
 debug: $(SRC)
 	@echo --- ByteAutomata DEBUG ---
-	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(SRC) -o $(TARGET_EXE) 
+	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(SRC) -o $(DEBUG_TARGET_EXE) 
 
 demo:
 	@echo --- TODO: ByteAutomata DEMO ---

@@ -8,7 +8,7 @@ using namespace meanscript;
 void Common::printCallbacks ()
 {
 	VERBOSE("-------- CALLBACKS:");
-	for (int32_t i=0; i < CFG_MAX_CALLBACKS; i++)
+	for (int32_t i=0; i < globalConfig.maxCallbacks; i++)
 	{
 		if (callbacks[i] != 0) PR("")X(i)X("")XO;
 	}
@@ -104,8 +104,8 @@ void Common::includePrimitives (Semantics & sem)
 Common::Common () 
 {
 	callbackCounter = MAX_MS_TYPES;
-	callbacks = new MCallback*[CFG_MAX_CALLBACKS];
-	for (int32_t i=0; i < CFG_MAX_CALLBACKS; i++)
+	callbacks = new MCallback*[globalConfig.maxCallbacks];
+	for (int32_t i=0; i < globalConfig.maxCallbacks; i++)
 	{
 		callbacks[i] = 0;
 	}
@@ -147,6 +147,6 @@ Common::Common ()
 	(*floatPrintArgs).addMember("a", MS_TYPE_FLOAT);
 	createCallback("printf", printFloatCallback, MS_TYPE_VOID, floatPrintArgs);
 }
-Common::~Common() { 	for (int32_t i=0; i < CFG_MAX_CALLBACKS; i++) 	{ 		delete callbacks[i]; 	} 	delete[] callbacks; }
+Common::~Common() { 	for (int32_t i=0; i < globalConfig.maxCallbacks; i++) 	{ 		delete callbacks[i]; 	} 	delete[] callbacks; }
 } // namespace meanscript(core)
 // C++ END

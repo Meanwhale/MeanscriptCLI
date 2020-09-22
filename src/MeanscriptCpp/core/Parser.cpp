@@ -65,7 +65,7 @@ std::string getNewName()
 {
 	int32_t start = lastStart;
 	int32_t length = index - start;
-	CHECK(length < CFG_MAX_NAME_LENGTH, EC_PARSE, "name is too long");
+	CHECK(length < globalConfig.maxNameLength, EC_PARSE, "name is too long");
 	
 	int32_t i = 0;
 	for (; i < length; i++)
@@ -398,7 +398,7 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 		EXIT("Parse error");
 	}
 
-	if (globalConfig.verboseOn)
+	if (globalConfig.verboseOn())
 	{
 		PRINT("------------------------ TOKEN TREE:");
 		(*root).printTree(true);

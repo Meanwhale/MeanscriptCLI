@@ -7,7 +7,7 @@ using namespace meanscript;
 ByteCode::ByteCode (Common* _common)
 {
 	common = _common;
-	{ code.reset( CFG_CODE_SIZE); code.fill(0); };
+	{ code.reset( globalConfig.codeSize); code.fill(0); };
 	codeTop = 0;
 }
 

@@ -395,3 +395,4 @@ war/meanscriptdemo/
 *.symbolMap
 *.cache.js
 /mean
+/meandbg

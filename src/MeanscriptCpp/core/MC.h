@@ -1,18 +1,5 @@
 namespace meanscriptcore
 {
-// configuration parameters
-static int32_t CFG_MAX_STRUCT_DEF_SIZE = 4096;
-static int32_t CFG_MAX_STRUCT_MEMBERS = 1024;
-static int32_t CFG_IP_STACK_SIZE = 1024;
-static int32_t CFG_BASE_STACK_SIZE = 1024;
-static int32_t CFG_MAX_FUNCTIONS = 256;
-static int32_t CFG_REGISTER_SIZE = 256;
-static int32_t CFG_MAX_ARRAY_SIZE = 4096;
-static int32_t CFG_MAX_NAME_LENGTH = 128;
-static int32_t CFG_CODE_SIZE = 16384; // 2^14
-static int32_t CFG_BUILDER_VALUES_SIZE = 16384;
-static int32_t CFG_OUTPUT_ARRAY_SIZE = 16384;
-static int32_t CFG_MAX_CALLBACKS = 256;
 // node types
 constexpr int32_t NT_ROOT = 0;
 constexpr int32_t NT_EXPR = 1;

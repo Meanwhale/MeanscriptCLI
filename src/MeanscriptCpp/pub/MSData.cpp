@@ -127,7 +127,7 @@ int32_t MSData::getMemberAddress (std::string name)
 	return dataIndex + (*structCode)[memberTagAddress + 1];
 }
 
-Array<int> nameIntsTmp(CFG_MAX_NAME_LENGTH);
+Array<int> nameIntsTmp(globalConfig.maxNameLength);
 
 int32_t MSData::getMemberTagAddress (std::string name, bool isArray) 
 {

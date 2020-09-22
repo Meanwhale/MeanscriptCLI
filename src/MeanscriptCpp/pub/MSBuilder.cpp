@@ -8,7 +8,7 @@ MSBuilder::MSBuilder (std::string _packageName)
 	semantics(new Semantics()),
 	variables((*(*semantics).globalContext).variables) {
 	packageName = _packageName;
-	{ values.reset( CFG_BUILDER_VALUES_SIZE); values.fill(0); };
+	{ values.reset( globalConfig.builderValuesSize); values.fill(0); };
 	common = new Common();
 	byteCode = new ByteCode(common);
 	(*common).includePrimitives((*semantics));

@@ -13,7 +13,7 @@ Semantics::Semantics ()
 		typeStructDefs[i] = 0;
 	}
 	
-	maxContexts = CFG_MAX_FUNCTIONS;
+	maxContexts = globalConfig.maxFunctions;
 	contexts = new Context*[maxContexts];
 	
 	contexts[0] = new Context("global", 0, -1);
@@ -153,7 +153,7 @@ void Semantics::analyzeNode (NodeIterator it)
 
 void Semantics::analyzeExpr (NodeIterator it) 
 {
-	if (globalConfig.verboseOn) it.printTree(false);
+	if (globalConfig.verboseOn()) it.printTree(false);
 
 	if (it.type() == NT_NAME_TOKEN)
 	{
@@ -260,7 +260,7 @@ void Semantics::analyzeExpr (NodeIterator it)
 					SYNTAX(!it.hasNext(), it, "array size expected");
 					SYNTAX(it.type() == NT_NUMBER_TOKEN, it, "array size (number) expected");
 					arraySize = std::stoi(it.data());
-					SYNTAX(arraySize > 0 && arraySize < CFG_MAX_ARRAY_SIZE, it, "invalid array size");
+					SYNTAX(arraySize > 0 && arraySize < globalConfig.maxArraySize, it, "invalid array size");
 					it.toParent();
 				}
 				it.toParent();
@@ -275,7 +275,7 @@ void Semantics::analyzeExpr (NodeIterator it)
 					it.toNext();
 					ASSERT(it.type() == NT_ASSIGNMENT, "array assignment expected as the size is not defined");
 					arraySize = it.numChildren();
-					SYNTAX(arraySize > 0 && arraySize < CFG_MAX_ARRAY_SIZE, it, "invalid array size");
+					SYNTAX(arraySize > 0 && arraySize < globalConfig.maxArraySize, it, "invalid array size");
 				}
 				
 				VR("New array: ")X(varName)X(", size ")X(arraySize)XO;

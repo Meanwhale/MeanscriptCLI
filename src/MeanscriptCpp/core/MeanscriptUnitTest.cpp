@@ -154,7 +154,7 @@ void msBuilder()
 	MSCode* ms = (*builder).createMS();
 	//(*ms).run();
 	
-	if (globalConfig.verboseOn) (*ms).printData();
+	if (globalConfig.verboseOn()) (*ms).printData();
 	
 	TEST((*ms).getInt("bb") == 456);
 	TEST(((*ms).getText("key").compare("value")==0));

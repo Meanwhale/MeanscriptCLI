@@ -153,7 +153,7 @@ void Generator::generateCodeBlock (NodeIterator it)
 void Generator::generateExpression (NodeIterator it) 
 {
 	VERBOSE("------------ read expr ------------");
-	if (globalConfig.verboseOn) it.printTree(false);
+	if (globalConfig.verboseOn()) it.printTree(false);
 
 	if (it.type() == NT_NAME_TOKEN)
 	{
@@ -292,7 +292,7 @@ void Generator::generateAssignment(NodeIterator it)
 	}
 	else
 	{
-		NodeIterator cp = it;
+		NodeIterator cp = NodeIterator(it);
 		singleArgumentPush(target.tag, cp, -1);
 	}
 
@@ -322,7 +322,7 @@ int32_t Generator::arrayPush (NodeIterator it, int32_t targetTag, int32_t arrayS
 	for (int32_t i=0; i<arraySize; i++)
 	{
 		it.toChild();
-		NodeIterator cp = it;
+		NodeIterator cp = NodeIterator(it);
 		singleArgumentPush(itemTag, cp, -1);
 		it.toParent();
 		if (it.hasNext()) it.toNext();
@@ -508,7 +508,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 			{
 				// handle variable (or other expression) array index
 				// push index value
-				NodeIterator cp = it;
+				NodeIterator cp = NodeIterator(it);
 				singleArgumentPush(OP_STRUCT_MEMBER | MS_TYPE_INT, cp, -1);
 
 				if (auxAddress < 0)
@@ -578,7 +578,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 	{
 		SYNTAX(!it.hasNext(), it, "argument syntax error");
 		it.toChild();
-		NodeIterator cp = it;
+		NodeIterator cp = NodeIterator(it);
 		singleArgumentPush(targetTag, cp, arrayItemCount);
 		it.toParent();
 		return;
@@ -661,7 +661,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 	else if (it.type() == NT_PARENTHESIS)
 	{
 		it.toChild();
-		NodeIterator cp = it;
+		NodeIterator cp = NodeIterator(it);
 		singleArgumentPush(targetTag, cp, arrayItemCount);
 		it.toParent();
 		return;

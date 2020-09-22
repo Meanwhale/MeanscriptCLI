@@ -33,8 +33,8 @@ StructDef::StructDef (std::string _name, int32_t _typeID)
 	name = _name;
 	typeID = _typeID;
 	
-	{ code.reset(			CFG_MAX_STRUCT_DEF_SIZE); code.fill(0); };
-	{ memberOffset.reset(	CFG_MAX_STRUCT_MEMBERS); memberOffset.fill(0); };
+	{ code.reset(			globalConfig.maxStructDefSize); code.fill(0); };
+	{ memberOffset.reset(	globalConfig.maxStructMembers); memberOffset.fill(0); };
 	
 	numMembers = 0;
 	argsSize = -1; // set structSize after all arguments are set
@@ -56,7 +56,7 @@ int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t ar
 	// 		vec2 [3] -> [3] [x0] [y0] [x1] [y1] [x2] [y2]
 	//		"sizeof" being 7 here
 
-	ASSERT(itemCount > 0 && itemCount < CFG_MAX_ARRAY_SIZE, "invalid array size");
+	ASSERT(itemCount > 0 && itemCount < globalConfig.maxArraySize, "invalid array size");
 	StructDef* sd = (*semantics).typeStructDefs[arrayType];
 	ASSERT(sd != 0, "struct missing");
 	int32_t singleMemberSize = (*sd).structSize;
@@ -203,7 +203,7 @@ void StructDef::print ()
 	}
 	else
 	{
-		if (globalConfig.verboseOn) printData(code, codeTop, -1, true);
+		if (globalConfig.verboseOn()) printData(code, codeTop, -1, true);
 	}
 	VERBOSE("--------------------------------");
 }

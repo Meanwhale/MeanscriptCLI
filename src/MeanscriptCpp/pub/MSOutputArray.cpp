@@ -5,7 +5,7 @@ using namespace meanscriptcore;
 
 MSOutputArray::MSOutputArray ()
 {
-	maxSize = CFG_OUTPUT_ARRAY_SIZE;
+	maxSize = globalConfig.outputArraySize;
 	{ buffer.reset(maxSize); };
 	index = 0;
 }

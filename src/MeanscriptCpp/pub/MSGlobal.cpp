@@ -5,7 +5,7 @@ using namespace meanscriptcore;
 	
 void MSGlobal::setVerbose (bool b)
 {
-	verboseOn = b;
+	verbose = b;
 }
 
 } // namespace meanscript(core)

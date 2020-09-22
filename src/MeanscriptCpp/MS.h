@@ -82,13 +82,10 @@ namespace meanscriptcore
 #elif MS_DEBUG
 #define MS_BUILD_INFO "version 0.1 DEBUG"
 #ifdef _CRT_SECURE_NO_WARNINGS // VS memory debug
-#define HALT {__debugbreak(); std::exit(-1);}
-#else
-#define HALT {std::exit(-1);}
+#define USE_DEBUG_BREAK
 #endif
 #elif MS_RELEASE
 #define MS_BUILD_INFO "version 0.1 RELEASE"
-#define HALT std::exit(-1)
 #else
 #error MS_DEBUG or MS_RELEASE must be defined
 #endif
@@ -103,9 +100,15 @@ namespace meanscriptcore
 //#define ASSERT(x,msg) { if (!(x)) { printf("FAIL: (%s), file %s, line %d.\n", STR(x), __FILE__, __LINE__); printer().print(msg).endLine(); HALT; }}
 //#define ASSERT(x,msg) { if (!(x)) { meanscript::printer().print("ASSERTION FAILED: \"").print(STR(x)).print("\"\nFILE: ").print(__FILE__).print("\nLINE: ").print(__LINE__).print("\nMESSAGE: ").print(msg).endLine(); HALT; }}
 //#define ASSERT(x,msg) msAssert(x,toString(msg), STR(x), __FILE__, __LINE__);
-#define ASSERT(x,msg) msAssert(x,"assertion failed", STR(x), __FILE__, __LINE__);
 //#define EXIT(msg) { meanscript::printer().print("\nERROR:").endLine().print(msg).endLine(); HALT;}
-#define EXIT(msg) { HALT; }
+
+#ifdef USE_DEBUG_BREAK
+#define ASSERT(x,msg) {if (!(x)) {__debugbreak(); std::exit(-1);}}
+#define EXIT(msg) ASSERT(false,msg);
+#else
+#define ASSERT(x,msg) msAssert(x,"assertion failed", STR(x), __FILE__, __LINE__);
+#define EXIT(msg) msAssert(false,"error", STR(x), __FILE__, __LINE__);
+#endif
 
 #define MSPRINT printer().print
 
@@ -166,7 +169,7 @@ namespace meanscript
 
 	extern const MSGlobal& globalConfig;
 
-	void setVerbose(bool);
+	void setVerbose(bool); // access beyond public const
 
 	// Standard printers
 
