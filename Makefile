@@ -8,8 +8,8 @@ SRC += $(wildcard $(MS_DIR)/pub/*.cpp)
 
 CC = g++
 FLAGS = -std=c++14 -I$(CMD_DIR) -I$(MS_DIR) -I$(MS_DIR)/core -I$(MS_DIR)/pub
-RELEASE_TARGET_EXE = mean
-DEBUG_TARGET_EXE = meandbg
+RELEASE_TARGET_EXE = bin/mean
+DEBUG_TARGET_EXE = bin/meandbg
 RELEASE_FLAGS = -Os -s -DMS_RELEASE
 DEBUG_FLAGS = -fsanitize=leak -fsanitize=address -DMS_DEBUG
 

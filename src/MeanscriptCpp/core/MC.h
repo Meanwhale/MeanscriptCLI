@@ -43,15 +43,15 @@ constexpr int32_t OP_END_INIT = 0x16000000;
 constexpr int32_t OP_FUNCTION_CALL = 0x17000000;
 constexpr int32_t OP_PUSH_LOCAL = 0x18000000;
 constexpr int32_t OP_PUSH_GLOBAL = 0x19000000;
-constexpr int32_t OP_WRITE_STACK_TO_LOCAL = 0x1a000000;
-constexpr int32_t OP_WRITE_STACK_TO_GLOBAL = 0x1b000000;
-constexpr int32_t OP_WRITE_STACK_TO_REG = 0x1c000000;
+constexpr int32_t OP_POP_STACK_TO_LOCAL = 0x1a000000;
+constexpr int32_t OP_POP_STACK_TO_GLOBAL = 0x1b000000;
+constexpr int32_t OP_POP_STACK_TO_REG = 0x1c000000;
 constexpr int32_t OP_MEMBER_NAME = 0x1d000000;
 constexpr int32_t OP_INIT_GLOBALS = 0x1e000000;
 constexpr int32_t OP_ARRAY_MEMBER = 0x1f000000;
 constexpr int32_t OP_MULTIPLY_GLOBAL_ARRAY_INDEX= 0x20000000;
-constexpr int32_t OP_WRITE_STACK_TO_LOCAL_REF = 0x21000000;
-constexpr int32_t OP_WRITE_STACK_TO_GLOBAL_REF = 0x22000000;
+constexpr int32_t OP_POP_STACK_TO_LOCAL_REF = 0x21000000;
+constexpr int32_t OP_POP_STACK_TO_GLOBAL_REF = 0x22000000;
 constexpr int32_t OP_PUSH_LOCAL_REF = 0x23000000;
 constexpr int32_t OP_PUSH_GLOBAL_REF = 0x24000000;
 constexpr int32_t OP_MAX = 0x30000000;
@@ -63,9 +63,9 @@ constexpr char const * opName [] = {
  "no operation", "---OLD---", "---OLD---", "---OLD---",
  "text", "push immediate", "---OLD---", "push from reg.",
  "function data", "start init", "end init", "function call",
- "push local", "push global", "stack to local", "stack to global",
- "stack to register", "member name", "init globals", "array member",
- "multiply array index", "stack to local ref.", "stack to global ref.", "push local ref.",
+ "push local", "push global", "pop to local", "pop to global",
+ "pop to register", "member name", "init globals", "array member",
+ "multiply array index", "pop to local ref.", "pop to global ref.", "push local ref.",
  "push global ref.", "---ERROR---", "---ERROR---", "---ERROR---",
  "---ERROR---", "---ERROR---", "---ERROR---", "---ERROR---",
  "---ERROR---", "---ERROR---", "---ERROR---", "---ERROR---",

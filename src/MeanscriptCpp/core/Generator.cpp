@@ -196,7 +196,7 @@ void Generator::generateExpression (NodeIterator it)
 			// TODO: return value could be an array, a reference, etc.
 			singleArgumentPush(OP_STRUCT_MEMBER | (*currentContext).returnType, it, -1);
 			
-			bc.addInstruction(OP_WRITE_STACK_TO_REG, 1, (*currentContext).returnType);
+			bc.addInstruction(OP_POP_STACK_TO_REG, 1, (*currentContext).returnType);
 			bc.addWord((*sem.getType((*currentContext).returnType)).structSize);
 			bc.addInstruction(OP_GO_END, 0 , 0);
 		}
@@ -271,7 +271,7 @@ void Generator::generateAssignment(NodeIterator it)
 		
 		int32_t arrayDataSize = arrayPush(it, target.tag, target.arraySize);
 		
-		bc.addInstruction(inGlobal()?OP_WRITE_STACK_TO_GLOBAL:OP_WRITE_STACK_TO_LOCAL, 2, MS_TYPE_VOID);
+		bc.addInstruction(inGlobal()?OP_POP_STACK_TO_GLOBAL:OP_POP_STACK_TO_LOCAL, 2, MS_TYPE_VOID);
 		bc.addWord(arrayDataSize);
 		bc.addWord(target.address);
 
@@ -302,11 +302,11 @@ void Generator::generateAssignment(NodeIterator it)
 	// local or global?
 	if (target.isReference)
 	{
-		bc.addInstruction(inGlobal()?OP_WRITE_STACK_TO_GLOBAL_REF:OP_WRITE_STACK_TO_LOCAL_REF, 2, MS_TYPE_VOID);
+		bc.addInstruction(inGlobal()?OP_POP_STACK_TO_GLOBAL_REF:OP_POP_STACK_TO_LOCAL_REF, 2, MS_TYPE_VOID);
 	}
 	else
 	{
-		bc.addInstruction(inGlobal()?OP_WRITE_STACK_TO_GLOBAL:OP_WRITE_STACK_TO_LOCAL, 2, MS_TYPE_VOID);
+		bc.addInstruction(inGlobal()?OP_POP_STACK_TO_GLOBAL:OP_POP_STACK_TO_LOCAL, 2, MS_TYPE_VOID);
 	}
 	bc.addWord((*sem.getType(targetType)).structSize);
 	bc.addWord(target.address);

@@ -318,45 +318,45 @@ void MeanMachine::step ()
 		
 		pushData(bc, stack, address, size);
 	}
-	else if (op == OP_WRITE_STACK_TO_GLOBAL)
+	else if (op == OP_POP_STACK_TO_GLOBAL)
 	{
 		// write from stack to global target
 		
 		int32_t size = bc.code[instructionPointer + 1];
 		int32_t address = bc.code[instructionPointer + 2];
-		writeStackToTarget(bc, stack, size, address);
+		popStackToTarget(bc, stack, size, address);
 	}
-	else if (op == OP_WRITE_STACK_TO_LOCAL)
+	else if (op == OP_POP_STACK_TO_LOCAL)
 	{
 		// write from stack to local target
 		
 		int32_t size = bc.code[instructionPointer + 1];
 		int32_t address = bc.code[instructionPointer + 2];
-		writeStackToTarget(bc, stack, size, address + stackBase);
+		popStackToTarget(bc, stack, size, address + stackBase);
 	}
-	else if (op == OP_WRITE_STACK_TO_GLOBAL_REF)
+	else if (op == OP_POP_STACK_TO_GLOBAL_REF)
 	{
 		// write from stack to global reference target
 		
 		int32_t size = bc.code[instructionPointer + 1];
 		int32_t refAddress = bc.code[instructionPointer + 2];
 		int32_t address = stack[refAddress];
-		writeStackToTarget(bc, stack, size, address);
+		popStackToTarget(bc, stack, size, address);
 	}
-	else if (op == OP_WRITE_STACK_TO_LOCAL_REF)
+	else if (op == OP_POP_STACK_TO_LOCAL_REF)
 	{
 		// write from stack to local reference target
 		
 		int32_t size = bc.code[instructionPointer + 1];
 		int32_t refAddress = bc.code[instructionPointer + 2];
 		int32_t address = stack[stackBase + refAddress];
-		writeStackToTarget(bc, stack, size, address);
+		popStackToTarget(bc, stack, size, address);
 	}
-	else if (op == OP_WRITE_STACK_TO_REG)
+	else if (op == OP_POP_STACK_TO_REG)
 	{
 		// when 'return' is called
 		int32_t size = bc.code[instructionPointer + 1];
-		writeStackToTarget(bc, registerData, size, 0);
+		popStackToTarget(bc, registerData, size, 0);
 		registerType = (int32_t)(instruction & VALUE_TYPE_MASK);
 	}
 	else if (op == OP_MULTIPLY_GLOBAL_ARRAY_INDEX)
@@ -510,7 +510,7 @@ void MeanMachine::pushData (ByteCode & bc, Array<int> & source, int32_t address,
 	}
 }
 
-void MeanMachine::writeStackToTarget (ByteCode & bc, Array<int> & target, int32_t size, int32_t address)
+void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t size, int32_t address)
 {
 	for (int32_t i=0; i<size; i++)
 	{

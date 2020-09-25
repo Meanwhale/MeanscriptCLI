@@ -33,17 +33,12 @@ void printHelp()
 	printVersion();
 	MSPRINT("Command line interface\n");
 	MSPRINT("USAGE:\n  mean [options] [command] <file(s)>\n");
-	MSPRINT("OPTIONS:\n  -v, --verbose    Print command details.\n");
+	MSPRINT("OPTIONS:\n");
+	MSPRINT("  -v, --verbose                  Print command details.\n");
 	MSPRINT("COMMANDS:\n");
-	//printCommandHelp("compile", "<input script> <output bytecode file>", "Compile a script and output bytecode to a file.");
-	//printCommandHelp("run", "<input bytecode>", "Read and run a bytecode.");
-	//printCommandHelp("decode" , "<input bytecode>", "Read bytecode and print its content.");
-	//printCommandHelp("view", "<input bytecode>", "Run code and view values.");
-	//printCommandHelp("test", "", "Run unit tests.");
-	//printCommandHelp("help", "", "Print help.");
-	//printCommandHelp("version", "", "Print version.");
-
+	
 	MSPRINT("  compile <script> <output>      Compile a script and write bytecode to a file.\n");
+	MSPRINT("  cr <script> <output>           Same as 'compile' but also run they bytecode.\n");
 	MSPRINT("  run <bytecode>                 Read and run a bytecode.\n");
 	MSPRINT("  decode <bytecode>              Read bytecode and print its content.\n");
 	MSPRINT("  view <bytecode>                Run code and view values.\n");
@@ -119,16 +114,6 @@ int execute(int argc, char* argv[])
 				MSPRINT("Set verbose on.").endLine();
 				setVerbose(true);
 			}
-			//else if (arg == "--version")
-			//{
-			//	MSPRINT("Meanscript (C) 2020, version:\n0.1\n");
-			//}
-			//else if (arg == "--test")
-			//{
-			//	MSPRINT("Run all unit tests").endLine();
-			//	MeanscriptUnitTest::runAll();
-			//	MSPRINT("\nTESTS DONE!").endLine();
-			//}
 			else
 			{
 				MSPRINT("Unknown argument: ").print(arg);

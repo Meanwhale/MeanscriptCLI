@@ -37,7 +37,7 @@ Array<int>* getDataCode();
 void step();
 void initStep();
 void pushData (ByteCode &, Array<int> & source, int32_t address, int32_t size);
-void writeStackToTarget (ByteCode &, Array<int> & target, int32_t size, int32_t offset);
+void popStackToTarget (ByteCode &, Array<int> & target, int32_t size, int32_t offset);
 void push(int32_t data);
 void callbackReturn(int32_t type, int32_t value);
 void saveReg(int32_t type, int32_t value);
