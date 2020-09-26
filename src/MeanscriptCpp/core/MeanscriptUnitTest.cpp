@@ -232,16 +232,16 @@ bool parseError()
 
 void MeanscriptUnitTest:: runAll () 
 {
-	PR("TEST ")X( "simpleVariable" ); simpleVariable(); PRINT(": OK");;
-	PR("TEST ")X( "structAssignment" ); structAssignment(); PRINT(": OK");;
-	PR("TEST ")X( "argumentList" ); argumentList(); PRINT(": OK");;
-	PR("TEST ")X( "simpleFunction" ); simpleFunction(); PRINT(": OK");;
-	PR("TEST ")X( "structFunction" ); structFunction(); PRINT(": OK");;
-	PR("TEST ")X( "msBuilder" ); msBuilder(); PRINT(": OK");;
-	PR("TEST ")X( "varArray" ); varArray(); PRINT(": OK");;
-	PR("TEST ")X( "structArray" ); structArray(); PRINT(": OK");;
-	PR("TEST ")X( "inputOutputStream" ); inputOutputStream(); PRINT(": OK");;
-	PR("TEST ")X( "readOnly" ); readOnly(); PRINT(": OK");;
+	PRINT("TEST " CAT  "simpleVariable" ); simpleVariable(); PRINT(": OK");;
+	PRINT("TEST " CAT  "structAssignment" ); structAssignment(); PRINT(": OK");;
+	PRINT("TEST " CAT  "argumentList" ); argumentList(); PRINT(": OK");;
+	PRINT("TEST " CAT  "simpleFunction" ); simpleFunction(); PRINT(": OK");;
+	PRINT("TEST " CAT  "structFunction" ); structFunction(); PRINT(": OK");;
+	PRINT("TEST " CAT  "msBuilder" ); msBuilder(); PRINT(": OK");;
+	PRINT("TEST " CAT  "varArray" ); varArray(); PRINT(": OK");;
+	PRINT("TEST " CAT  "structArray" ); structArray(); PRINT(": OK");;
+	PRINT("TEST " CAT  "inputOutputStream" ); inputOutputStream(); PRINT(": OK");;
+	PRINT("TEST " CAT  "readOnly" ); readOnly(); PRINT(": OK");;
 
 }
 

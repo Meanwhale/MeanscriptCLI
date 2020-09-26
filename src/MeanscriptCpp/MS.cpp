@@ -5,24 +5,6 @@
 
 
 
-void msAssert(bool b, std::string m)
-{
-	if (!b)
-	{
-		std::cout<<std::endl<<"ERROR: "<<m<<std::endl;
-		std::exit(-1);
-	}
-};
-
-void msAssert(bool b, std::string m, const char* expression, const char* sourceFile, int lineNumber)
-{
-	if (!b)
-	{
-		std::cout<<std::endl<<"FILE: "<<sourceFile<<std::endl<<"LINE: "<<lineNumber<<std::endl<<"EXPR: "<<expression;
-		msAssert(false, m);
-	}
-};
-
 namespace meanscript
 {
 	using namespace meanscriptcore;
@@ -34,31 +16,34 @@ namespace meanscript
 	
 	NullStream nullOut;
 
-	MStdOutPrint verboseOut;
-	MStdOutPrint printOut;
+	MStdOutPrint verboseOut(std::cout);
+	MStdOutPrint printOut(std::cout);
+	MStdOutPrint errorOut(std::cerr);
 	MSNullPrint nullPrint;
 	
 	MSOutputPrint& verbose() { if (globalConfig.verboseOn()) return verboseOut; return nullPrint; }
 	MSOutputPrint& printer() { return printOut; }
+	MSOutputPrint& errorPrinter() { return errorOut; }
 	
 	// Standard print
 
-	MStdOutPrint::MStdOutPrint()
+	MStdOutPrint::MStdOutPrint(std::ostream& _os) :
+		os(_os)
 	{
 	}
 	void MStdOutPrint::writeByte(uint8_t b) {
-		std::cout<<b;
+		os<<b;
 	}
 	MSOutputPrint& MStdOutPrint::print(std::string s) {
-		std::cout<<s;
+		os<<s;
 		return *this;
 	}
 	MSOutputPrint& MStdOutPrint::print(std::int32_t i) {
-		std::cout<<i;
+		os<<i;
 		return *this;
 	}
 	MSOutputPrint& MStdOutPrint::print(float f) {
-		std::cout<<f;
+		os<<f;
 		return *this;
 	}
 	void MStdOutPrint::close() { }
@@ -88,7 +73,7 @@ namespace meanscript
 		if (usePathVar)
 		{
 			char * inputDir = std::getenv("MS_INPUT");
-			if (inputDir == 0) EXIT("environmental variable MS_INPUT not set");
+			if (inputDir == 0) ERROR("environmental variable MS_INPUT not set");
 			inputFileName = "\\" + inputFileName;
 			inputFileName = inputDir + inputFileName;
 			
@@ -103,7 +88,7 @@ namespace meanscript
 		if (usePathVar)
 		{
 			char * outputDir = std::getenv("MS_OUTPUT");
-			if (outputDir == 0) EXIT("environmental variable MS_OUTPUT not set");
+			if (outputDir == 0) ERROR("environmental variable MS_OUTPUT not set");
 			outputFileName = "\\" + outputFileName;
 			outputFileName = outputDir + outputFileName;
 			
@@ -120,11 +105,11 @@ namespace meanscript
 		if (!fo->is_open())
 		{
 			printer().print("file not found: ").print(fileName).endLine();
-			EXIT("MFileOutStream: exit");
+			ERROR("MFileOutStream: exit");
 		}
 	}
 	void MSFileOutStream::writeByte(uint8_t b) {
-		if (!fo->is_open()) EXIT("file is closed");
+		if (!fo->is_open()) ERROR("file is closed");
 		fo->write((const char *) &b, 1);
 	}
 	void MSFileOutStream::close() {
@@ -141,7 +126,7 @@ namespace meanscript
 		if (!fi->is_open())
 		{
 			printer().print("file not found: ").print(fileName).endLine();
-			EXIT("MFileOutStream: exit");
+			ERROR("MFileOutStream: exit");
 		}
 		fi->seekg (0, fi->end);
 		size = (int)fi->tellg();
@@ -278,3 +263,27 @@ namespace meanscript
 		return std::to_string(f);
 	}
 }
+
+
+void msAssert(bool b, const char* m)
+{
+	if (!b) msError(m,0,0,-1);
+};
+
+void msAssert(bool b, const char* m, const char* expression, const char* sourceFile, int lineNumber)
+{
+	if (!b) msError(m, expression, sourceFile, lineNumber);
+};
+
+void msError(const char* m, const char* expression, const char* sourceFile, int lineNumber)
+{
+	// TODO: use meanscript::errorPrinter()
+	
+	std::cerr<<"\n...ERROR... ";
+	if (m!= 0) std::cerr<<m;
+	if (sourceFile != 0) std::cerr<<"\nFILE: "<<sourceFile;
+	if (lineNumber >= 0) std::cerr<<"\nLINE: "<<lineNumber;
+	if (expression != 0) std::cerr<<"\nEXPR: "<<expression;
+	std::cerr<<std::endl;
+	std::exit(-1);
+};

@@ -29,7 +29,7 @@ Semantics::~Semantics() { 	for (int32_t i=0; i<maxContexts; i++) { delete contex
 
 void Semantics::addPrimitiveType (std::string name, StructDef* sd, int32_t id)
 {
-	VR("Add primitive type [")X(id)X("] ")X(name)XO;
+	VERBOSE("Add primitive type [" CAT id CAT "] " CAT name);
 	types.insert(std::make_pair( name, id));;
 	typeStructDefs[id] = sd;
 	
@@ -43,7 +43,7 @@ bool Semantics::hasType(std::string name)
 StructDef* Semantics:: getType (int32_t id) 
 {
 	StructDef* userType = typeStructDefs[id];
-	SYNTAX(userType != 0, 0, "Unkown type");
+	ASSERT(userType != 0, "Unkown type");
 	return userType;
 }
 
@@ -51,7 +51,22 @@ StructDef* Semantics:: getType (std::string name)
 {
 	int32_t id = nameTreeGet(types, name);
 	StructDef* userType = typeStructDefs[id];
-	SYNTAX(userType != 0, 0, "Unkown type");
+	ASSERT(userType != 0, "Unkown type: " CAT name);
+	return userType;
+}
+
+StructDef* Semantics:: getType (int32_t id, NodeIterator* itPtr) 
+{
+	StructDef* userType = typeStructDefs[id];
+	SYNTAX(userType != 0, (*itPtr), "Unkown type: #" CAT id);
+	return userType;
+}
+
+StructDef* Semantics:: getType (std::string name, NodeIterator* itPtr) 
+{
+	int32_t id = nameTreeGet(types, name);
+	StructDef* userType = typeStructDefs[id];
+	SYNTAX(userType != 0, (*itPtr), "Unkown type: " CAT name);
 	return userType;
 }
 
@@ -70,19 +85,37 @@ Context* Semantics:: findContext (std::string name)
 	return 0;
 }
 
-void Semantics:: checkReserved (std::string name, NodeIterator* itPtr) 
+bool Semantics:: assumeNotReserved (std::string name) 
 {
-	SYNTAX(findContext(name) == 0, itPtr, "unexpected function name");
-	SYNTAX(!(types.find( name) != types.end()), itPtr, "unexpected type name");
-	SYNTAX(!((*globalContext).variables.memberNames.find( name) != (*globalContext).variables.memberNames.end()), itPtr, "duplicate variable name");
+	// return true if not reserved, otherwise print error message and return false
+	
+	if(findContext(name) != 0) {
+		ERROR_PRINT("unexpected function name: " CAT name);
+		return false;
+	}
+	if((types.find( name) != types.end())) {
+		ERROR_PRINT("unexpected type name: " CAT name);
+		return false;
+	}
+	if(((*globalContext).variables.memberNames.find( name) != (*globalContext).variables.memberNames.end())) {
+		ERROR_PRINT("duplicate variable name: " CAT name);
+		return false;
+	}	
 	if (currentContext != globalContext)
 	{
-		SYNTAX(!((*currentContext).variables.memberNames.find( name) != (*currentContext).variables.memberNames.end()), itPtr, "duplicate variable name");
+		if(((*currentContext).variables.memberNames.find( name) != (*currentContext).variables.memberNames.end())) {
+			ERROR_PRINT("duplicate variable name: " CAT name);
+			return false;
+		}
 	}
 	for(int32_t i=0; i<NUM_KEYWORDS; i++)
 	{
-		SYNTAX(!(name.compare( keywords[i])==0), itPtr, "unexpected keyword");
+		if ((name.compare( keywords[i])==0)) {
+			ERROR_PRINT("unexpected keyword: " CAT name);
+			return false;
+		}
 	}
+	return true;
 }
 
 void Semantics::analyze (TokenTree* tree) 
@@ -106,7 +139,7 @@ void Semantics::analyze (TokenTree* tree)
 	{
 		if (contexts[i] != 0)
 		{
-			VR("-------- context ID: ")X(i)XO;
+			VERBOSE("-------- context ID: " CAT i);
 			(*contexts[i]).variables.print();
 		}
 	}
@@ -146,7 +179,7 @@ void Semantics::analyzeNode (NodeIterator it)
 		}
 		else
 		{
-			EXIT("expression expected");
+			ERROR("expression expected");
 		}
 	}
 }
@@ -179,9 +212,9 @@ void Semantics::analyzeExpr (NodeIterator it)
 			SYNTAX(it.type() == NT_NAME_TOKEN, it, "function name expected");
 			std::string functionName = it.data();
 
-			checkReserved(functionName, (&(it)));
+			SYNTAX(assumeNotReserved(functionName), it, "variable name error");
 			
-			VR("Create a new function: ")X(functionName)XO;
+			VERBOSE("Create a new function: " CAT functionName);
 			
 			// create new context
 			Context* funcContext = new Context(functionName, numContexts, returnType);
@@ -221,11 +254,11 @@ void Semantics::analyzeExpr (NodeIterator it)
 			SYNTAX(it.hasNext(), it, "struct name expected");
 			it.toNext();
 			std::string structName = it.data();
-			checkReserved(structName, (&(it)));
+			SYNTAX(assumeNotReserved(structName), it, "variable name error");
 			SYNTAX(it.hasNext(), it, "struct definition expected");
 			it.toNext();
 			SYNTAX(!it.hasNext(), it, "unexpected token after struct definition");
-			VR("Create a new struct: ")X(structName)XO;
+			VERBOSE("Create a new struct: " CAT structName);
 			addStructDef(structName, it.copy());
 		}
 		else if (hasType(it.data()))
@@ -268,7 +301,7 @@ void Semantics::analyzeExpr (NodeIterator it)
 				// array name
 				it.toNext();
 				std::string varName = it.data();
-				checkReserved(varName, (&(it)));
+				SYNTAX(assumeNotReserved(varName), it, "variable name error");
 				
 				if (arraySize == -1)
 				{
@@ -278,22 +311,22 @@ void Semantics::analyzeExpr (NodeIterator it)
 					SYNTAX(arraySize > 0 && arraySize < globalConfig.maxArraySize, it, "invalid array size");
 				}
 				
-				VR("New array: ")X(varName)X(", size ")X(arraySize)XO;
+				VERBOSE("New array: " CAT varName CAT ", size " CAT arraySize);
 
 				(*currentContext).variables.addArray(this, varName, type, arraySize);
 			}
 			else
 			{
 				// variable name
-				checkReserved(it.data(), (&(it)));
-				VR("New variable: ")X(it.data())X(" <")X((*currentContext).name)X(">")XO;
+				SYNTAX(assumeNotReserved(it.data()), it, "variable name error");
+				VERBOSE("New variable: " CAT it.data() CAT " <" CAT (*currentContext).name CAT ">");
 				(*currentContext).variables.addMember(this, it.data(), type);
 			}
 		}
 	}
 	else
 	{
-		EXIT("unexpected token");
+		ERROR("unexpected token");
 	}
 }
 
@@ -350,7 +383,7 @@ void Semantics::createStructDef (StructDef & sd, NodeIterator it)
 			
 			// array name
 			it.toNext();
-			VR("Member array: ")X(it.data())X(", size")X(arraySize)XO;
+			VERBOSE("Member array: " CAT it.data() CAT ", size" CAT arraySize);
 			
 			sd.addArray(this, it.data(), type, arraySize);
 		}
@@ -358,8 +391,8 @@ void Semantics::createStructDef (StructDef & sd, NodeIterator it)
 		{
 			SYNTAX(it.type() == NT_NAME_TOKEN,it,  "member name expected");
 			std::string memberName = it.data();
-			SYNTAX(!(sd.memberNames.find( memberName) != sd.memberNames.end()),it,  "duplicate name");
-			VR("Add struct member: ")X(memberName)XO;
+			SYNTAX(!(sd.memberNames.find( memberName) != sd.memberNames.end()),it,  "duplicate name: " CAT memberName);
+			VERBOSE("Add struct member: " CAT memberName);
 			sd.addMember(this, memberName, type);
 		}
 		SYNTAX(!it.hasNext(), it, "break expected");

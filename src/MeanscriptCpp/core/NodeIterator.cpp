@@ -7,6 +7,8 @@ NodeIterator::NodeIterator (MNode* _node)
 {
 	node = _node;
 }
+
+
 NodeIterator NodeIterator:: copy ()
 {
 	return NodeIterator(node);

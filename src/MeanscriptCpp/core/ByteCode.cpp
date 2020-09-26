@@ -49,13 +49,13 @@ void ByteCode::addInstructionWithData (int32_t operation, int32_t size, int32_t 
 void ByteCode::addInstruction (int32_t operation, int32_t size, int32_t valueType) 
 {
 	int32_t instruction = makeInstruction(operation, size, valueType);
-	VR("Add instruction: [")X(getOpName(instruction))X("]")XO;
+	VERBOSE("Add instruction: [" CAT getOpName(instruction) CAT "]");
 	code[codeTop++] = instruction;
 }
 
 void ByteCode::addWord(int32_t data)
 {
-	//DEBUG(PR("data: ")X(data)XO);
+	//DEBUG(PRINT("data: " CAT data));
 	code[codeTop++] = data;
 }
 

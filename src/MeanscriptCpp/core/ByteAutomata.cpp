@@ -31,15 +31,15 @@ void ByteAutomata::print ()
 {
 	for (int32_t i = 0; i <= stateCounter; i++)
 	{
-		VR("state: ")X(i)XO;
+		PRINT("state: " CAT i);
 
 		for (int32_t n = 0; n < 256; n++)
 		{
 			uint8_t foo = tr[(i * 256) + n];
-			if (foo == 0xff) VERBOSEN(".");
-			else VERBOSEN(foo);
+			if (foo == 0xff) PRINTN(".");
+			else PRINTN(foo);
 		}
-		VERBOSE("");
+		PRINT("");
 	}
 }
 
@@ -66,7 +66,7 @@ void ByteAutomata::transition (uint8_t state, const char * input, void (* action
 		tr[(state * 256) + bytes[i]] = actionIndex;
 		i++;
 	}
-	//DEBUG(VR("New Transition added: id ")X(actionIndex)XO);
+	//DEBUG(VERBOSE("New Transition added: id " CAT actionIndex));
 }
 
 void ByteAutomata::fillTransition (uint8_t state, void (* action)())
@@ -78,7 +78,7 @@ void ByteAutomata::fillTransition (uint8_t state, void (* action)())
 	{
 		tr[(state * 256) + i] = actionIndex;
 	}
-	//DEBUG(VR("New Transition filled: id ")X(actionIndex)XO);
+	//DEBUG(VERBOSE("New Transition filled: id " CAT actionIndex));
 }
 
 uint8_t ByteAutomata:: addAction (void (* action)())
@@ -93,7 +93,7 @@ void ByteAutomata::next (uint8_t nextState)
 {
 	currentState = nextState;
 
-	DEBUG(VR("Next state: ")X(stateNames[ (int32_t)currentState])XO);
+	DEBUG(VERBOSE("Next state: " CAT stateNames[ (int32_t)currentState]));
 }
 
 
@@ -173,7 +173,7 @@ void ByteAutomata::run (MSInputStream & input)
 		{
 			stayNextStep = false;
 		}
-		VR("[ ")X((char)(inputByte))X(" ]")XO;
+		VERBOSE("[ " CAT (char)(inputByte) CAT " ]");
 
 		running = step(inputByte);
 	}
@@ -183,8 +183,8 @@ void ByteAutomata::run (MSInputStream & input)
 
 void ByteAutomata::printError ()
 {
-	PR("ERROR: parser state [")X(stateNames[ (int32_t)currentState])X("]")XO;
-	PR("Line ")X(lineNumber)X(": \"");
+	PRINT("ERROR: parser state [" CAT stateNames[ (int32_t)currentState] CAT "]");
+	PRINT("Line " CAT lineNumber CAT ": \"");
 	
 	// print nearby code
 	int32_t start = index-1;
@@ -194,7 +194,7 @@ void ByteAutomata::printError ()
 	}
 	while (++start < index)
 	{
-		VR((char)(buffer[start % BUFFER_SIZE]));
+		VERBOSE((char)(buffer[start % BUFFER_SIZE]));
 	}
 	PRINT("\"");
 }

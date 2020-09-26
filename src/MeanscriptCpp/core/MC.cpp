@@ -54,20 +54,19 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	{
 		if (code)
 		{
-			if (i == index) PR(">>> ")X(i);
-			else PRINTN("    ")X(i);
+			if (i == index) PRINT(">>> " CAT i);
+			else PRINTN("    " CAT i);
 			
 			if (i == tagIndex)
 			{
-				PR(":    ")XHEX(data[i])
-				 X("        ")X(getOpName(data[i]))XO;
+				PRINT(":    " CATHEX (data[i]) CAT "        " CAT getOpName(data[i]));
 				tagIndex += instrSize(data[i]) + 1;
 			}
-			else PR(":    ")X(data[i])XO;
+			else PRINT(":    " CAT data[i]);
 		}
 		else
 		{
-			PR("    ")X(i)X(":    ")X(data[i])XO;
+			PRINT("    " CAT i CAT ":    " CAT data[i]);
 		}
 	}
 }
@@ -81,7 +80,7 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	code[top++]=numChars;
 	for (int32_t i=0; i<size32; i++)
 	{
-		VR("        0x")XHEX(intArray[i])XO;
+		VERBOSE("        0x" CATHEX intArray[i]);
 		code[top++] = intArray[i];
 	}
 	return top;
@@ -111,7 +110,7 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	int32_t numChars = text.size();
 	int32_t size32 = (numChars/4) + 1;
 	
-	VR("Add text: ")X(size32)X(" x 4 bytes, ")X(numChars)X(" characters")XO;
+	VERBOSE("Add text: " CAT size32 CAT " x 4 bytes, " CAT numChars CAT " characters");
 	
 	int32_t instruction = makeInstruction(instructionCode, size32 + 1, MS_TYPE_TEXT);
 	code[top++] = instruction;

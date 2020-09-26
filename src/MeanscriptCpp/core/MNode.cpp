@@ -26,13 +26,13 @@ void MNode::printTree (MNode* _node, int32_t depth, bool deep)
 
 	MNode & node = (*_node);
 
-	for (int32_t i = 0; i < depth; i++) VERBOSEN("  ");
+	for (int32_t i = 0; i < depth; i++) PRINTN("  ");
 
-	PR("[")X(node.data)X("]");
+	PRINT("[" CAT node.data CAT "]");
 
-	// if (node.numChildren > 0) { VR(" + ")X(node.numChildren); }
+	// if (node.numChildren > 0) { VERBOSE(" + " CAT node.numChildren); }
 
-	if (deep) VERBOSE("");
+	if (deep) PRINT("");
 
 	if (node.child != 0 && deep) printTree(node.child, depth + 1, deep);
 	if (node.next != 0) printTree(node.next, depth, deep);

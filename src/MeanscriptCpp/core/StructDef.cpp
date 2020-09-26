@@ -155,7 +155,7 @@ int32_t StructDef:: getMemberArrayItemCount (std::string varName)
 	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found");
 	int32_t index = nameTreeGet(memberNames, varName);
 	int32_t tag = code[index];
-	CHECK((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, EC_SYNTAX, "not an array (getMemberArrayItemCount)");
+	CHECK((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, EC_SYNTAX, "not an array");
 	return code[index + 3]; // see above for definition
 }
 int32_t StructDef:: getMemberArrayItemCountOrNegative (std::string varName) 
@@ -195,7 +195,7 @@ int32_t StructDef:: getMemberSize (int32_t index)
 void StructDef::print () 
 {
 	VERBOSE("--------------------------------");
-	VR("STRUCT CODE: ")X(name)XO;
+	VERBOSE("STRUCT CODE: " CAT name);
 	VERBOSE("--------------------------------");
 	if (numMembers == 0)
 	{

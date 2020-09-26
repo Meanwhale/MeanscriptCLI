@@ -36,8 +36,8 @@ void MSBuilder::addType (std::string typeName, StructDef* sd)
 void MSBuilder::addInt (std::string name, int32_t value) 
 {
 	structLock = true;
-	(*semantics).checkReserved(name, 0);
-	VR("BUILDER: New int: ")X(name)XO;
+	ASSERT((*semantics).assumeNotReserved(name), "variable name error");
+	VERBOSE("BUILDER: New int: " CAT name);
 	int32_t address = variables.addMember(semantics, name, MS_TYPE_INT);
 	values[address] = value;
 }
@@ -55,7 +55,7 @@ int32_t MSBuilder::createText (std::string value)
 void MSBuilder::addText (std::string varName, std::string value) 
 {
 	structLock = true;
-	(*semantics).checkReserved(varName, 0);
+	ASSERT((*semantics).assumeNotReserved(varName), "variable name error");
 	// add string to tree
 	int32_t textID = createText(value);
 	int32_t address = variables.addMember(semantics, varName, MS_TYPE_TEXT);
@@ -105,8 +105,8 @@ MSWriter MSBuilder::createStruct (std::string typeName, std::string varName)
 MSWriter MSBuilder::createStruct (int32_t typeID, std::string varName) 
 {
 	structLock = true;
-	(*semantics).checkReserved(varName, 0);
-	VR("BUILDER: New struct: ")X(varName)XO;
+	ASSERT((*semantics).assumeNotReserved(varName), "variable name error");
+	VERBOSE("BUILDER: New struct: " CAT varName);
 	StructDef* sd = (*semantics).getType(typeID);
 	int32_t address = variables.addMember(semantics, varName, typeID);
 	

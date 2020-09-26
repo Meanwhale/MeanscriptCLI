@@ -181,7 +181,7 @@ void MeanMachine::initStep ()
 	// read instruction
 
 	int32_t instruction = bc.code[instructionPointer];
-	VR("INIT [")X(getOpName(instruction))X("]")XO;
+	VERBOSE("INIT [" CAT getOpName(instruction) CAT "]");
 	//jumped = false;
 
 	int32_t op = (int32_t)(instruction & OPERATION_MASK);
@@ -194,7 +194,7 @@ void MeanMachine::initStep ()
 			byteCodeType == BYTECODE_READ_ONLY ||
 			byteCodeType == BYTECODE_EXECUTABLE, EC_CODE, "unknown bytecode type"); 
 		numTexts = bc.code[instructionPointer + 1];
-		VR("start init! ")X(numTexts)X(" texts")XO;
+		VERBOSE("start init! " CAT numTexts CAT " texts");
 		{ texts.reset(numTexts+1); texts.fill(0); };
 		
 		if (byteCodeType == BYTECODE_EXECUTABLE) initVMArrays();
@@ -261,7 +261,7 @@ void MeanMachine::initStep ()
 	}
 	else
 	{
-		EXIT("unknown op. code");
+		ERROR("unknown op. code");
 	}
 	instructionPointer += 1 + instrSize(instruction);
 }
@@ -274,7 +274,7 @@ void MeanMachine::step ()
 	// read instruction
 
 	int32_t instruction = bc.code[instructionPointer];
-	VR("EXECUTE [")X(getOpName(instruction))X("]")XO;
+	VERBOSE("EXECUTE [" CAT getOpName(instruction) CAT "]");
 	jumped = false;
 
 	int32_t op = (int32_t)(instruction & OPERATION_MASK);
@@ -374,7 +374,7 @@ void MeanMachine::step ()
 		int32_t arrayIndex = stack[stackTop];
 		if (arrayIndex < 0 || arrayIndex >= arrayItemCount)
 		{
-			PR("ERROR: index ")X(arrayIndex)X(", size")X(arrayItemCount)XO;
+			PRINT("ERROR: index " CAT arrayIndex CAT ", size" CAT arrayItemCount);
 			CHECK(false, EC_SCRIPT, "index out of bounds");
 		}
 		if (arrayDataAddress < 0)
@@ -399,12 +399,12 @@ void MeanMachine::step ()
 		
 		MArgs* args = new MArgs((&(bc)), cb.argStruct, stackTop - argsSize);
 		
-		VR("-------- callback ")X(callbackIndex)XO;
+		VERBOSE("-------- callback " CAT callbackIndex);
 		cb.func( (*this), (*args));
 		
 		{ delete args; args = 0; };
 		
-		VR("Clear stack after call")XO;
+		VERBOSE("Clear stack after call");
 		// clear stack after callback is done
 		stackTop -= (*cb.argStruct).structSize;
 	}
@@ -425,7 +425,7 @@ void MeanMachine::step ()
 		stackTop += delta;
 		stackBase = stackTop - functionContextStructSize;
 		
-		VR("-------- function call! ID ")X(functionID)X(", jump to ")X(instructionPointer)XO;
+		VERBOSE("-------- function call! ID " CAT functionID CAT ", jump to " CAT instructionPointer);
 		jumped = true;
 		
 	}
@@ -445,14 +445,14 @@ void MeanMachine::step ()
 	{
 		ASSERT(registerType != -1, "register empty");
 		int32_t size = bc.code[instructionPointer + 1];
-		VR("push register content to stack, size ")X(size)XO;
+		VERBOSE("push register content to stack, size " CAT size);
 		for (int32_t i=0; i<size; i++) push(registerData[i]);
 		registerType = -1;
 	}
 	else if (op == OP_JUMP)
 	{
 		int32_t address = bc.code[instructionPointer + 1];
-		VR("jump: ")X(address)XO;
+		VERBOSE("jump: " CAT address);
 		instructionPointer = address;
 		jumped = true;
 	}
@@ -487,10 +487,10 @@ void MeanMachine::step ()
 	}
 	else
 	{
-		EXIT("unknown operation code");
+		ERROR("unknown operation code");
 	}
 
-	//DEBUG(VR("STACK: base ")X(stackBase)X(", top ")X(stackTop)XO);
+	//DEBUG(VERBOSE("STACK: base " CAT stackBase CAT ", top " CAT stackTop));
 	//DEBUG(printData(stack, stackTop, stackBase, false));
 
 	if (!jumped)
@@ -505,7 +505,7 @@ void MeanMachine::pushData (ByteCode & bc, Array<int> & source, int32_t address,
 	// push words from the source
 	for (int32_t i=0; i<size; i++)
 	{
-		VR("push from address ")X(address + i)XO;
+		VERBOSE("push from address " CAT address + i);
 		push(source[address + i]);
 	}
 }
@@ -515,7 +515,7 @@ void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t 
 	for (int32_t i=0; i<size; i++)
 	{
 		target[address + i] = stack[stackTop - size + i];
-		VR("write ")X(stack[stackTop - size + i])X(" to address ")X(address + i)XO;
+		VERBOSE("write " CAT stack[stackTop - size + i] CAT " to address " CAT address + i);
 	}
 	VERBOSE("clean stack");
 	stackTop -= size;
@@ -523,14 +523,14 @@ void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t 
 
 void MeanMachine::push (int32_t data)
 {
-	VR("push stack: ")X(data)XO;
+	VERBOSE("push stack: " CAT data);
 	stack[stackTop++] = data;
 }
 
 void MeanMachine::callbackReturn (int32_t type, int32_t value)
 {
 	VERBOSE("--------------------------------");
-	     VR("        return ")X(value)XO;
+	     VERBOSE("        return " CAT value);
 	VERBOSE("--------------------------------");
 	// return value from a callback
 	// parameter for some other function or call
@@ -573,7 +573,7 @@ void MeanMachine::printGlobals()
 	{
 		for (int32_t i=0; i<globalsSize; i++)
 		{
-			PR("    ")X(i)X(":    ")X(stack[i])XO;
+			PRINT("    " CAT i CAT ":    " CAT stack[i]);
 		}
 		PRINT("");
 	}
@@ -583,11 +583,11 @@ void MeanMachine::printDetails()
 {
 	PRINT("DETAILS");
 	PRINT("--------------------------------");
-	PR("globals size: ")X(globalsSize)XO;
-	PR("stack base:   ")X(stackBase)XO;
-	PR("stack top:    ")X(stackTop)XO;
-	PR("call depth:   ")X(baseStackTop)XO;
-	PR("instruction pointer: ")X(instructionPointer)XO;
+	PRINT("globals size: " CAT globalsSize);
+	PRINT("stack base:   " CAT stackBase);
+	PRINT("stack top:    " CAT stackTop);
+	PRINT("call depth:   " CAT baseStackTop);
+	PRINT("instruction pointer: " CAT instructionPointer);
 	
 	PRINT("\nSTACK");
 	PRINT("--------------------------------");

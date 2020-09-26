@@ -12,31 +12,65 @@
 #define MS_NO_EXCEPTIONS
 
 #define CAT ).print(
+#define CATHEX ).printHex(
 #define DEBUG(x) {x;}
-#define PR(a) printer().print(a)
-#define VR(a) verbose().print(a)
-#define X(a) .print(a)
-#define XHEX(i) .printHex(i)
+//#define PR(a) printer().print(a)
+//#define VR(a) verbose().print(a)
+//#define X(a) ).print(a
 #define XO .endLine()
-#define PRINT(a) PR(a).endLine()
-#define PRINTN(a) PR(a)
+#define ERROR_PRINT(a) errorPrinter().print(a).endLine()
+#define ERROR_PRINTN(a) errorPrinter().print(a)
+#define PRINT(a) printer().print(a).endLine()
+#define PRINTN(a) printer().print(a)
+#define VERBOSE(a) {if(globalConfig.verboseOn()) PRINT(a);}
+#define VERBOSEN(a) {if(globalConfig.verboseOn()) PRINTN(a);}
+#define USER_PRINT PRINT
+
+void msAssert(bool b, const char*);
+void msAssert(bool b, const char*, const char*, const char*, int);
+void msError(const char*, const char*, const char*, int);
+
+#if defined MS_DEBUG && defined MS_RELEASE
+#error either MS_DEBUG or MS_RELEASE must be defined, not both
+#elif MS_DEBUG
+#define MS_BUILD_INFO "version 0.1 DEBUG"
+#ifdef _CRT_SECURE_NO_WARNINGS // VS memory debug
+//#define USE_DEBUG_BREAK
+#endif
+#elif MS_RELEASE
+#define MS_BUILD_INFO "version 0.1 RELEASE"
+#else
+#error MS_DEBUG or MS_RELEASE must be defined
+#endif
+
+#ifdef _DEBUG
+     #define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#else
+     #define new new
+#endif
+
+#define STR(a) #a
+
+#ifdef USE_DEBUG_BREAK
+#define ASSERT(x,msg) {if (!(x)) {__debugbreak(); std::exit(-1);}}
+#define ERROR(msg) ASSERT(false,msg);
+#else
+#define ASSERT(x,msg) {if (!(x)){errorPrinter().print(msg);msError("", STR(x), __FILE__, __LINE__);}}
+#define ERROR(msg) {errorPrinter().print(msg);msError(0, 0, __FILE__, __LINE__);}
+#endif
+
 #ifndef MS_NO_EXCEPTIONS
 #define CHECK(b,error,msg) {if (!(b)) {PR(msg); throw MException(error);}}
 #else
-#define CHECK(b,error,msg) {if (!(b)) {PR(msg); EXIT("");}}
+#define CHECK(b,error,msg) {if (!(b)) {ERROR_PRINT(msg).endLine(); ERROR("");}}
 #endif
-#define SYNTAX(b,node,msg) {if (!(b)) {PR(msg); EXIT("");}}
+#define SYNTAX(b,node,msg) {if (!(b)) {errorPrinter().print("SCRIPT ERROR AT LINE ").print(node.line()).endLine().print(msg).endLine(); std::exit(-1);}}
 #define TEST(b) ASSERT(b,"test error")
+
 #define TRY try {
 #define TEST_CATCH(err) } catch(MException e) { return &e.error == &err; }
-#define VERBOSE(a) verbose().print(a).endLine()
-#define VERBOSEN(a) verbose().print(a)
-#define USER_PRINT PRINT
 
-
-
-void msAssert(bool b, std::string);
-void msAssert(bool b, std::string, const char*, const char*, int);
+#define MSPRINT printer().print
 
 namespace meanscript
 {
@@ -77,40 +111,6 @@ namespace meanscriptcore
 	class VarGen;
 }
 
-#if defined MS_DEBUG && defined MS_RELEASE
-#error either MS_DEBUG or MS_RELEASE must be defined, not both
-#elif MS_DEBUG
-#define MS_BUILD_INFO "version 0.1 DEBUG"
-#ifdef _CRT_SECURE_NO_WARNINGS // VS memory debug
-#define USE_DEBUG_BREAK
-#endif
-#elif MS_RELEASE
-#define MS_BUILD_INFO "version 0.1 RELEASE"
-#else
-#error MS_DEBUG or MS_RELEASE must be defined
-#endif
-
-#ifdef _DEBUG
-     #define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#else
-     #define new new
-#endif
-
-#define STR(x) #x
-//#define ASSERT(x,msg) { if (!(x)) { printf("FAIL: (%s), file %s, line %d.\n", STR(x), __FILE__, __LINE__); printer().print(msg).endLine(); HALT; }}
-//#define ASSERT(x,msg) { if (!(x)) { meanscript::printer().print("ASSERTION FAILED: \"").print(STR(x)).print("\"\nFILE: ").print(__FILE__).print("\nLINE: ").print(__LINE__).print("\nMESSAGE: ").print(msg).endLine(); HALT; }}
-//#define ASSERT(x,msg) msAssert(x,toString(msg), STR(x), __FILE__, __LINE__);
-//#define EXIT(msg) { meanscript::printer().print("\nERROR:").endLine().print(msg).endLine(); HALT;}
-
-#ifdef USE_DEBUG_BREAK
-#define ASSERT(x,msg) {if (!(x)) {__debugbreak(); std::exit(-1);}}
-#define EXIT(msg) ASSERT(false,msg);
-#else
-#define ASSERT(x,msg) msAssert(x,"assertion failed", STR(x), __FILE__, __LINE__);
-#define EXIT(msg) msAssert(false,"error", STR(x), __FILE__, __LINE__);
-#endif
-
-#define MSPRINT printer().print
 
 #include "Array.h"
 #include "Unique.h"
@@ -174,8 +174,11 @@ namespace meanscript
 	// Standard printers
 
 	class MStdOutPrint : public MSOutputPrint {
+	private:
+		MStdOutPrint() = delete;
+		std::ostream& os;
 	public:
-		MStdOutPrint();
+		MStdOutPrint(std::ostream&);
 		virtual void writeByte(uint8_t) override;
 		virtual MSOutputPrint& print(std::string) override;
 		virtual MSOutputPrint& print(int32_t) override;
@@ -195,9 +198,12 @@ namespace meanscript
 
 	extern MStdOutPrint verboseOut;
 	MSOutputPrint& verbose();
-
+	
 	extern MStdOutPrint printOut;
 	MSOutputPrint& printer();
+
+	extern MStdOutPrint errorOut;
+	MSOutputPrint& errorPrinter();
 
 	// Meanscript file in/output 
 

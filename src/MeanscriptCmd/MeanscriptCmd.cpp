@@ -122,7 +122,7 @@ int execute(int argc, char* argv[])
 		}
 		else if (arg.rfind("-", 0) == 0)
 		{
-			if (arg.size() == 1) EXIT("flag arguments expected after a '-'");
+			if (arg.size() == 1) ERROR("flag arguments expected after a '-'");
 
 			for(size_t n=1; n<arg.size(); n++)
 			{
@@ -170,7 +170,7 @@ int execute(int argc, char* argv[])
 		break;
 	case CMD_RUN:
 		{
-			if (argc != i + 1) EXIT("bytecode file for input expected");
+			if (argc != i + 1) ERROR("bytecode file for input expected");
 		
 			MSFileInStream fis = getInput(argv[i]);
 			MSCode m(fis, globalConfig.STREAM_BYTECODE);
@@ -180,7 +180,7 @@ int execute(int argc, char* argv[])
 		break;
 	case CMD_DECODE:
 		{
-			if (argc != i + 1) EXIT("bytecode file for input expected");
+			if (argc != i + 1) ERROR("bytecode file for input expected");
 		
 			MSFileInStream fis = getInput(argv[i]);
 			MSCode m(fis, globalConfig.STREAM_BYTECODE);
@@ -190,7 +190,7 @@ int execute(int argc, char* argv[])
 		break;
 	case CMD_VIEW:
 		{
-			if (argc != i + 1) EXIT("bytecode file for input expected");
+			if (argc != i + 1) ERROR("bytecode file for input expected");
 		
 			MSFileInStream fis = getInput(argv[i]);
 			MSCode m(fis, globalConfig.STREAM_BYTECODE);

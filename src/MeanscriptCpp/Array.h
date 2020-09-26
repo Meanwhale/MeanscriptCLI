@@ -132,12 +132,12 @@ public:
 	}
 	T & get(int i)
 	{
-		if (!inRange(i)) EXIT("out of range");
+		if (!inRange(i)) msError("out of range", 0, 0, -1);
 		return data[i];
 	}
 	T & operator[] (int i)
 	{
-		if (!inRange(i)) EXIT("out of range");
+		if (!inRange(i)) msError("out of range", 0, 0, -1);
 		return get(i);
 	}
 	int length()

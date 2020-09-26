@@ -10,7 +10,7 @@ void Common::printCallbacks ()
 	VERBOSE("-------- CALLBACKS:");
 	for (int32_t i=0; i < globalConfig.maxCallbacks; i++)
 	{
-		if (callbacks[i] != 0) PR("")X(i)X("")XO;
+		if (callbacks[i] != 0) PRINT("" CAT i CAT "");
 	}
 	VERBOSE("");
 }
@@ -29,9 +29,9 @@ void eqCallback(MeanMachine & mm, MArgs & args)
 {
 	VERBOSE("//////////////// EQ ////////////////");
 	
-	VR("compare ")X(mm.stack[args.baseIndex])X(" and ")X(mm.stack[args.baseIndex+1])XO;
+	VERBOSE("compare " CAT mm.stack[args.baseIndex] CAT " and " CAT mm.stack[args.baseIndex+1]);
 	bool result = (mm.stack[args.baseIndex] == mm.stack[args.baseIndex+1]);
-	VR("result: ")X((result ? "true" : "false"))XO;
+	VERBOSE("result: " CAT (result ? "true" : "false"));
 	mm.callbackReturn(MS_TYPE_INT, result ? 1 : 0);
 }
 void ifCallback(MeanMachine & mm, MArgs & args) 
@@ -48,7 +48,7 @@ void subCallback(MeanMachine & mm, MArgs & args)
 	VERBOSE("//////////////// SUBTRACTION ////////////////");
 	int32_t a = mm.stack[args.baseIndex];
 	int32_t b = mm.stack[args.baseIndex+1];
-	VR("calculate ")X(a)X(" - ")X(b)X(" = ")X(a-b)XO;
+	VERBOSE("calculate " CAT a CAT " - " CAT b CAT " = " CAT a-b);
 	mm.callbackReturn(MS_TYPE_INT, a - b);
 }
 
@@ -72,7 +72,7 @@ void printFloatCallback(MeanMachine & mm, MArgs & args)
 
 int32_t Common:: createCallback (std::string name, void (*func)(MeanMachine &, MArgs &), int32_t returnType, StructDef* argStruct)
 {
-	VR("Add callback: ")X(name)XO;
+	VERBOSE("Add callback: " CAT name);
 	
 	MCallback* cb = new MCallback(name, func, returnType, argStruct);
 	callbacks[callbackCounter] = cb;

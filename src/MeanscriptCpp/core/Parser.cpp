@@ -93,7 +93,7 @@ void addToken(int32_t tokenType)
 
 	std::string data = getNewName();
 
-	DEBUG(VR("TOKEN: ")X(data)XO);
+	DEBUG(VERBOSE("TOKEN: " CAT data));
 
 	if (tokenType == NT_TEXT)
 	{
@@ -187,7 +187,7 @@ void addBlock(int32_t blockType)
 	else if (blockType == NT_CODE_BLOCK) blockTypeName = "<CODE_BLOCK>";
 	else ASSERT(false, "invalid block type");
 	
-	DEBUG(VR("add block: ")X(blockType)XO);
+	DEBUG(VERBOSE("add block: " CAT blockType));
 	
 	lastStart = -1;
 	std::string tmp123(blockTypeName);
@@ -364,7 +364,7 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 		{
 			goBackwards = false;
 		}
-		DEBUG(VR("[ ")X((char)(inputByte))X(" ]")XO);
+		DEBUG(VERBOSE("[ " CAT (char)(inputByte) CAT " ]"));
 
 		running = ba.step(inputByte);
 	}
@@ -379,8 +379,8 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 	
 	if (!running || !(ba.ok))
 	{
-		PR("Parser state [")X(ba.stateNames[ (int32_t)ba.currentState])X("]")XO;
-		PR("Line ")X(lineNumber)X(": \"");
+		PRINT("Parser state [" CAT ba.stateNames[ (int32_t)ba.currentState] CAT "]");
+		PRINT("Line " CAT lineNumber CAT ": \"");
 		
 		// print nearby code
 		int32_t start = index-1;
@@ -388,14 +388,14 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 			start --;
 		while (++start < index)
 		{
-			VR((char)(buffer[start % 512]));
+			VERBOSE((char)(buffer[start % 512]));
 		}
 		PRINT("\"");
 		
 		{ delete baPtr; baPtr = 0; };
 		{ delete root; root = 0; };
 		{ delete tokenTree; tokenTree = 0; };
-		EXIT("Parse error");
+		ERROR("Parse error");
 	}
 
 	if (globalConfig.verboseOn())

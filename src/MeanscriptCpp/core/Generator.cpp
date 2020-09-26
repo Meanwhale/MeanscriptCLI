@@ -144,7 +144,7 @@ void Generator::generateCodeBlock (NodeIterator it)
 		}
 		else
 		{
-			EXIT("expression expected");
+			ERROR("expression expected");
 		}
 	}
 }
@@ -197,7 +197,7 @@ void Generator::generateExpression (NodeIterator it)
 			singleArgumentPush(OP_STRUCT_MEMBER | (*currentContext).returnType, it, -1);
 			
 			bc.addInstruction(OP_POP_STACK_TO_REG, 1, (*currentContext).returnType);
-			bc.addWord((*sem.getType((*currentContext).returnType)).structSize);
+			bc.addWord((*sem.getType((*currentContext).returnType, (&(it)))).structSize);
 			bc.addInstruction(OP_GO_END, 0 , 0);
 		}
 		else if ((it.data().compare( keywords[KEYWORD_STRUCT_ID])==0))
@@ -210,7 +210,7 @@ void Generator::generateExpression (NodeIterator it)
 		}
 		else
 		{
-			SYNTAX(false, it, "unknown word '" CAT it.data().c_str() CAT "'");
+			SYNTAX(false, it, "unknown word: " CAT it.data().c_str());
 		}
 	}
 	else
@@ -239,7 +239,7 @@ MCallback* Generator::generateCallbackCall (NodeIterator it)
 {
 	int32_t callbackID = nameTreeGet(common.callbackIDs, it.data());
 	MCallback* callback = common.callbacks[callbackID];
-	VR("Callback call, id ")X(callbackID)XO;
+	VERBOSE("Callback call, id " CAT callbackID);
 	it.toNext();
 	callArgumentPush(it.copy(), (*callback).argStruct, (*(*callback).argStruct).numMembers);
 	bc.addInstructionWithData(OP_CALLBACK_CALL, 1, 0, callbackID);
@@ -288,7 +288,7 @@ void Generator::generateAssignment(NodeIterator it)
 	if (it.hasNext())
 	{
 		// list of arguments to assign
-		argumentStructPush(it.copy(), sem.getType(targetType), (*sem.getType(targetType)).numMembers, true);
+		argumentStructPush(it.copy(), sem.getType(targetType, (&(it))), (*sem.getType(targetType, (&(it)))).numMembers, true);
 	}
 	else
 	{
@@ -308,14 +308,14 @@ void Generator::generateAssignment(NodeIterator it)
 	{
 		bc.addInstruction(inGlobal()?OP_POP_STACK_TO_GLOBAL:OP_POP_STACK_TO_LOCAL, 2, MS_TYPE_VOID);
 	}
-	bc.addWord((*sem.getType(targetType)).structSize);
+	bc.addWord((*sem.getType(targetType, (&(it)))).structSize);
 	bc.addWord(target.address);
 }
 
 int32_t Generator::arrayPush (NodeIterator it, int32_t targetTag, int32_t arraySize) 
 {
 	ASSERT(((int32_t)(targetTag & OPERATION_MASK)) == OP_ARRAY_MEMBER, "array expected");
-	StructDef* itemType = sem.getType((int32_t)(targetTag & VALUE_TYPE_MASK));
+	StructDef* itemType = sem.getType((int32_t)(targetTag & VALUE_TYPE_MASK), (&(it)));
 	int32_t itemSize = (*itemType).structSize;
 	int32_t itemTag = makeInstruction(OP_STRUCT_MEMBER, 0, (int32_t)(targetTag & VALUE_TYPE_MASK));
 
@@ -448,7 +448,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 			SYNTAX(it.hasNext() && it.nextType() == NT_NAME_TOKEN, it, "name expected after a dot");
 			it.toNext();
 
-			StructDef* memberType = sem.getType((int32_t)(memberTag & VALUE_TYPE_MASK));
+			StructDef* memberType = sem.getType((int32_t)(memberTag & VALUE_TYPE_MASK), (&(it)));
 			memberTag = (*memberType).getMemberTag(it.data());
 			
 			currentStruct = memberType;
@@ -482,7 +482,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 			it.toChild();
 			
 			// get array item type
-			StructDef* arrayItemType = sem.getType((int32_t)(memberTag & VALUE_TYPE_MASK));
+			StructDef* arrayItemType = sem.getType((int32_t)(memberTag & VALUE_TYPE_MASK), (&(it)));
 			int32_t itemSize = (*arrayItemType).structSize;
 			
 			if (it.type() == NT_NUMBER_TOKEN)
@@ -492,7 +492,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 				// array index (number) expected");
 				int32_t arrayIndex = std::stoi(it.data());
 				// mul. size * index, and plus one as the array size is at [0]
-				SYNTAX(arrayIndex >= 0 && arrayIndex < arrayItemCount, it, "index out of range");
+				SYNTAX(arrayIndex >= 0 && arrayIndex < arrayItemCount, it, "index out of range: " CAT arrayIndex CAT " of " CAT arrayItemCount);
 				size = itemSize;
 			
 				if (isReference)
@@ -568,7 +568,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 
 void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_t arrayItemCount) 
 {
-	VR("Assign an argument [")X(it.data())X("]")XO;
+	VERBOSE("Assign an argument [" CAT it.data() CAT "]");
 	
 	int32_t targetType = (int32_t)(targetTag & VALUE_TYPE_MASK);
 	
@@ -617,7 +617,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 			// PUSH A FUNCTION ARGUMENT
 			
 			generateFunctionCall(it.copy(), functionContext);
-			StructDef* returnData = sem.getType((*functionContext).returnType);
+			StructDef* returnData = sem.getType((*functionContext).returnType, (&(it)));
 			SYNTAX(targetType == (*returnData).typeID, it, "type mismatch");
 			bc.addInstructionWithData(OP_PUSH_REG_TO_STACK, 1, MS_TYPE_VOID, (*returnData).structSize);
 			return;
@@ -628,7 +628,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 			// PUSH A CALLBACK ARGUMENT
 			
 			MCallback* callback = generateCallbackCall(it.copy());
-			StructDef* returnData = sem.getType((*callback).returnType);
+			StructDef* returnData = sem.getType((*callback).returnType, (&(it)));
 			SYNTAX(targetType == (*returnData).typeID, it, "type mismatch");
 			bc.addInstructionWithData(OP_PUSH_REG_TO_STACK, 1, MS_TYPE_VOID, (*returnData).structSize);
 			return;

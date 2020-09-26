@@ -23,7 +23,7 @@ constexpr int32_t NT_COMMA = 17;
 constexpr int BYTECODE_READ_ONLY = 0x101;
 constexpr int BYTECODE_EXECUTABLE = 0x102;
 // instructions
-constexpr int32_t OP_SYSTEM = 0x00000000; // system calls (exit, assert, exception, etc. TBD)
+constexpr int32_t OP_SYSTEM = 0x00000000; // system calls (ERROR, assert, exception, etc. TBD)
 constexpr int32_t OP_CALLBACK_CALL = 0x03000000;
 constexpr int32_t OP_JUMP = 0x04000000;
 constexpr int32_t OP_GO_BACK = 0x05000000; // return to previous block. named to be less confusing
