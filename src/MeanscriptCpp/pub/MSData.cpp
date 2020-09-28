@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -64,14 +66,14 @@ std::string MSData:: getText (int32_t id)
 float MSData::getFloat () 
 {
 	ASSERT(getType() != MS_TYPE_FLOAT, "not a float");
-	return (*reinterpret_cast<float*>(&((*dataCode)[dataIndex])));
+	return ((float&)(*(&(*dataCode)[dataIndex])));
 }
 
 float MSData::getFloat (std::string name) 
 {
 	int32_t address = getMemberAddress(name, MS_TYPE_FLOAT);
 	CHECK(address >= 0, EC_DATA, "unknown name");
-	return (*reinterpret_cast<float*>(&((*dataCode)[address])));
+	return ((float&)(*(&(*dataCode)[address])));
 }
 
 int32_t MSData::getInt () 
@@ -184,7 +186,7 @@ void MSData:: printData (int32_t depth, std::string name)
 	{
 		if (getType() == MS_TYPE_FLOAT)
 		{
-			PRINT((*reinterpret_cast<float*>(&((*dataCode)[dataIndex]))));
+			PRINT(((float&)(*(&(*dataCode)[dataIndex]))));
 		}
 		else if (getType() == MS_TYPE_TEXT)
 		{

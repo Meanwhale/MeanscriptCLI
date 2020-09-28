@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -596,7 +598,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 		{
 			SYNTAX(targetType == MS_TYPE_FLOAT, it, "number expected");
 			float f = std::stof(it.data());
-			int32_t floatToInt = (*reinterpret_cast<int*>(&(f)));
+			int32_t floatToInt = floatToIntBits(f);
 			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_FLOAT, floatToInt);
 			return;
 		}

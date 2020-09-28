@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -194,9 +196,9 @@ int32_t StructDef:: getMemberSize (int32_t index)
 }
 void StructDef::print () 
 {
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	VERBOSE("STRUCT CODE: " CAT name);
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	if (numMembers == 0)
 	{
 		VERBOSE("        empty");
@@ -205,7 +207,7 @@ void StructDef::print ()
 	{
 		if (globalConfig.verboseOn()) printData(code, codeTop, -1, true);
 	}
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 }
 
 } // namespace meanscript(core)

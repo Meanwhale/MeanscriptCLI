@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -145,9 +147,9 @@ void MeanMachine::init ()
 	textCounter = 1; // 0 is empty
 	done = false;
 	
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	VERBOSE("START INITIALIZING");
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	if (globalConfig.verboseOn()) printData((*byteCode).code, (*byteCode).codeTop, -1, true);
 
 	while (running())
@@ -155,9 +157,9 @@ void MeanMachine::init ()
 		initStep();
 	}
 	ASSERT(numTexts == textCounter, "text count mismatch");
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	VERBOSE("INITIALIZING FINISHED");
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	
 	if (byteCodeType == BYTECODE_EXECUTABLE)
 	{
@@ -529,9 +531,9 @@ void MeanMachine::push (int32_t data)
 
 void MeanMachine::callbackReturn (int32_t type, int32_t value)
 {
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	     VERBOSE("        return " CAT value);
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	// return value from a callback
 	// parameter for some other function or call
 	saveReg(type,value);
@@ -582,7 +584,7 @@ void MeanMachine::printGlobals()
 void MeanMachine::printDetails() 
 {
 	PRINT("DETAILS");
-	PRINT("--------------------------------");
+	PRINT(HORIZONTAL_LINE);
 	PRINT("globals size: " CAT globalsSize);
 	PRINT("stack base:   " CAT stackBase);
 	PRINT("stack top:    " CAT stackTop);
@@ -590,23 +592,25 @@ void MeanMachine::printDetails()
 	PRINT("instruction pointer: " CAT instructionPointer);
 	
 	PRINT("\nSTACK");
-	PRINT("--------------------------------");
+	PRINT(HORIZONTAL_LINE);
 	printData(stack, stackTop, -1, false);
 }
 
 void MeanMachine::printCode() 
 {
-	PRINT("CODE");
-	PRINT("--------------------------------");
+	PRINT("BYTECODE CONTENTS");
+	PRINT(HORIZONTAL_LINE);
+	PRINT("index     code/data (32 bits)");
+	PRINT(HORIZONTAL_LINE);
 	printData((*byteCode).code, (*byteCode).codeTop, instructionPointer, true);
 }
 
 
 void MeanMachine::dataPrint() 
 {
-	PRINT("--------------------------------");
+	PRINT(HORIZONTAL_LINE);
 	(*globals).printData(0, "<globals>");
-	PRINT("--------------------------------");
+	PRINT(HORIZONTAL_LINE);
 }
 
 } // namespace meanscript(core)

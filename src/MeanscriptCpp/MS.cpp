@@ -74,7 +74,6 @@ namespace meanscript
 		{
 			char * inputDir = std::getenv("MS_INPUT");
 			if (inputDir == 0) ERROR("environmental variable MS_INPUT not set");
-			inputFileName = "\\" + inputFileName;
 			inputFileName = inputDir + inputFileName;
 			
 		}
@@ -89,7 +88,6 @@ namespace meanscript
 		{
 			char * outputDir = std::getenv("MS_OUTPUT");
 			if (outputDir == 0) ERROR("environmental variable MS_OUTPUT not set");
-			outputFileName = "\\" + outputFileName;
 			outputFileName = outputDir + outputFileName;
 			
 		}
@@ -157,8 +155,16 @@ namespace meanscript
 		while (c[i] != 0)i++;
 		return i + 1;
 	};
-
-
+	int32_t floatToIntBits(float f)
+	{
+		char * c = (char*)&f;
+		int32_t i = 0;
+		i |= (int32_t)((c[3] << 24)		& 0xff000000);
+		i |= (int32_t)((c[2] << 16)		& 0x00ff0000);
+		i |= (int32_t)((c[1] << 8)		& 0x0000ff00);
+		i |= (int32_t)((c[0])			& 0x000000ff);
+		return i;
+	}
 	unsigned char * copyToByteArray(const char * c, int size)
 	{
 		if (size < 0)

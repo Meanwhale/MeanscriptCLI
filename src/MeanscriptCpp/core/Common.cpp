@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -67,7 +69,7 @@ void printTextCallback(MeanMachine & mm, MArgs & args)
 void printFloatCallback(MeanMachine & mm, MArgs & args)
 {
 	VERBOSE("//////////////// PRINT FLOAT ////////////////");
-	USER_PRINT((*reinterpret_cast<float*>(&(mm.stack[args.baseIndex]))));
+	USER_PRINT(((float&)(*(&mm.stack[args.baseIndex]))));
 }
 
 int32_t Common:: createCallback (std::string name, void (*func)(MeanMachine &, MArgs &), int32_t returnType, StructDef* argStruct)

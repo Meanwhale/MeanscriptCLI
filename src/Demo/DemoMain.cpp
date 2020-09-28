@@ -3,7 +3,7 @@
 using namespace std;
 using namespace meanscript;
 
-void main()
+int main()
 {
 	MSBuilder builder("demo");
 	builder.addInt("foo", 123);
@@ -15,4 +15,6 @@ void main()
 	MSFileInStream input = getInput("demo.mb", true);
 	MSCode code (input, globalConfig.STREAM_BYTECODE);
 	cout<<"FOO: "<<code.getInt("foo")<<endl;
+
+	return 0;
 }

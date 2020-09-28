@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -28,7 +30,7 @@ void MNode::printTree (MNode* _node, int32_t depth, bool deep)
 
 	for (int32_t i = 0; i < depth; i++) PRINTN("  ");
 
-	PRINT("[" CAT node.data CAT "]");
+	PRINTN("[" CAT node.data CAT "]");
 
 	// if (node.numChildren > 0) { VERBOSE(" + " CAT node.numChildren); }
 

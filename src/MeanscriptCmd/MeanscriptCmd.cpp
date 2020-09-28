@@ -94,7 +94,7 @@ int execute(int argc, char* argv[])
 	else if (arg == "version") commandType = CMD_VERSION;
 	else
 	{
-		MSPRINT("invalid subcommand: ").print(arg);
+		MSPRINT("invalid subcommand: ").print(arg).endLine();
 		printHelp();
 		return -1;
 	}

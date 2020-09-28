@@ -22,8 +22,8 @@
 #define ERROR_PRINTN(a) errorPrinter().print(a)
 #define PRINT(a) printer().print(a).endLine()
 #define PRINTN(a) printer().print(a)
-#define VERBOSE(a) {if(globalConfig.verboseOn()) PRINT(a);}
-#define VERBOSEN(a) {if(globalConfig.verboseOn()) PRINTN(a);}
+#define VERBOSE(a) {if(globalConfig.verboseOn()) printer().print(a).endLine();}
+#define VERBOSEN(a) {if(globalConfig.verboseOn()) printer().print(a);}
 #define USER_PRINT PRINT
 
 void msAssert(bool b, const char*);
@@ -278,11 +278,11 @@ namespace meanscript
 	typedef unsigned char byte;
 
 	int length(const char *);
+	int32_t floatToIntBits(float);
 	unsigned char * copyToByteArray(const char *, int length = -1);
 
 	void println(const char* format, ...);
 	void print(const char* format, ...);
-	const char * hexStr(int h);
 	void printCompact(int *, int top);
 	int nameTreeGet(std::map<std::string, int> &, std::string);
 	std::string readStringFromIntArray(Array<int> &, int offset, int count);

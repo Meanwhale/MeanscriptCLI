@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -120,9 +122,9 @@ bool Semantics:: assumeNotReserved (std::string name)
 
 void Semantics::analyze (TokenTree* tree) 
 {
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	VERBOSE("SEMANTIC ANALYZE");
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 
 	currentContext = contexts[0];
 
@@ -132,9 +134,9 @@ void Semantics::analyze (TokenTree* tree)
 	
 	{ delete it; it = 0; };
 	
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	VERBOSE("CONTEXTS");
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	for (int32_t i=0; i<maxContexts; i++)
 	{
 		if (contexts[i] != 0)
@@ -143,9 +145,9 @@ void Semantics::analyze (TokenTree* tree)
 			(*contexts[i]).variables.print();
 		}
 	}
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 	VERBOSE("END ANALYZING");
-	VERBOSE("--------------------------------");
+	VERBOSE(HORIZONTAL_LINE);
 
 	print();
 }

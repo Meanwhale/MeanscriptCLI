@@ -1,5 +1,7 @@
 namespace meanscriptcore
 {
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 // node types
 constexpr int32_t NT_ROOT = 0;
 constexpr int32_t NT_EXPR = 1;
@@ -81,6 +83,8 @@ constexpr char const * keywords [] = {
  "return",
  "global"
  };
+  constexpr char const * HORIZONTAL_LINE = "------------------------------------------";
+//INITIALIZED_CONST_STRING(HORIZONTAL_LINE,"__________________________________________\n");
 constexpr int OPERATION_MASK = 0xff000000;
 //CD INT SCOPE_MASK			= 0x00f00000;
 constexpr int SIZE_MASK = 0x00ff0000; // NOTE: erikoistapauksissa voisi käyttää 0x00FFFFFF

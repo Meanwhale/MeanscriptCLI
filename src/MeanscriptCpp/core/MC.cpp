@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -54,12 +56,12 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	{
 		if (code)
 		{
-			if (i == index) PRINT(">>> " CAT i);
+			if (i == index) PRINTN(">>> " CAT i);
 			else PRINTN("    " CAT i);
 			
 			if (i == tagIndex)
 			{
-				PRINT(":    " CATHEX (data[i]) CAT "        " CAT getOpName(data[i]));
+				PRINT(":    0x" CATHEX (data[i]) CAT "      " CAT getOpName(data[i]));
 				tagIndex += instrSize(data[i]) + 1;
 			}
 			else PRINT(":    " CAT data[i]);

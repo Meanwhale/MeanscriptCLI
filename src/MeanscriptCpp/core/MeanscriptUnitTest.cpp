@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -232,16 +234,16 @@ bool parseError()
 
 void MeanscriptUnitTest:: runAll () 
 {
-	PRINT("TEST " CAT  "simpleVariable" ); simpleVariable(); PRINT(": OK");;
-	PRINT("TEST " CAT  "structAssignment" ); structAssignment(); PRINT(": OK");;
-	PRINT("TEST " CAT  "argumentList" ); argumentList(); PRINT(": OK");;
-	PRINT("TEST " CAT  "simpleFunction" ); simpleFunction(); PRINT(": OK");;
-	PRINT("TEST " CAT  "structFunction" ); structFunction(); PRINT(": OK");;
-	PRINT("TEST " CAT  "msBuilder" ); msBuilder(); PRINT(": OK");;
-	PRINT("TEST " CAT  "varArray" ); varArray(); PRINT(": OK");;
-	PRINT("TEST " CAT  "structArray" ); structArray(); PRINT(": OK");;
-	PRINT("TEST " CAT  "inputOutputStream" ); inputOutputStream(); PRINT(": OK");;
-	PRINT("TEST " CAT  "readOnly" ); readOnly(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "simpleVariable" ); simpleVariable(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "structAssignment" ); structAssignment(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "argumentList" ); argumentList(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "simpleFunction" ); simpleFunction(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "structFunction" ); structFunction(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "msBuilder" ); msBuilder(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "varArray" ); varArray(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "structArray" ); structArray(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "inputOutputStream" ); inputOutputStream(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "readOnly" ); readOnly(); PRINT(": OK");;
 
 }
 

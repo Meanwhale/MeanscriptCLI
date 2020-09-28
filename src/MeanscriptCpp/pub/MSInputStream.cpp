@@ -1,4 +1,6 @@
 
+//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
+//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -16,7 +18,7 @@ int32_t MSInputStream:: readInt ()
 	int32_t i = 0;
 	i |= (int32_t)((readByte() << 24)		& 0xff000000);
 	i |= (int32_t)((readByte() << 16)		& 0x00ff0000);
-	i |= (int32_t)((readByte() << 8)			& 0x0000ff00);
+	i |= (int32_t)((readByte() << 8)		& 0x0000ff00);
 	i |= (int32_t)((readByte())				& 0x000000ff);
 	return i;
 }
