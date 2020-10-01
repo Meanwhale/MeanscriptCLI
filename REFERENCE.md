@@ -7,6 +7,16 @@ int a: 5                // define with an initial value of 5
 text name: "Jack"       // define immutable string
 bool b                  // define boolean
 
+// Function calls can be of two formats:
+// 1. Argument list separated with spaces, like on command line:
+//        function arg1 arg2 ...
+// 2. Argument list in brackets, separated with commands:
+//        function ( arg1 , arg2 , ... )
+// If an argument is a function call (return value), it's in brackets:
+//        1. function_a arg_a1 (function_b arg_b1 arg_b2 ...) arg_a3 ...
+//        2. function_a (arg_a1, ( function_b ( arg_b1, arg_b2, ... ) ) , arg_a3 , ... )
+
+// common functions:
 sum (a, b)              // return a+b
 sum a b                 // alternative format for the same call, without brackets
 sub (a, b)              // return a-b
