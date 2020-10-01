@@ -5,6 +5,8 @@ _Command line interface (CLI) for Meanscript, a versatile scripting and bytecode
 
 Meanscript is still on prototyping phase, but the plan is to combine best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers, while keeping it compact and easy to use.
  
+<img src=nutshell.png width=100%>
+
 Current features:
 * This **command line tool** for compiling and running scripts and viewing contents of bytecode files
 * **C++ library** to compile and run code, and read and write bytecode data from your source code
@@ -20,6 +22,7 @@ New features coming up next
 
 More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
 
+More about script syntax and bytecode format in [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md).
 
 
 **Contact**:<br>
