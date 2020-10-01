@@ -213,7 +213,6 @@ void MeanMachine::initStep ()
 		functions[id] = instructionPointer; // save address to this tag 
 	}
 	else if (op == OP_MEMBER_NAME) { }
-	else if (op == OP_DATA)	{ }
 	else if (op == OP_STRUCT_DEF)
 	{
 		currentStructID = (int32_t)(instruction & VALUE_TYPE_MASK);
@@ -541,7 +540,6 @@ void MeanMachine::callbackReturn (int32_t type, int32_t value)
 
 void MeanMachine::saveReg (int32_t type, int32_t value)
 {
-	//reg[0] = makeInstruction(OP_DATA, 1, type);
 	registerType = type;
 	registerData[0] = value;
 }

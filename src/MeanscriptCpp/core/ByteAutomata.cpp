@@ -108,7 +108,7 @@ bool ByteAutomata::step (uint8_t input)
 	if (actionIndex == 0) return true; // stay on same state and do nothing else
 	if (actionIndex == 0xff||actionIndex < 0)
 	{
-		CHECK(false, E_UNEXPECTED_CHAR, "char: '" CAT ((char)input) CAT "'");
+		CHECK(false, E_UNEXPECTED_CHAR, "unexpected char: '" CAT (input) CAT "'" CAT " #" CAT ((int)input));
 		ok = false;
 		return false; // end
 	}

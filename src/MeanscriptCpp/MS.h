@@ -34,35 +34,40 @@ void msError(const char*, const char*, const char*, int);
 #error either MS_DEBUG or MS_RELEASE must be defined, not both
 #elif MS_DEBUG
 #define MS_BUILD_INFO "version 0.1 DEBUG"
-#ifdef _CRT_SECURE_NO_WARNINGS // VS memory debug
-//#define USE_DEBUG_BREAK
-#endif
 #elif MS_RELEASE
 #define MS_BUILD_INFO "version 0.1 RELEASE"
 #else
 #error MS_DEBUG or MS_RELEASE must be defined
 #endif
 
-#ifdef _DEBUG
-     #define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-#else
-     #define new new
+#ifdef MS_VS_MEM_DEBUG 
+#define USE_DEBUG_BREAK
+#define new new( _NORMAL_BLOCK , __FILE__ , __LINE__ )
 #endif
 
 #define STR(a) #a
+
+// Error handling:
+//		* SYNTAX: user script error. Print error cause and position in script, and exit.
+//		* CHECK: user error when using MS library.
+//		* ASSERT/ERROR: internal error that shouldn't normally happen.
+//		* CHECK/ASSERT/ERROR:
+//			* MS_DEBUG: trigger break.
+//			* MS_RELEASE: Print info and source code location, and exit.
+
 
 #ifdef USE_DEBUG_BREAK
 #define ASSERT(x,msg) {if (!(x)) {__debugbreak(); std::exit(-1);}}
 #define ERROR(msg) ASSERT(false,msg);
 #else
-#define ASSERT(x,msg) {if (!(x)){errorPrinter().print(msg);msError("", STR(x), __FILE__, __LINE__);}}
-#define ERROR(msg) {errorPrinter().print(msg);msError(0, 0, __FILE__, __LINE__);}
+#define ASSERT(x,msg) {if (!(x)){errorPrinter().print(msg).endLine(); msError("", STR(x), __FILE__, __LINE__);}}
+#define ERROR(msg) {errorPrinter().print(msg).endLine(); msError(0, 0, __FILE__, __LINE__);}
 #endif
 
 #ifndef MS_NO_EXCEPTIONS
 #define CHECK(b,error,msg) {if (!(b)) {PR(msg); throw MException(error);}}
 #else
-#define CHECK(b,error,msg) {if (!(b)) {ERROR_PRINT(msg).endLine(); ERROR("");}}
+#define CHECK(b,error,msg) {if (!(b)) {errorPrinter().print(msg).endLine(); ERROR("");}}
 #endif
 #define SYNTAX(b,node,msg) {if (!(b)) {errorPrinter().print("SCRIPT ERROR AT LINE ").print(node.line()).endLine().print(msg).endLine(); std::exit(-1);}}
 #define TEST(b) ASSERT(b,"test error")
@@ -180,6 +185,7 @@ namespace meanscript
 	public:
 		MStdOutPrint(std::ostream&);
 		virtual void writeByte(uint8_t) override;
+		virtual MSOutputPrint& print(uint8_t) override;
 		virtual MSOutputPrint& print(std::string) override;
 		virtual MSOutputPrint& print(int32_t) override;
 		virtual MSOutputPrint& print(float) override;
@@ -190,6 +196,7 @@ namespace meanscript
 	public:
 		MSNullPrint();
 		virtual void writeByte(uint8_t) override;
+		virtual MSOutputPrint& print(uint8_t) override;
 		virtual MSOutputPrint& print(std::string) override;
 		virtual MSOutputPrint& print(int32_t) override;
 		virtual MSOutputPrint& print(float) override;

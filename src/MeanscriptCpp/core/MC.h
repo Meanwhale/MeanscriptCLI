@@ -30,7 +30,6 @@ constexpr int32_t OP_CALLBACK_CALL = 0x03000000;
 constexpr int32_t OP_JUMP = 0x04000000;
 constexpr int32_t OP_GO_BACK = 0x05000000; // return to previous block. named to be less confusing
 constexpr int32_t OP_GO_END = 0x06000000; // go to end of the function (context's end address)
-constexpr int32_t OP_DATA = 0x07000000; // just data, do nothing
 constexpr int32_t OP_STRUCT_DEF = 0x08000000;
 constexpr int32_t OP_STRUCT_MEMBER = 0x09000000;
 constexpr int32_t OP_SAVE_BASE = 0x0a000000; // save/load stack base index
@@ -60,7 +59,7 @@ constexpr int32_t OP_MAX = 0x30000000;
 constexpr int32_t NUM_OP = 0x30;
 constexpr char const * opName [] = {
  "system", "---OLD---", "---OLD---", "call",
- "jump", "go back", "go end", "data",
+ "jump", "go back", "go end", "---OLD---",
  "struct definition", "struct member", "save base", "load base",
  "no operation", "---OLD---", "---OLD---", "---OLD---",
  "text", "push immediate", "---OLD---", "push from reg.",

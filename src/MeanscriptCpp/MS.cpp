@@ -32,7 +32,7 @@ namespace meanscript
 	{
 	}
 	void MStdOutPrint::writeByte(uint8_t b) {
-		os<<b;
+		print(b);
 	}
 	MSOutputPrint& MStdOutPrint::print(std::string s) {
 		os<<s;
@@ -40,6 +40,11 @@ namespace meanscript
 	}
 	MSOutputPrint& MStdOutPrint::print(std::int32_t i) {
 		os<<i;
+		return *this;
+	}
+	MSOutputPrint& MStdOutPrint::print(std::uint8_t i) {
+		if (i>=32) os<<(char)i; // don't try to print control char's
+		else os<<'?';
 		return *this;
 	}
 	MSOutputPrint& MStdOutPrint::print(float f) {
@@ -59,6 +64,9 @@ namespace meanscript
 		return *this;
 	}
 	MSOutputPrint& MSNullPrint::print(std::int32_t) {
+		return *this;
+	}
+	MSOutputPrint& MSNullPrint::print(std::uint8_t i) {
 		return *this;
 	}
 	MSOutputPrint& MSNullPrint::print(float) {
