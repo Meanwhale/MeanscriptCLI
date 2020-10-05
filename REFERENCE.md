@@ -66,6 +66,8 @@ Use command `mean decode` to explore bytecode content further!
 
 ## List of bytecode operations:
 
+C++ code: https://github.com/Meanwhale/MeanscriptCLI/blob/master/src/MeanscriptCpp/core/MC.h
+
 <pre>START_INIT                  Start code initialization
 END_INIT                    End code initialization
 ADD_TEXT                    Add a constant text
