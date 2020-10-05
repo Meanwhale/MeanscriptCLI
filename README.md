@@ -1,11 +1,11 @@
-# MeanscriptCLI
-_Command line interface (CLI) for Meanscript, a versatile scripting and bytecode language._
-
 <img src=http://www.meanscript.net/logo.png width=50%>
+
+_Command line interface (CLI) and C++ library for Meanscript, a versatile scripting and bytecode language._
+
+<img src=nutshell.png width=100%>
 
 Meanscript is still on prototyping phase, but the plan is to combine best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers, while keeping it compact and easy to use.
  
-<img src=nutshell.png width=100%>
 
 Current features:
 * **Parser** to convert text script to bytecode
@@ -93,12 +93,12 @@ Then change the `main` function in `src/Demo/DemoMain.cpp` so that it looks like
 ```
 int main()
 {
-	MSFileInStream input = getInput("test.ms", true);
-	MSCode code (input, globalConfig.STREAM_SCRIPT);
-	code.run();
-	cout<<"name is "<<code.getText("name")<<endl;
-	cout<<"and the year is "<<code.getInt("year")<<endl;
-	return 0;
+  MSFileInStream input = getInput("test.ms", true);
+  MSCode code (input, globalConfig.STREAM_SCRIPT);
+  code.run();
+  cout<<"name is "<<code.getText("name")<<endl;
+  cout<<"and the year is "<<code.getInt("year")<<endl;
+  return 0;
 }
 ```
 
