@@ -14,7 +14,7 @@ MeanMachine::MeanMachine (ByteCode* bc)
 	byteCode = bc;
 	
 	// INT_ARRAY_RESETtexts;
-	{ types.reset(			MAX_TYPES); types.fill(0); };
+	{ types.reset( MAX_TYPES); types.fill(0); types.description =  "MeanMachine: types"; };
 	registerType = -1;
 	byteCodeType = -1;
 	ipStackTop = 0;
@@ -48,11 +48,11 @@ void MeanMachine::initVMArrays ()
 
 	ASSERT(!initialized, "VM arrays must be initialized before code initialization is finished.");
 	
-	{ stack.reset(			globalConfig.stackSize); stack.fill(0); };
-	{ ipStack.reset(		globalConfig.ipStackSize); ipStack.fill(0); };
-	{ baseStack.reset(		globalConfig.baseStackSize); baseStack.fill(0); };
-	{ functions.reset(		globalConfig.maxFunctions); functions.fill(0); };
-	{ registerData.reset(	globalConfig.registerSize); registerData.fill(0); };
+	{ stack.reset(			globalConfig.stackSize); stack.fill(0); stack.description =  "MeanMachine: stack"; };
+	{ ipStack.reset(		globalConfig.ipStackSize); ipStack.fill(0); ipStack.description =  "MeanMachine: instruction pointer stack"; };
+	{ baseStack.reset(		globalConfig.baseStackSize); baseStack.fill(0); baseStack.description =  "MeanMachine: base stack"; };
+	{ functions.reset(		globalConfig.maxFunctions); functions.fill(0); functions.description =  "MeanMachine: functions"; };
+	{ registerData.reset(	globalConfig.registerSize); registerData.fill(0); registerData.description =  "MeanMachine: register"; };
 }
 
 Array<int>* MeanMachine::getStructCode ()
@@ -197,7 +197,7 @@ void MeanMachine::initStep ()
 			byteCodeType == BYTECODE_EXECUTABLE, EC_CODE, "unknown bytecode type"); 
 		numTexts = bc.code[instructionPointer + 1];
 		VERBOSE("start init! " CAT numTexts CAT " texts");
-		{ texts.reset(numTexts+1); texts.fill(0); };
+		{ texts.reset(numTexts+1); texts.fill(0); texts.description =  "MeanMachine: texts"; };
 		
 		if (byteCodeType == BYTECODE_EXECUTABLE) initVMArrays();
 	}

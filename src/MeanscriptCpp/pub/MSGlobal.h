@@ -14,11 +14,11 @@ const int32_t maxFunctions = 256;
 const int32_t registerSize = 256;
 const int32_t maxArraySize = 4096;
 const int32_t maxNameLength = 128;
-const int32_t codeSize = 16384; // 2^14
-const int32_t builderValuesSize = 16384;
-const int32_t outputArraySize = 16384;
+const int32_t codeSize = 65536; // 2^16
+const int32_t stackSize = 65536;
+const int32_t builderValuesSize = 65536;
+const int32_t outputArraySize = 65536;
 const int32_t maxCallbacks = 256;
-const int32_t stackSize = 4096;
 bool verbose = false;
 // stream types
 const int32_t STREAM_TYPE_FIRST = 100001;

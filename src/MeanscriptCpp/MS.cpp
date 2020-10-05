@@ -75,15 +75,31 @@ namespace meanscript
 	void MSNullPrint::close() { }
 
 	// file input/output
+	
+	char filePathSeparator()
+	{
+#ifdef _WIN32
+		return '\\';
+#else
+		return '/';
+#endif
+	}
+
 	MSFileInStream getInput(const char * fileName, bool usePathVar)
 	{
-		std::string inputFileName(fileName);
+		std::string inputFileName;
 		if (usePathVar)
 		{
 			char * inputDir = std::getenv("MS_INPUT");
 			if (inputDir == 0) ERROR("environmental variable MS_INPUT not set");
-			inputFileName = inputDir + inputFileName;
+			inputFileName = inputDir;
+			inputFileName += filePathSeparator();
+			inputFileName += fileName;
 			
+		}
+		else
+		{
+			inputFileName = fileName;
 		}
 		MSPRINT("input: ").print(inputFileName).endLine();
 		return MSFileInStream (inputFileName.c_str());
@@ -91,13 +107,19 @@ namespace meanscript
 
 	MSFileOutStream getOutput(const char * fileName, bool usePathVar)
 	{
-		std::string outputFileName(fileName);
+		std::string outputFileName;
 		if (usePathVar)
 		{
 			char * outputDir = std::getenv("MS_OUTPUT");
 			if (outputDir == 0) ERROR("environmental variable MS_OUTPUT not set");
-			outputFileName = outputDir + outputFileName;
+			outputFileName = outputDir;
+			outputFileName += filePathSeparator();
+			outputFileName += fileName;
 			
+		}
+		else
+		{
+			outputFileName = fileName;
 		}
 		MSPRINT("output: ").print(outputFileName).endLine();
 		return MSFileOutStream (outputFileName.c_str());

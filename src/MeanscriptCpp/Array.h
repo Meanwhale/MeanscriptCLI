@@ -16,6 +16,8 @@ protected:
 
 public:
 
+	const char * description = 0; // print array description on overflow to identify the problem better
+
 	explicit Array() :
 		data(0),
 		size(0)
@@ -132,12 +134,12 @@ public:
 	}
 	T & get(int i)
 	{
-		if (!inRange(i)) msError("out of range", 0, 0, -1);
+		if (!inRange(i)) msError("out of range", description, 0, -1);
 		return data[i];
 	}
 	T & operator[] (int i)
 	{
-		if (!inRange(i)) msError("out of range", 0, 0, -1);
+		if (!inRange(i)) msError("out of range", description, 0, -1);
 		return get(i);
 	}
 	int length()

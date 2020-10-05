@@ -9,7 +9,7 @@ using namespace meanscript;
 ByteCode::ByteCode (Common* _common)
 {
 	common = _common;
-	{ code.reset( globalConfig.codeSize); code.fill(0); };
+	{ code.reset( globalConfig.codeSize); code.fill(0); code.description =  "ByteCode: code"; };
 	codeTop = 0;
 }
 
@@ -19,7 +19,7 @@ ByteCode::ByteCode (Common* _common, MSInputStream & input)
 	int32_t byteCount = input.getByteCount();
 	ASSERT(byteCount % 4 == 0, "bytecode file size not divisible by 4");
 	int32_t size = byteCount / 4;
-	{ code.reset( size); code.fill(0); };
+	{ code.reset( size); code.fill(0); code.description =  "ByteCode: code"; };
 	input.readArray(code, size);
 	codeTop = size;
 }
@@ -29,7 +29,7 @@ ByteCode::ByteCode (ByteCode & bc)
 	codeTop = bc.codeTop;
 	common = bc.common;
 	
-	{ code.reset( codeTop); code.fill(0); };	
+	{ code.reset( codeTop); code.fill(0); code.description =  "ByteCode: code"; };	
 	
 	// copy array
 	

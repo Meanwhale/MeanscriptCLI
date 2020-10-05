@@ -35,8 +35,8 @@ StructDef::StructDef (std::string _name, int32_t _typeID)
 	name = _name;
 	typeID = _typeID;
 	
-	{ code.reset(			globalConfig.maxStructDefSize); code.fill(0); };
-	{ memberOffset.reset(	globalConfig.maxStructMembers); memberOffset.fill(0); };
+	{ code.reset(			globalConfig.maxStructDefSize); code.fill(0); code.description =  "StructDef: structure definitions"; };
+	{ memberOffset.reset(	globalConfig.maxStructMembers); memberOffset.fill(0); memberOffset.description =  "StructDef: structure members"; };
 	
 	numMembers = 0;
 	argsSize = -1; // set structSize after all arguments are set
@@ -136,33 +136,33 @@ int32_t StructDef:: addMember (std::string name, int32_t type, int32_t memberSiz
 
 int32_t StructDef:: getMemberTag (std::string varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found");
+	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	return code[index];
 }
 int32_t StructDef:: getMemberAddress (std::string varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found");
+	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	return code[index+1]; // see above for definition
 }
 int32_t StructDef:: getMemberSize (std::string varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found");
+	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	return code[index+2]; // see above for definition
 }
 int32_t StructDef:: getMemberArrayItemCount (std::string varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found");
+	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	int32_t tag = code[index];
-	CHECK((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, EC_SYNTAX, "not an array");
+	CHECK((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, EC_SYNTAX, "not an array: " CAT varName);
 	return code[index + 3]; // see above for definition
 }
 int32_t StructDef:: getMemberArrayItemCountOrNegative (std::string varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found");
+	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	int32_t tag = code[index];
 	if ((tag & OPERATION_MASK) != OP_ARRAY_MEMBER) return -1;
@@ -170,7 +170,7 @@ int32_t StructDef:: getMemberArrayItemCountOrNegative (std::string varName)
 }
 int32_t StructDef:: getMemberArrayItemCountOrNegative (int32_t index) 
 {
-	ASSERT(indexInRange(index), "argument index out of range");
+	ASSERT(indexInRange(index), "argument index out of range: " CAT index);
 	int32_t tag = code[memberOffset[index]];
 	if ((tag & OPERATION_MASK) != OP_ARRAY_MEMBER) return -1;
 	return code[memberOffset[index] + 3]; // see above for definition
@@ -181,17 +181,17 @@ bool StructDef:: indexInRange(int32_t index)
 }
 int32_t StructDef:: getMemberTag (int32_t index) 
 {
-	ASSERT(indexInRange(index), "argument index out of range");
+	ASSERT(indexInRange(index), "argument index out of range: " CAT index);
 	return code[memberOffset[index]];
 }
 int32_t StructDef:: getMemberAddress (int32_t index) 
 {
-	ASSERT(indexInRange(index), "argument index out of range");
+	ASSERT(indexInRange(index), "argument index out of range: " CAT index);
 	return code[memberOffset[index] + 1]; // see above for definition
 }
 int32_t StructDef:: getMemberSize (int32_t index) 
 {
-	ASSERT(indexInRange(index), "argument index out of range");
+	ASSERT(indexInRange(index), "argument index out of range: " CAT index);
 	return code[memberOffset[index] + 2]; // see above for definition
 }
 void StructDef::print () 

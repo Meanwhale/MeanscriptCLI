@@ -126,34 +126,33 @@ void structArray()
 
 void msBuilder() 
 {
-	MSBuilder* builder = new MSBuilder("test");
+	MSBuilder builder ("test");
 	
-	int32_t personTypeID = (*builder).createStructDef("person");
-	(*builder).addMember(personTypeID, "age", MS_TYPE_INT);
-	(*builder).addMember(personTypeID, "name", MS_TYPE_TEXT);
+	int32_t personTypeID = builder.createStructDef("person");
+	builder.addMember(personTypeID, "age", MS_TYPE_INT);
+	builder.addMember(personTypeID, "name", MS_TYPE_TEXT);
 	
 	// struct
 	// TODO: make builder for other languages too
 	
 	// simple global values
-	(*builder).addInt("aa", 123);
-	(*builder).addText("key","value");
-	(*builder).addInt("bb", 456);
+	builder.addInt("aa", 123);
+	builder.addText("key","value");
+	builder.addInt("bb", 456);
 	
-	MSWriter pw = (*builder).createStruct("person", "boss");
+	MSWriter pw = builder.createStruct("person", "boss");
 	pw.setInt("age", 42);
 	pw.setText("name", "Jaska");
-	
 
 //void MeanscriptUnitTest::addArray (int32_t typeID, std::string arrayName, int32_t arraySize) 
 //MSWriter & MeanscriptUnitTest::arrayItem (std::string arrayName, int32_t arrayIndex)
 
-	(*builder).addArray(personTypeID, "team", 3);
-	MSWriter aw = (*builder).arrayItem("team", 1);
+	builder.addArray(personTypeID, "team", 3);
+	MSWriter aw = builder.arrayItem("team", 1);
 	aw.setInt("age", 67);
 
-	(*builder).generate();
-	MSCode* ms = (*builder).createMS();
+	builder.generate();
+	MSCode* ms = builder.createMS();
 	//(*ms).run();
 	
 	if (globalConfig.verboseOn()) (*ms).printData();
@@ -170,7 +169,6 @@ void msBuilder()
 	TEST(arr.getAt(1).getInt("age") == 67);
 	
 	
-	{ delete builder; builder = 0; };
 	{ delete ms; ms = 0; };
 }
 
