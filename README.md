@@ -78,10 +78,10 @@ export MS_OUTPUT=~/meanscriptCLI
 export MS_INPUT=~/meanscriptCLI
 ```
 
+Build the demo project in Visual Studio project or run `make demo` in Linux. Execute the demo by running `bin/meandemo`.
 File `src/Demo/DemoMain.cpp` shows how the demo program writes and reads a simple Meanscript bytecode file.
-Build the demo project in Visual Studio project or running `make demo` in Linux. Execute the demo by running `bin/meandemo`.
 
-Next try to write a script file from your source code. Create a file `test.ms` that contains
+Next try to read a script file from your source code. Create a file `test.ms` that contains
 
 ```
 text name: "Meanscript"
@@ -95,7 +95,7 @@ int main()
 {
   MSFileInStream input = getInput("test.ms", true);
   MSCode code (input, globalConfig.STREAM_SCRIPT);
-  code.run();
+  code.run(); // execute code to assign variable values
   cout<<"name is "<<code.getText("name")<<endl;
   cout<<"and the year is "<<code.getInt("year")<<endl;
   return 0;
