@@ -1,5 +1,28 @@
 # Meanscript: Quick Refenrence
 
+Meanscript is still work-in-progress so the documentation is quite minimal.
+To explore Meanscript capabilities, see header files in the public folder:
+
+https://github.com/Meanwhale/MeanscriptCLI/tree/master/src/MeanscriptCpp/pub
+
+Check out the unit tests for more information of library usage:
+
+https://github.com/Meanwhale/MeanscriptCLI/blob/master/src/MeanscriptCpp/core/MeanscriptUnitTest.cpp
+
+## Public interface classes
+
+class | description
+------|------------
+MSBuilder | Create bytecode data and data structures from source code.
+MSCode | Read and access script and bytecode data.
+MSData | Any type of variable or structure.
+MSDataArray | Array of data, i.e. _MSData_ objects of certain type.
+MSGlobal | Global constant values for the engine.
+MSInputStream, MSOutputStream | An abstract interfaces for input/output.
+MSInputArray, MSOutputArray | Array holders for streaming data.
+MSOutputPrint | An abstract _MSOutputStream_ interface to print data.
+MSWriter | A writer class for the _MSBuilder_.
+
 ## Script syntax reference
 
 <pre>int a                   // define integer 'a' with a default value (0)
@@ -39,6 +62,22 @@ team[sum(1,2)].id: 5738  // modify the last person (index = 3)
 // define a function that returns a value
 func int increase [int foo] { return (sum foo 1) }
 </pre>
+
+<!--## MSCode quick reference
+
+Use _MSCode_ to read script and bytecode, execute code, and access data.
+
+C++ code: https://github.com/Meanwhale/MeanscriptCLI/blob/master/src/MeanscriptCpp/pub/MSCode.h
+
+MSCode(MSInputStream & input, int32_t streamType);   // constructor. see MSGlobal.h for stream types
+void compileAndRun (std::string s);                  // compile and run a string of script
+int32_t getInt (std::string name);                   // get an integer by name
+float getFloat (std::string name);                   // get a float by name
+std::string getText (std::string name);              // get a text string by name
+MSData getData (std::string name);                   // get any type of data (also struct) by name
+MSDataArray getArray (std::string name);             // get a data array by name
+
+MSBuilder quick reference-->
 
 ## Bytecode format
 
