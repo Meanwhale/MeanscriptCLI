@@ -9,7 +9,8 @@ It is still in the prototyping phase, but the plan is to combine the best parts 
 while keeping it compact and easy to use.
  
 
-Current features:
+### Current features:
+
 * **Parser** to convert text script to bytecode
 * Bytecode **interpreter** to execute bytecode instructions
 * **MSCode** object to access bytecode data
@@ -17,29 +18,43 @@ Current features:
 * Abstract interfaces to make your own input/output streams
 * **Command line tool** to compilie and run scripts and view contents of bytecode files
 * **C++ library** to compile and run code, and read and write bytecode data from your source code
-* Integers, text strings, floating point numbers, structs, and arrays
-* Script functions
+* Integers, text strings, floating point numbers, structs, arrays, and functions
 <!-- * Create custom input/output streams to read/write data
 * _Web editor_ -->
 
-New features coming up next
+### New features coming up next
 * Support for C# and Java, in addition to C++
 * Generate C++/C#/Java code to read and write data structures
 * Custom data types and callbacks (called from script or RPC)
 
+Meanscript is implemented in C-like language with a lot of macros (gcc),
+which enables targeting multiple languages at the same time.
+Same technique is used in Meanscript's side project **ByteAutomata**,
+that is a tool for making a hard-coded parser. Check it out:<br>
+https://github.com/Meanwhale/ByteAutomata
+
 More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
 
-More about script syntax and bytecode format in [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md).
+More about script syntax, API, etc. in [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md).
 
 
 **Contact**:<br>
 meanwhale@gmail.com<br>
 https://twitter.com/TheMeanwhale
 
+<!--
+
 ## Project Content
 
-This project contains C++ source code for Meanscript library, command line tool, and a demo program.
-Visual Studio (2017) solution file is in the *src* folder. A *Makefile* for Linux build is in the root folder.
+This project contains
+
+* C++ source code for Meanscript library
+* Command line tool
+* Demo program
+* Visual Studio (2017) solution (_src_ folder)
+* _Makefile_ for Linux build is in the root folder
+
+-->
 
 ## 5 Minutes Tutorial
 
