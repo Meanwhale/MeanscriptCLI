@@ -4,7 +4,9 @@ _Command line interface (CLI) and C++ library for Meanscript, a versatile script
 
 <img src=nutshell.png width=100%>
 
-Meanscript is still on prototyping phase, but the plan is to combine best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers, while keeping it compact and easy to use.
+Meanscript is a tool to create, save, and read data in a software, by using binary bytecode, human-readable script, and scripted functions.
+It is still in the prototyping phase, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
+while keeping it compact and easy to use.
  
 
 Current features:
@@ -38,14 +40,14 @@ https://discord.gg/YDdbJb (chat)
 ## Project Content
 
 This project contains C++ source code for Meanscript library, command line tool, and a demo program.
-Visual Studio (2017) solution file is in *src* folder. A *Makefile* for Linux build is in root folder.
+Visual Studio (2017) solution file is in the *src* folder. A *Makefile* for Linux build is in the root folder.
 
 ## 5 Minutes Tutorial
 
 * **Microsoft Visual C++:** Open the solution file in _src_ folder and build the _MeanscriptCmd_ project.
 * **Linux:** Run `make` at project's root folder to build a command line tool (GCC 6.1 or higher required).
 
-After a successful build run `bin/mean` to see command line arguments.
+After a successful build run `bin/mean` to see the command line arguments.
 
 ### Hello world
 
@@ -55,7 +57,7 @@ Crete a text file `hello.ms` that contains:
 prints "Hello world!"
 ```
 
-Then compile the script to a bytecode file `hello.mb` and run it with terminal command:
+Then compile the script to a bytecode file `hello.mb` and run it with a terminal command:
 
 ```
 bin/mean cr hello.ms hello.mb
@@ -81,7 +83,7 @@ export MS_INPUT=~/meanscriptCLI
 Build the demo project in Visual Studio project or run `make demo` in Linux. Execute the demo by running `bin/meandemo`.
 File `src/Demo/DemoMain.cpp` shows how the demo program writes and reads a simple Meanscript bytecode file.
 
-Next try to read a script file from your source code. Create a file `test.ms` that contains
+Next, try to read a script file from your source code. Create a file `test.ms` that contains
 
 ```
 text name: "Meanscript"
