@@ -1,7 +1,5 @@
 namespace meanscriptcore
 {
-//#define FLOAT_TO_INT_FORMAT(f) (*reinterpret_cast<int*>(&(f)))
-//#define INT_FORMAT_TO_FLOAT(i) (*reinterpret_cast<float*>(&(i)))
 // node types
 constexpr int32_t NT_ROOT = 0;
 constexpr int32_t NT_EXPR = 1;
