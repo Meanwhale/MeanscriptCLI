@@ -2,7 +2,7 @@
 
 _Command line interface (CLI) and C++ library for Meanscript, a versatile scripting and bytecode language._
 
-<img src=nutshell.png width=50%>
+<img src=nutshell.png width=75%>
 
 Meanscript is a tool to create, save, and read data in a software, by using binary bytecode, human-readable script, and scripted functions.
 It is still in the prototyping phase, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
