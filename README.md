@@ -34,8 +34,7 @@ More about script syntax and bytecode format in [REFERENCE.md](https://github.co
 
 **Contact**:<br>
 meanwhale@gmail.com<br>
-https://twitter.com/TheMeanwhale<br>
-https://discord.gg/YDdbJb (chat)
+https://twitter.com/TheMeanwhale
 
 ## Project Content
 
