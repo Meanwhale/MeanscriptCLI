@@ -60,8 +60,8 @@ This project contains
 ### Microsoft Visual C++
 
 * Open the solution file in _src_ folder
-* _MeanscriptCmd_: command line interface
-* _Demo_: demo program
+* Build the command line interface: _MeanscriptCmd_
+* Build the demo application: _Demo_
 
 ### Linux
 
@@ -71,7 +71,7 @@ This project contains
 * `make debug`: CLI debug build
 
 Executables are built to `bin/` folder.
-Add it to your `PATH` to execute them from any folder.
+Add it to your `PATH` environment variable to run the executables from any folder.
 
 ## 5 Minutes Tutorial
 
@@ -99,7 +99,7 @@ mean decode hello.mb
 
 ### C++ example
 
-C++ code examples use environment variables `MS_INPUT` and `MS_OUTPUT` to define input and output file directories, so set up them first, eg. on Linux
+C++ code examples use environment variables `MS_INPUT` and `MS_OUTPUT` to define input and output file directories, so set them up first, eg. on Linux
 
 ```
 export MS_OUTPUT=/home/johndoe/meanscript
