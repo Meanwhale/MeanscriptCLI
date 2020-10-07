@@ -32,7 +32,7 @@ void printHelp()
 {
 	printVersion();
 	MSPRINT("Command line interface\n");
-	MSPRINT("USAGE:\n  mean [options] [command] <file(s)>\n");
+	MSPRINT("USAGE:\n  mean [command] [options] <file(s)>\n");
 	MSPRINT("OPTIONS:\n");
 	MSPRINT("  -v, --verbose                  Print command details.\n");
 	MSPRINT("COMMANDS:\n");
