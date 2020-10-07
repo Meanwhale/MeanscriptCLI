@@ -26,7 +26,7 @@ while keeping it compact and easy to use.
 * Generate C++/C#/Java code to read and write data structures
 * Custom data types and callbacks (called from script or RPC)
 
-Meanscript is implemented in syntax that is common to C++, C#, and Java, and a lot of macros (gcc).
+Meanscript is implemented in syntax that is common to C++, C#, and Java, and a lot of macros (GCC).
 That's how to generate code to multiple languages at the same time.
 Same technique is used in Meanscript's side project **ByteAutomata**,
 that is a tool for making a hard-coded parser. Check it out:<br>
@@ -63,7 +63,7 @@ This project contains
 * _MeanscriptCmd_: command line interface
 * _Demo_: demo program
 
-###Linux
+### Linux
 
 * Requirement: GCC 6.1 or higher
 * Run `make` at project's root folder to build a command line tool
@@ -116,7 +116,7 @@ text name: "Meanscript"
 int year: 2020
 ```
 
-Then change the `main` function in `src/Demo/DemoMain.cpp` so that it looks like this:
+Then change the `main()` function in `src/Demo/DemoMain.cpp` so that it looks like this:
 
 ```
 int main()
