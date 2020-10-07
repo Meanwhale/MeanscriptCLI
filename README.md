@@ -1,23 +1,22 @@
-<img src=http://www.meanscript.net/logo.png width=50%>
-
-_Command line interface (CLI) and C++ library for Meanscript, a versatile scripting and bytecode language._
 
 <img src=nutshell.png>
 
-Meanscript is a tool to create, save, and read data in a software, by using binary bytecode, human-readable script, and scripted functions.
-It is still in the prototyping phase, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
+## Command line interface (CLI) and C++ library for Meanscript
+
+Meanscript is a versatile scripting and bytecode language to create, save, and read data.
+It is still **in the prototyping phase**, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
 while keeping it compact and easy to use.
  
 
 ### Current features:
 
-* **Parser** to convert text script to bytecode
-* Bytecode **interpreter** to execute bytecode instructions
-* **MSCode** object to access bytecode data
-* **MSBuilder** to create data from your source code
+* **Parser:** convert text script to bytecode
+* Bytecode **interpreter:** execute bytecode instructions
+* **MSCode:** a C++ class to access bytecode data from your source code
+* **MSBuilder:** create data from your source code
 * Abstract interfaces to make your own input/output streams
-* **Command line tool** to compilie and run scripts and view contents of bytecode files
-* **C++ library** to compile and run code, and read and write bytecode data from your source code
+* **Command line tool:** compile and run scripts and view contents of bytecode files
+* **C++ library:** compile and run code, and read and write bytecode data from your source code
 * Integers, text strings, floating point numbers, structs, arrays, and functions
 <!-- * Create custom input/output streams to read/write data
 * _Web editor_ -->
@@ -27,8 +26,8 @@ while keeping it compact and easy to use.
 * Generate C++/C#/Java code to read and write data structures
 * Custom data types and callbacks (called from script or RPC)
 
-Meanscript is implemented in C-like language with a lot of macros (gcc),
-which enables targeting multiple languages at the same time.
+Meanscript is implemented in syntax that is common to C++, C#, and Java, and a lot of macros (gcc).
+That's how to generate code to multiple languages at the same time.
 Same technique is used in Meanscript's side project **ByteAutomata**,
 that is a tool for making a hard-coded parser. Check it out:<br>
 https://github.com/Meanwhale/ByteAutomata
@@ -56,45 +55,58 @@ This project contains
 
 -->
 
+## Build
+
+### Microsoft Visual C++
+
+* Open the solution file in _src_ folder
+* _MeanscriptCmd_: command line interface
+* _Demo_: demo program
+
+###Linux
+
+* Requirement: GCC 6.1 or higher
+* Run `make` at project's root folder to build a command line tool
+* `make demo`: demo project
+* `make debug`: CLI debug build
+
+Executables are built to `bin/` folder.
+Add it to your `PATH` to execute them from any folder.
+
 ## 5 Minutes Tutorial
 
-* **Microsoft Visual C++:** Open the solution file in _src_ folder and build the _MeanscriptCmd_ project.
-* **Linux:** Run `make` at project's root folder to build a command line tool (GCC 6.1 or higher required).
+<!--### Hello world-->
 
-After a successful build run `bin/mean` to see the command line arguments.
-
-### Hello world
-
-Crete a text file `hello.ms` that contains:
+Create a text file `hello.ms` that contains:
 
 ```
 prints "Hello world!"
 ```
 
-Then compile the script to a bytecode file `hello.mb` and run it with a terminal command:
+Then compile the script to a bytecode file `hello.mb` and run it:
 
 ```
-bin/mean cr hello.ms hello.mb
+mean cr hello.ms hello.mb
 ```
 
 If everything goes well, you see the text `Hello world!` in your terminal.
 
-You can check the content of the bytecode file by command
+You can check the content of the bytecode file:
 
 ```
-bin/mean decode hello.mb
+mean decode hello.mb
 ```
 
 ### C++ example
 
-C++ code examples use environment variables `MS_INPUT` and `MS_OUTPUT` to point input and output directories, so set up them first, eg. on Linux
+C++ code examples use environment variables `MS_INPUT` and `MS_OUTPUT` to define input and output file directories, so set up them first, eg. on Linux
 
 ```
-export MS_OUTPUT=~/meanscriptCLI
-export MS_INPUT=~/meanscriptCLI
+export MS_OUTPUT=/home/johndoe/meanscript
+export MS_INPUT=/home/johndoe/meanscript
 ```
 
-Build the demo project in Visual Studio project or run `make demo` in Linux. Execute the demo by running `bin/meandemo`.
+Build the demo and execute it by running `meandemo`.
 File `src/Demo/DemoMain.cpp` shows how the demo program writes and reads a simple Meanscript bytecode file.
 
 Next, try to read a script file from your source code. Create a file `test.ms` that contains
@@ -118,7 +130,7 @@ int main()
 }
 ```
 
-Compile and run `bin/meandemo` to see the result.
+Compile and run `meandemo` to see the result!
 
 ## To be continued...
 
