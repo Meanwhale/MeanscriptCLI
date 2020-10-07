@@ -72,13 +72,15 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>mean</TargetName>
     <OutDir>$(SolutionDir)\..\bin\</OutDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)/MeanscriptCpp;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\MeanscriptCpp;..\MeanscriptCpp\core;..\MeanscriptCpp\pub</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;MS_VS_MEM_DEBUG;MS_DEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -120,15 +122,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MeanscriptCpp\MeanscriptCpp.vcxproj">
-      <Project>{74dae4b3-b8c8-4911-b86c-8e375d6cbcc8}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="MeanscriptCmd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeanscriptCmd.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MeanscriptCpp\MeanscriptCpp.vcxproj">
+      <Project>{74dae4b3-b8c8-4911-b86c-8e375d6cbcc8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -123,35 +123,35 @@ namespace meanscriptcore
 
 #ifndef _INCLUDE_GENERATED_
 #define _INCLUDE_GENERATED_
-#include "ByteAutomata.h"
-#include "ByteCode.h"
-#include "StructDef.h" // switched place
-#include "MSInputStream.h" // switched place
-#include "MSOutputStream.h" // switched place
-#include "Context.h"
-#include "Common.h"
-#include "Generator.h"
-#include "MArgs.h"
-#include "MCallback.h"
-#include "MeanMachine.h"
-#include "MeanscriptUnitTest.h"
-#include "MSInputArray.h"
-#include "MNode.h"
-#include "MSBuilder.h"
-#include "MSCode.h"
-#include "MSData.h"
-#include "MSDataArray.h"
-#include "MSOutputArray.h"
-#include "MSOutputPrint.h"
-#include "MSWriter.h"
-#include "MSGlobal.h"
+#include "core/ByteAutomata.h"
+#include "core/ByteCode.h"
+#include "core/StructDef.h" // switched place
+#include "pub/MSInputStream.h" // switched place
+#include "pub/MSOutputStream.h" // switched place
+#include "core/Context.h"
+#include "core/Common.h"
+#include "core/Generator.h"
+#include "core/MArgs.h"
+#include "core/MCallback.h"
+#include "core/MeanMachine.h"
+#include "core/MeanscriptUnitTest.h"
+#include "core/MNode.h"
+#include "pub/MSInputArray.h"
+#include "pub/MSBuilder.h"
+#include "pub/MSCode.h"
+#include "pub/MSData.h"
+#include "pub/MSDataArray.h"
+#include "pub/MSOutputArray.h"
+#include "pub/MSOutputPrint.h"
+#include "pub/MSWriter.h"
+#include "pub/MSGlobal.h"
 //#include "MVarList.h"
-#include "NodeIterator.h"
-#include "Parser.h"
-#include "Semantics.h"
+#include "core/NodeIterator.h"
+#include "core/Parser.h"
+#include "core/Semantics.h"
 // StructDef
-#include "TokenTree.h"
-#include "VarGen.h"
+#include "core/TokenTree.h"
+#include "core/VarGen.h"
 #endif
 
 
@@ -304,7 +304,7 @@ namespace meanscript
 // constants
 #ifndef _MC_H_
 #define _MC_H_
-#include "MC.h"
+#include "core/MC.h"
 #endif
 
 #endif
