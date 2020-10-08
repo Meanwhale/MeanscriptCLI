@@ -4,7 +4,7 @@
 ## Command line interface (CLI) and C++ library for Meanscript
 
 Meanscript is a versatile scripting and bytecode language to create, save, and read data.
-It is still **in the prototyping phase**, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
+It is still in the **prototyping phase**, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
 while keeping it compact and easy to use.
  
 
@@ -12,10 +12,10 @@ while keeping it compact and easy to use.
 
 * **Parser:** convert text script to bytecode
 * Bytecode **interpreter:** execute bytecode instructions
-* **MSCode:** a C++ class to access bytecode data from your source code
+* **MSCode:** access bytecode data from your source code
 * **MSBuilder:** create data from your source code
-* Abstract interfaces to make your own input/output streams
-* **Command line tool:** compile and run scripts and view contents of bytecode files
+<!-- * Abstract interfaces to make your own input/output streams -->
+* **Command line application:** compile and run scripts and view contents of bytecode files
 * **C++ library:** compile and run code, and read and write bytecode data from your source code
 * Integers, text strings, floating point numbers, structs, arrays, and functions
 <!-- * Create custom input/output streams to read/write data
@@ -29,7 +29,7 @@ while keeping it compact and easy to use.
 Meanscript is implemented in syntax that is common to C++, C#, and Java, and a lot of macros (GCC).
 That's how to generate code to multiple languages at the same time.
 Same technique is used in Meanscript's side project **ByteAutomata**,
-that is a tool for making a hard-coded parser. Check it out:<br>
+which is a toolset for a hard-coded parser in C++, C#, and Java. Check it out:<br>
 https://github.com/Meanwhale/ByteAutomata
 
 More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
@@ -59,6 +59,7 @@ This project contains
 
 ### Microsoft Visual C++
 
+* Requirement: Visual Studio 2017 with C++ (older versions might work but not tested)
 * Open the solution file in _src_ folder
 * Build the command line interface: _MeanscriptCmd_
 * Build the demo application: _Demo_
@@ -83,13 +84,13 @@ Create a text file `hello.ms` that contains:
 prints "Hello world!"
 ```
 
-Then compile the script to a bytecode file `hello.mb` and run it:
+Compile the script to a bytecode file `hello.mb` and run it:
 
 ```
 mean cr hello.ms hello.mb
 ```
 
-If everything goes well, you see the text `Hello world!` in your terminal.
+If everything goes well, you'll see the text `Hello world!` in your terminal.
 
 You can check the content of the bytecode file:
 
@@ -97,9 +98,9 @@ You can check the content of the bytecode file:
 mean decode hello.mb
 ```
 
-### C++ example
+### C++ API example
 
-C++ code examples use environment variables `MS_INPUT` and `MS_OUTPUT` to define input and output file directories, so set them up first, eg. on Linux
+Examples use environment variables `MS_INPUT` and `MS_OUTPUT` to define input and output file directories, so set them up first, eg. on Linux
 
 ```
 export MS_OUTPUT=/home/johndoe/meanscript
@@ -134,7 +135,9 @@ Compile and run `meandemo` to see the result!
 
 ## To be continued...
 
-Meanscript is still work-in-progress, so stay connected for further updates.
+Meanscript is still work-in-progress, so stay connected for further updates by **Starring** this project and/or Twitter:
+
+https://twitter.com/TheMeanwhale
 
 Check out
 [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md)
