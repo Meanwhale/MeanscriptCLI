@@ -36,6 +36,8 @@ Same technique is used in Meanscript's side project **ByteAutomata**,
 which is a toolset for a hard-coded parser in C++, C#, and Java. Check it out:<br>
 https://github.com/Meanwhale/ByteAutomata
 
+See [EXAMPLES.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/EXAMPLES.md) for some script and C++ examples.
+
 More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
 
 More about script syntax, API, etc. in [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md).
