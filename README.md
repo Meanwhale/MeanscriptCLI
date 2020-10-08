@@ -3,8 +3,13 @@
 
 ## Command line interface (CLI) and C++ library for Meanscript
 
-Meanscript is a versatile scripting and bytecode language to create, save, and read data.
-It is still in the **prototyping phase**, but the plan is to combine the best parts of existing scripting languages like JavaScript, JSON, and Protocol Buffers,
+<!-- USE CASES -->
+
+**Light-weight**, **stand-alone** tool to save and read data in both human-readable **text script** and **bytecode** formats.
+
+
+Meanscript is <!-- a versatile scripting and bytecode language to create, save, and read data.
+It is --> still in the **prototyping phase**, but the plan is to combine the best parts of existing techniques like XML, JSON, and Protocol Buffers,
 while keeping it compact and easy to use.
  
 
@@ -14,7 +19,6 @@ while keeping it compact and easy to use.
 * Bytecode **interpreter:** execute bytecode instructions
 * **MSCode:** access bytecode data from your source code
 * **MSBuilder:** create data from your source code
-<!-- * Abstract interfaces to make your own input/output streams -->
 * **Command line application:** compile and run scripts and view contents of bytecode files
 * **C++ library:** compile and run code, and read and write bytecode data from your source code
 * Integers, text strings, floating point numbers, structs, arrays, and functions
@@ -23,7 +27,7 @@ while keeping it compact and easy to use.
 
 ### New features coming up next
 * Support for C# and Java, in addition to C++
-* Generate C++/C#/Java code to read and write data structures
+* Generate C++/C#/Java code to read and write data structures, like Protocol Buffers does
 * Custom data types and callbacks (called from script or RPC)
 
 Meanscript is implemented in syntax that is common to C++, C#, and Java, and a lot of macros (GCC).
