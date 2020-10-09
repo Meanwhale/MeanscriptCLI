@@ -140,7 +140,7 @@ public:
 	T & operator[] (int i)
 	{
 		if (!inRange(i)) msError("out of range", description, 0, -1);
-		return get(i);
+		return data[i];
 	}
 	int length()
 	{

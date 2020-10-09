@@ -127,8 +127,6 @@ int32_t MSData::getMemberAddress (std::string name)
 	return dataIndex + (*structCode)[memberTagAddress + 1];
 }
 
-Array<int> nameIntsTmp(globalConfig.maxNameLength);
-
 int32_t MSData::getMemberTagAddress (std::string name, bool isArray) 
 {
 	ASSERT(isStruct(), "struct expected");
@@ -140,6 +138,8 @@ int32_t MSData::getMemberTagAddress (std::string name, bool isArray)
 	code = (*structCode)[i];
 	
 	// change 'name' to int32_t array to compares names
+	
+	Array<int> nameIntsTmp(globalConfig.maxNameLength);
 	
 	stringToIntsWithSize(name, nameIntsTmp, 0);
 	
