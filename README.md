@@ -13,16 +13,21 @@ It is --> still in the **prototyping phase**, but the plan is to combine the bes
 while keeping it compact and easy to use.
  
 
-### Current features:
+## Featuring
 
-* **Parser:** convert text script to bytecode
+* **Scripting language** to store and transfer data using variables, data structures, and functions.
+* **Bytecode format** compiled from a script or generated from source code.
+* **Command line interface** (CLI) to compile and run code from a terminal.
+* **C++ library** to compile scripts, and read and write bytecode data from C++ source code.
+
+<!-- * **Parser:** convert text script to bytecode
 * Bytecode **interpreter:** execute bytecode instructions
 * **MSCode:** access bytecode data from your source code
 * **MSBuilder:** create data from your source code
 * **Command line application:** compile and run scripts and view contents of bytecode files
 * **C++ library:** compile and run code, and read and write bytecode data from your source code
 * Integers, text strings, floating point numbers, structs, arrays, and functions
-<!-- * Create custom input/output streams to read/write data
+* Create custom input/output streams to read/write data
 * _Web editor_ -->
 
 ### New features coming up next
@@ -38,9 +43,9 @@ https://github.com/Meanwhale/ByteAutomata
 
 See [EXAMPLES.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/EXAMPLES.md) for some script and C++ examples.
 
-More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
-
 More about script syntax, API, etc. in [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md).
+
+More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
 
 
 **Contact**:<br>
