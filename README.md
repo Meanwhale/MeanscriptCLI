@@ -47,8 +47,13 @@ More about script syntax, API, etc. in [REFERENCE.md](https://github.com/Meanwha
 
 More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
 
+### Contact
 
-**Contact**:<br>
+If you have any questions, comments, or ideas, don't hesitate to send a message!
+
+**Discord chat**<br>
+https://discord.gg/R4Rhr7E
+
 meanwhale@gmail.com<br>
 https://twitter.com/TheMeanwhale
 
