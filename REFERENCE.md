@@ -25,10 +25,12 @@ MSWriter | A writer class for the _MSBuilder_.
 
 ## Script syntax reference
 
-<pre>int a                   // define integer 'a' with a default value (0)
-int a: 5                // define with an initial value of 5
-text name: "Jack"       // define immutable string
-bool b                  // define boolean
+<pre>// basic variable types:
+int a                   // define an integer 'a' with a default value (0)
+int a: 5                // define it with an initial value of 5
+float f: 123.456        // define a floating-point (32-bit decimal) number
+text name: "Jack"       // define an immutable string
+bool b                  // define a boolean
 
 // Function calls can be of two formats:
 // 1. Argument list separated with spaces, like on command line:
