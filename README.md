@@ -5,7 +5,7 @@
 
 <!-- USE CASES -->
 
-**Light-weight**, **stand-alone** tool to save and read data in both human-readable **text script** and **bytecode** formats.
+**Light-weight**, **stand-alone** tool to write and read data in both human-readable **text script** and **bytecode** formats.
 
 
 Meanscript is <!-- a versatile scripting and bytecode language to create, save, and read data.
@@ -16,9 +16,10 @@ while keeping it compact and easy to use.
 ## Featuring
 
 * **Scripting language** to store and transfer data using variables, data structures, and functions.
-* **Bytecode format** compiled from a script or generated from source code.
+* **Bytecode format** translated from a script or generated from source code.
 * **Command line interface** (CLI) to compile and run code from a terminal.
-* **C++ library** to compile scripts, and read and write bytecode data from C++ source code.
+* **C++ library** to translate scipts, and read and write bytecode data from C++ source code.
+<!--* **Generate Java code** to serialize data structures, like Protocol Buffers does.-->
 
 <!-- * **Parser:** convert text script to bytecode
 * Bytecode **interpreter:** execute bytecode instructions
@@ -31,9 +32,10 @@ while keeping it compact and easy to use.
 * _Web editor_ -->
 
 ### New features coming up next
-* Support for C# and Java, in addition to C++
-* Generate C++/C#/Java code to read and write data structures, like Protocol Buffers does
-* Custom data types and callbacks (called from script or RPC)
+* **Work-in-progress:** Generate Java/C#/C++ code to serializate data. See [CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md) for more information.
+* Enumeration (enum) data type.
+* Support for C# and Java, in addition to C++.
+* Custom data types and callbacks (called from script or RPC).
 
 Meanscript is implemented in syntax that is common to C++, C#, and Java, and a lot of macros (GCC).
 That's how to generate code to multiple languages at the same time.
@@ -41,23 +43,23 @@ Same technique is used in Meanscript's side project **ByteAutomata**,
 which is a toolset for a hard-coded parser in C++, C#, and Java. Check it out:<br>
 https://github.com/Meanwhale/ByteAutomata
 
-See [EXAMPLES.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/EXAMPLES.md) for some script and C++ examples.
-
-More about script syntax, API, etc. in [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md).
-
-More about Meanscript design in [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md).
+[EXAMPLES.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/EXAMPLES.md): Script and C++ examples.<br>
+[REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md): About script syntax, API, etc.<br>
+[CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md): Genearate Java classes from Meanscript structs to serialize data.<br>
+[ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md): About Meanscript design.
 
 ### Contact
 
 If you have any questions, comments, or ideas, don't hesitate to send a message!
 
+<!--
 **Discord chat**<br>
 https://discord.gg/R4Rhr7E
+-->
 
 meanwhale@gmail.com<br>
 https://twitter.com/TheMeanwhale
 
-<!--
 
 ## Project Content
 
