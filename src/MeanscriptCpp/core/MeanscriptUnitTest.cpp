@@ -13,12 +13,13 @@ const char * testStructs = "struct vec [int x, int y]; struct person [vec pos, t
 
 void simpleVariable() 
 {
-	std::string s = "int a: 5; text b: \"x\";float c:-123.456";
+	std::string s = "int a: 5; text b: \"x\";chars [12] ch: \"asds\";float c:-123.456";
 	MSCode* m = new MSCode();
 	(*m).compileAndRun(s);
 	TEST((*m).hasData("a"));
 	TEST((*m).getInt("a") == 5);
-	TEST(((*m).getText("b").compare( "x")==0));
+	TEST((compare((*m).getText("b"), "x")));
+	TEST((compare((*m).getChars("ch"), "asds")));
 	TEST((*m).getFloat("c") == -123.456f);
 	{ delete m; m = 0; };
 }
@@ -91,12 +92,12 @@ void varArray()
 void structArray() 
 {
 	std::string s = "struct vec [int x, int y];";
-	s += "struct person [text name, vec [2] pos, int age];";
+	s += "struct person [text name, chars[12] title, vec [2] pos, int age];";
 	s += "func int summa [int a, int b] {return (sum a b)};";
 	s += "int a:2;int b;int c:1;";
-	s += "person [5] team; team[a].name: \"Jaska\"; team[a].pos[c].x: 8888; team[a].age: 9999;";
+	s += "person [5] team; team[a].name: \"Jaska\"; team[a].title: \"boss\"; team[a].pos[c].x: 8888; team[a].age: 9999;";
 	s += "b: team[a].pos[c].x; c: team[a].age; text t: team[a].name;";
-	s += "person [] otherTeam: \n[\"A\", [[1,2], [3,4]], 34],\n [\"B\", [[5,6], [7,8]], 56],\n [\"C\", [[1,2], [9,0]], 78]";
+	s += "person [] otherTeam: \n[\"A\", \"tA\", [[1,2], [3,4]], 34],\n [\"B\", \"Bt\", [[5,6], [7,8]], 56],\n [\"C\", \"tC\", [[1,2], [9,0]], 78]";
 		
 	MSCode* m = new MSCode();
 	(*m).compileAndRun(s);
@@ -106,12 +107,13 @@ void structArray()
 	TEST((*m).getInt("a") == 2);
 	TEST((*m).getInt("b") == 8888);
 	TEST((*m).getInt("c") == 9999);
-	TEST(((*m).getText("t").compare("Jaska")==0));
+	TEST((compare((*m).getText("t"),"Jaska")));
 	
 	// MSData access test
 	
 	MSDataArray arr = (*m).getArray("team");
 	TEST(arr.getAt(2).getInt("age") == 9999);
+	TEST((compare(arr.getAt(2).getChars("title"),"boss")));
 	
 	// struct array assignment
 	arr = (*m).getArray("otherTeam");
@@ -129,6 +131,7 @@ void msBuilder()
 	int32_t personTypeID = builder.createStructDef("person");
 	builder.addMember(personTypeID, "age", MS_TYPE_INT);
 	builder.addMember(personTypeID, "name", MS_TYPE_TEXT);
+	builder.addCharsMember(personTypeID, "code", 12);
 	
 	// struct
 	// TODO: make builder for other languages too
@@ -136,11 +139,13 @@ void msBuilder()
 	// simple global values
 	builder.addInt("aa", 123);
 	builder.addText("key","value");
+	builder.addChars("cdata",13,"cdatavalue");
 	builder.addInt("bb", 456);
 	
 	MSWriter pw = builder.createStruct("person", "boss");
 	pw.setInt("age", 42);
 	pw.setText("name", "Jaska");
+	pw.setChars("code", "abcdefg");
 	
 
 //void MeanscriptUnitTest::addArray (int32_t typeID, std::string arrayName, int32_t arraySize) 
@@ -157,12 +162,14 @@ void msBuilder()
 	if (globalConfig.verboseOn()) (*ms).printData();
 	
 	TEST((*ms).getInt("bb") == 456);
-	TEST(((*ms).getText("key").compare("value")==0));
+	TEST((compare((*ms).getText("key"),"value")));
+	TEST((compare((*ms).getChars("cdata"),"cdatavalue")));
 	
 	MSData bossData = (*ms).getData("boss");
 	VERBOSE(bossData.getType());
 	TEST(bossData.getInt("age") == 42);
-	TEST(((*ms).getData("boss").getText("name").compare( "Jaska")==0));
+	TEST((compare((*ms).getData("boss").getText("name"), "Jaska")));
+	TEST((compare((*ms).getData("boss").getChars("code"), "abcdefg")));
 	
 	MSDataArray arr = (*ms).getArray("team");
 	TEST(arr.getAt(1).getInt("age") == 67);

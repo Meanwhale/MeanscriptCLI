@@ -35,7 +35,7 @@ ByteCode* Generator::generate ()
 	
 	// add texts in numeral order, id = 0, 1, 2, 3, ...
 	int32_t numTexts = (*tree).texts.size();
-	const char ** textArray = new const char * [numTexts];
+	Array<std::string>textArray(numTexts);
 	
 	for (const auto&  entry :  (*tree).texts)
 	{
@@ -49,7 +49,6 @@ ByteCode* Generator::generate ()
 	{
 		bc.codeTop = addTextInstruction(textArray[i], OP_ADD_TEXT, bc.code, bc.codeTop);
 	}
-	{ delete[] textArray; textArray = 0; };
 	
 	// define structure types
 	sem.writeStructDefs((&(bc)));
@@ -185,7 +184,7 @@ void Generator::generateExpression (NodeIterator it)
 			SYNTAX(((*currentContext).variables.memberNames.find( it.data()) != (*currentContext).variables.memberNames.end()), it, "unknown variable: " CAT it.data());
 			if (it.hasNext()) generateAssignment(it);
 		}
-		else if ((it.data().compare( keywords[KEYWORD_RETURN_ID])==0))
+		else if ((compare(it.data(), keywords[KEYWORD_RETURN_ID])))
 		{
 			VERBOSE("Generate a return call");
 			SYNTAX(it.hasNext(),it,  "'return' is missing a value"); // TODO: return from a void context
@@ -200,11 +199,11 @@ void Generator::generateExpression (NodeIterator it)
 			bc.addWord((*sem.getType((*currentContext).returnType, (&(it)))).structSize);
 			bc.addInstruction(OP_GO_END, 0 , 0);
 		}
-		else if ((it.data().compare( keywords[KEYWORD_STRUCT_ID])==0))
+		else if ((compare(it.data(), keywords[KEYWORD_STRUCT_ID])))
 		{
 			VERBOSE("Skip a struct definition");
 		}
-		else if ((it.data().compare( keywords[KEYWORD_FUNC_ID])==0))
+		else if ((compare(it.data(), keywords[KEYWORD_FUNC_ID])))
 		{
 			VERBOSE("Skip a function definition for now");
 		}
@@ -281,6 +280,7 @@ void Generator::generateAssignment(NodeIterator it)
 	}
 
 	int32_t targetType = (int32_t)(target.tag & VALUE_TYPE_MASK);
+	StructDef* typeSD = sem.getType(targetType, (&(it)));
 
 	// get value for assignment target
 
@@ -288,12 +288,17 @@ void Generator::generateAssignment(NodeIterator it)
 	if (it.hasNext())
 	{
 		// list of arguments to assign
-		argumentStructPush(it.copy(), sem.getType(targetType, (&(it))), (*sem.getType(targetType, (&(it)))).numMembers, true);
+		argumentStructPush(it.copy(), typeSD, (*typeSD).numMembers, true);
 	}
 	else
 	{
+		int32_t numItems = -1;
+		if ((*typeSD).isCharsDef())
+		{
+			numItems = (*typeSD).numCharsForCharsDef();
+		}
 		NodeIterator cp = NodeIterator(it);
-		singleArgumentPush(target.tag, cp, -1);
+		singleArgumentPush(target.tag, cp, numItems);
 	}
 
 	// WRITE values. This works like a callback call.
@@ -345,6 +350,12 @@ void Generator::squareBracketArgumentPush (NodeIterator it, StructDef* sd, int32
 		SYNTAX(argIndex < numArgs, it,  "wrong number of arguments, expected " CAT numArgs);
 		int32_t memberTag = (*sd).getMemberTag(argIndex);
 		int32_t arrayItemCount = (*sd).getMemberArrayItemCountOrNegative(argIndex);
+		StructDef* memberType = sem.getType((int32_t)(memberTag & VALUE_TYPE_MASK), (&(it)));
+		if ((*memberType).isCharsDef())
+		{
+			ASSERT(arrayItemCount < 0, "chars is an array?");
+			arrayItemCount = (*memberType).numCharsForCharsDef();
+		}
 		singleArgumentPush(memberTag, it, arrayItemCount);
 		it.toParent();
 		argIndex++;
@@ -603,10 +614,22 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 	}
 	else if (it.type() == NT_TEXT)
 	{
-		SYNTAX(targetType == MS_TYPE_TEXT, it, "type mismatch");
 		ASSERT(((*tree).texts.find( it.data()) != (*tree).texts.end()), "text not found");
 		int32_t textID = nameTreeGet((*tree).texts, it.data());
-		bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_TEXT, textID);
+		if (targetType == MS_TYPE_TEXT)
+		{
+			// assign text id
+			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_TEXT, textID);
+		}
+		else
+		{
+			// copy chars
+			int32_t maxChars = arrayItemCount;
+			StructDef* sd = sem.typeStructDefs[targetType];
+			bc.addInstructionWithData(OP_PUSH_CHARS, 3, MS_TYPE_TEXT, textID);
+			bc.addWord(maxChars);
+			bc.addWord((*sd).structSize);
+		}
 		return;
 	}
 	else if (it.type() == NT_NAME_TOKEN)
@@ -654,7 +677,15 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 			bc.addWord(vg.size);
 			
 			int32_t resolvedType = (int32_t)(vg.tag & VALUE_TYPE_MASK);
-			SYNTAX(resolvedType == targetType, it, "type mismatch");
+			if (targetType == MS_TYPE_CHARS)
+			{
+				StructDef* sd = sem.typeStructDefs[resolvedType];
+				SYNTAX((*sd).isCharsDef(), it, "chars type expected");
+			}
+			else
+			{
+				SYNTAX(resolvedType == targetType, it, "type mismatch");
+			}
 			return;
 		}
 	}

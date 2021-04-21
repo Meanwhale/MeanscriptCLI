@@ -211,6 +211,11 @@ void MeanMachine::initStep ()
 		functions[id] = instructionPointer; // save address to this tag 
 	}
 	else if (op == OP_MEMBER_NAME) { }
+	else if (op == OP_CHARS_DEF)
+	{
+		currentStructID = (int32_t)(instruction & VALUE_TYPE_MASK);
+		types[currentStructID] = instructionPointer;
+	}
 	else if (op == OP_STRUCT_DEF)
 	{
 		currentStructID = (int32_t)(instruction & VALUE_TYPE_MASK);
@@ -292,14 +297,14 @@ void MeanMachine::step ()
 		int32_t address = bc.code[instructionPointer + 1];
 		int32_t size    = bc.code[instructionPointer + 2];
 		
-		pushData(bc, stack, address, size);
+		pushData(stack, address, size);
 	}
 	else if (op == OP_PUSH_LOCAL)
 	{
 		int32_t address = bc.code[instructionPointer + 1];
 		int32_t size    = bc.code[instructionPointer + 2];
 		
-		pushData(bc, stack, stackBase + address, size);
+		pushData(stack, stackBase + address, size);
 	}
 	else if (op == OP_PUSH_GLOBAL_REF)
 	{
@@ -307,7 +312,7 @@ void MeanMachine::step ()
 		int32_t address = stack[refAddress];
 		int32_t size    = bc.code[instructionPointer + 2];
 		
-		pushData(bc, stack, address, size);
+		pushData(stack, address, size);
 	}
 	else if (op == OP_PUSH_LOCAL_REF)
 	{
@@ -315,7 +320,24 @@ void MeanMachine::step ()
 		int32_t address = stack[stackBase + refAddress];
 		int32_t size    = bc.code[instructionPointer + 2];
 		
-		pushData(bc, stack, address, size);
+		pushData(stack, address, size);
+	}
+	else if (op == OP_PUSH_CHARS)
+	{
+		int32_t textID = bc.code[instructionPointer + 1];
+		int32_t maxChars = bc.code[instructionPointer + 2];
+		int32_t structSize = bc.code[instructionPointer + 3];
+		
+		int32_t textIndex = texts[textID];
+		int32_t textChars = bc.code[textIndex + 1];
+		int32_t textDataSize = instrSize(bc.code[textIndex]);
+		CHECK(textChars <= maxChars, EC_CODE, "text too long");
+		CHECK(textDataSize <= structSize, EC_CODE, "text data too long");
+		//VERBOSE("SIZE: " CAT textChars CAT " MAX: " CAT maxChars);
+		
+		pushData(bc.code, textIndex + 1, textDataSize);
+		// fill the rest
+		for (int32_t i=0; i < (structSize - textDataSize); i++) push(0);
 	}
 	else if (op == OP_POP_STACK_TO_GLOBAL)
 	{
@@ -373,7 +395,7 @@ void MeanMachine::step ()
 		int32_t arrayIndex = stack[stackTop];
 		if (arrayIndex < 0 || arrayIndex >= arrayItemCount)
 		{
-			PRINT("ERROR: index " CAT arrayIndex CAT ", size" CAT arrayItemCount);
+			ERROR_PRINT("ERROR: index " CAT arrayIndex CAT ", size" CAT arrayItemCount);
 			CHECK(false, EC_SCRIPT, "index out of bounds");
 		}
 		if (arrayDataAddress < 0)
@@ -482,7 +504,7 @@ void MeanMachine::step ()
 	}
 	else if (op == OP_NOOP)
 	{
-		VERBOSE(" . . .");
+		VERBOSE(" . . . ");
 	}
 	else
 	{
@@ -499,7 +521,7 @@ void MeanMachine::step ()
 }
 
 
-void MeanMachine::pushData (ByteCode & bc, Array<int> & source, int32_t address, int32_t size)
+void MeanMachine::pushData (Array<int> & source, int32_t address, int32_t size)
 {
 	// push words from the source
 	for (int32_t i=0; i<size; i++)

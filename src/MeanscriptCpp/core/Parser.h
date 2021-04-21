@@ -1,5 +1,6 @@
 // Auto-generated: do not edit.
 namespace meanscriptcore {
+using namespace meanscript;
 class Parser
 {
 public:

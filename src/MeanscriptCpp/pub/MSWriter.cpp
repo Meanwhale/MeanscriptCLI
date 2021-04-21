@@ -24,6 +24,23 @@ void MSWriter::setText (std::string name, std::string value)
 	int32_t textID = (*builder).createText(value);
 	(*builder).values[baseAddress + memberAddress] = textID;
 }
+//pw.setChars("code", "abcdefg");
+void MSWriter::setChars (std::string name, std::string value) 
+{
+	// get chars type
+	int32_t memberAddress = (*sd).getMemberAddress(name);
+	int32_t tag = (*sd).getMemberTag(name);
+	int32_t type = (int32_t)(tag & VALUE_TYPE_MASK);
+	StructDef* charsDef = (*(*builder).semantics).getType(type);
+	ASSERT((*charsDef).isCharsDef(), "not a chars def.");
+	//int32_t maxChars = (*charsDef).numCharsForCharsDef();
+	int32_t size32 = (*charsDef).structSize;
+	
+	// TODO: check sizes
+	// copy array
+	stringToIntsWithSize(value, (*builder).values, baseAddress + memberAddress, size32);
+
+}
 
 } // namespace meanscript(core)
 // C++ END

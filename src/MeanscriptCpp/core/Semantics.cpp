@@ -35,9 +35,36 @@ void Semantics::addPrimitiveType (std::string name, StructDef* sd, int32_t id)
 	
 }
 
+void Semantics::addElementaryType (std::string name, int32_t typeID, int32_t size) 
+{
+	VERBOSE("Add elementary type [" CAT typeID CAT "] " CAT name);
+	types.insert(std::make_pair( name, typeID));;
+	StructDef* sd = new StructDef(name, typeID, size);
+	typeStructDefs[typeID] = sd;
+}
+
+StructDef* Semantics::addCharsType (int32_t numChars) 
+{
+	// words:
+	//		0:		size in characters (start stringToIntsWithSize() from here)
+	//		1...n:	characters + zero at the end, e.g. "mean\0" --> 2 words = (numChars / 4) + 1
+	
+	int32_t arraySize = (numChars / 4) + 2;
+	SYNTAX(arraySize > 0 && arraySize < globalConfig.maxArraySize, 0, "invalid array size");
+	int32_t typeID = typeIDCounter++;
+	StructDef* sd = new StructDef("", typeID, numChars, arraySize, OP_CHARS_DEF);
+	typeStructDefs[typeID] = sd;
+	return sd;
+}
+
 bool Semantics::hasType(std::string name)
 {
 	return (types.find( name) != types.end());
+}
+
+bool Semantics::hasType(int32_t id)
+{
+	return typeStructDefs[id] != 0;
 }
 
 StructDef* Semantics:: getType (int32_t id) 
@@ -80,7 +107,7 @@ Context* Semantics:: findContext (std::string name)
 	for (int32_t i=1; i<maxContexts; i++)
 	{
 		if (contexts[i] == 0) continue;
-		if (((*contexts[i]).name.compare( name)==0)) return contexts[i];			
+		if ((compare((*contexts[i]).name, name))) return contexts[i];			
 	}
 	return 0;
 }
@@ -110,7 +137,7 @@ bool Semantics:: assumeNotReserved (std::string name)
 	}
 	for(int32_t i=0; i<NUM_KEYWORDS; i++)
 	{
-		if ((name.compare( keywords[i])==0)) {
+		if ((compare(name, keywords[i]))) {
 			ERROR_PRINT("unexpected keyword: " CAT name);
 			return false;
 		}
@@ -196,7 +223,7 @@ void Semantics::analyzeExpr (NodeIterator it)
 		{
 			VERBOSE("-------- function call!!!");
 		}
-		else if ((it.data().compare( keywords[KEYWORD_FUNC_ID])==0))
+		else if ((compare(it.data(), keywords[KEYWORD_FUNC_ID])))
 		{
 			// get return type
 
@@ -247,7 +274,7 @@ void Semantics::analyzeExpr (NodeIterator it)
 
 			SYNTAX(!it.hasNext(), it, "unexpected token after code block");
 		}
-		else if ((it.data().compare( keywords[KEYWORD_STRUCT_ID])==0))
+		else if ((compare(it.data(), keywords[KEYWORD_STRUCT_ID])))
 		{
 			// e.g. "struct Vec [int x, INT y, INT z]"
 
@@ -266,11 +293,36 @@ void Semantics::analyzeExpr (NodeIterator it)
 			// expr. starts with a type name, eg. "int foo" OR "person [5] players"
 			
 			int32_t type = nameTreeGet(types, it.data());
-			ASSERT(type == MS_TYPE_INT || type == MS_TYPE_FLOAT || type == MS_TYPE_TEXT || type >= MAX_MS_TYPES, "semantics: unknown type: " CAT type);
+			ASSERT(type == MS_TYPE_INT || type == MS_TYPE_FLOAT || type == MS_TYPE_TEXT || type == MS_TYPE_CHARS || type >= MAX_MS_TYPES, "semantics: unknown type: " CAT type);
 
 			it.toNext();
 			
-			if (it.type() == NT_SQUARE_BRACKETS)
+			if (type == MS_TYPE_CHARS)
+			{
+				// get number of chars, eg. "chars [12] name"
+				SYNTAX(it.type() == NT_SQUARE_BRACKETS, it, "chars size expected");
+				it.toChild();
+				SYNTAX(!it.hasNext(), it, "only the chars size expected");
+				it.toChild();
+				SYNTAX(!it.hasNext(), it, "only the chars size expected");
+				SYNTAX(it.type() == NT_NUMBER_TOKEN, it, "chars size (number) expected");
+				
+				// parse size and calculate array size
+				
+				int32_t charsSize = std::stoi(it.data());
+				
+				it.toParent();
+				it.toParent();
+				
+				it.toNext();
+				std::string varName = it.data();
+				SYNTAX(assumeNotReserved(varName), it, "variable name error");
+				
+				StructDef* charsType = addCharsType(charsSize);
+				
+				(*currentContext).variables.addMember(this, varName, (*charsType).typeID);				
+			}
+			else if (it.type() == NT_SQUARE_BRACKETS)
 			{
 				// eg. "person [5] players"
 				
@@ -278,7 +330,7 @@ void Semantics::analyzeExpr (NodeIterator it)
 				
 				// array size
 				it.toChild();
-				SYNTAX(!it.hasNext(), it, "array size expected");
+				SYNTAX(!it.hasNext(), it, "only the array size expected");
 				
 				int32_t arraySize = -1;
 				
@@ -365,7 +417,32 @@ void Semantics::createStructDef (StructDef & sd, NodeIterator it)
 		int32_t type = nameTreeGet(types, it.data());
 		it.toNext();
 
-		if (it.type() == NT_SQUARE_BRACKETS)
+		if (type == MS_TYPE_CHARS)
+		{
+			// get number of chars, eg. "chars [12] name"
+			SYNTAX(it.type() == NT_SQUARE_BRACKETS, it, "chars size expected");
+			it.toChild();
+			SYNTAX(!it.hasNext(), it, "only the chars size expected");
+			it.toChild();
+			SYNTAX(!it.hasNext(), it, "only the chars size expected");
+			SYNTAX(it.type() == NT_NUMBER_TOKEN, it, "chars size (number) expected");
+			
+			// parse size and calculate array size
+			
+			int32_t charsSize = std::stoi(it.data());
+			
+			it.toParent();
+			it.toParent();
+			
+			it.toNext();
+			std::string varName = it.data();
+			SYNTAX(assumeNotReserved(varName), it, "variable name error");
+			
+			StructDef* charsType = addCharsType(charsSize);
+			
+			sd.addMember(this, varName, (*charsType).typeID);				
+		}
+		else if (it.type() == NT_SQUARE_BRACKETS)
 		{
 			// eg. "int [5] numbers"
 

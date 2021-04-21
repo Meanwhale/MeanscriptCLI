@@ -1,5 +1,6 @@
 // Auto-generated: do not edit.
 namespace meanscriptcore {
+using namespace meanscript;
 class MeanMachine
 {
 public:
@@ -23,7 +24,7 @@ public:
  Array<int> texts;
  Array<int> types; // typeID -> STRUCT_DEF tag address
  ByteCode* byteCode;
- meanscript::MSData* globals;
+ MSData* globals;
  int32_t globalsTagAddress;
 void callFunction(int32_t id);
 void stepToFunction(int32_t id);
@@ -36,7 +37,7 @@ Array<int>* getStructCode();
 Array<int>* getDataCode();
 void step();
 void initStep();
-void pushData (ByteCode &, Array<int> & source, int32_t address, int32_t size);
+void pushData (Array<int> & source, int32_t address, int32_t size);
 void popStackToTarget (ByteCode &, Array<int> & target, int32_t size, int32_t offset);
 void push(int32_t data);
 void callbackReturn(int32_t type, int32_t value);
@@ -45,8 +46,8 @@ void gosub(int32_t address);
 void pushIP(int32_t ip);
 int32_t popIP();
 int32_t popEndIP();
-void writeCode (meanscript::MSOutputStream & output);
-void writeReadOnlyData (meanscript::MSOutputStream & output);
+void writeCode (MSOutputStream & output);
+void writeReadOnlyData (MSOutputStream & output);
 void printGlobals();
 void printDetails();
 void printCode();

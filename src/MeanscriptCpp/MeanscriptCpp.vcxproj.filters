@@ -125,6 +125,9 @@
     <ClInclude Include="pub\MSOutputStream.h">
       <Filter>Header Files\pub</Filter>
     </ClInclude>
+    <ClInclude Include="core\ClassMaker.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MS.cpp">
@@ -213,6 +216,9 @@
     </ClCompile>
     <ClCompile Include="pub\MSOutputStream.cpp">
       <Filter>Source Files\pub</Filter>
+    </ClCompile>
+    <ClCompile Include="core\ClassMaker.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

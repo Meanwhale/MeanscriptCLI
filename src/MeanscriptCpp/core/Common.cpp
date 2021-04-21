@@ -48,7 +48,7 @@ void subCallback(MeanMachine & mm, MArgs & args)
 	VERBOSE("//////////////// SUBTRACTION ////////////////");
 	int32_t a = mm.stack[args.baseIndex];
 	int32_t b = mm.stack[args.baseIndex+1];
-	VERBOSE("calculate " CAT a CAT " - " CAT b CAT " = " CAT a-b);
+	VERBOSE("calculate " CAT a CAT " - " CAT b CAT " = " CAT (a-b));
 	mm.callbackReturn(MS_TYPE_INT, a - b);
 }
 
@@ -62,6 +62,14 @@ void printTextCallback(MeanMachine & mm, MArgs & args)
 {
 	VERBOSE("//////////////// PRINT TEXT ////////////////");
 	USER_PRINT((*mm.globals).getText(mm.stack[args.baseIndex]));
+}
+
+void printCharsCallback(MeanMachine & mm, MArgs & args)
+{
+	VERBOSE("//////////////// PRINT CHARS  ////////////////");
+	int32_t numChars = mm.stack[args.baseIndex];
+	std::string s = readStringFromIntArray(mm.stack,  args.baseIndex + 1,  numChars);;
+	USER_PRINT(s);
 }
 
 void printFloatCallback(MeanMachine & mm, MArgs & args)
@@ -82,22 +90,11 @@ int32_t Common:: createCallback (std::string name, void (*func)(MeanMachine &, M
 
 void Common::includePrimitives (Semantics & sem) 
 {
-	// add primitive types
-	StructDef* sd = new StructDef("int", MS_TYPE_INT);
-	(*sd).addMember("x", MS_TYPE_INT);
-	sem.addPrimitiveType("int", sd, MS_TYPE_INT);
-	
-	sd = new StructDef("float", MS_TYPE_FLOAT);
-	(*sd).addMember("x", MS_TYPE_FLOAT);
-	sem.addPrimitiveType("float", sd, MS_TYPE_FLOAT);
-	
-	sd = new StructDef("text", MS_TYPE_TEXT);
-	(*sd).addMember("x", MS_TYPE_TEXT);
-	sem.addPrimitiveType("text", sd, MS_TYPE_TEXT);
-	
-	sd = new StructDef("bool", MS_TYPE_BOOL);
-	(*sd).addMember("x", MS_TYPE_BOOL);
-	sem.addPrimitiveType("bool", sd, MS_TYPE_BOOL);
+	sem.addElementaryType("int",   MS_TYPE_INT,   1);
+	sem.addElementaryType("float", MS_TYPE_FLOAT, 1);
+	sem.addElementaryType("text",  MS_TYPE_TEXT,  1);
+	sem.addElementaryType("bool",  MS_TYPE_BOOL,  1);
+	sem.addElementaryType("chars", MS_TYPE_CHARS,  -1); // special, dynamic type
 }
 // Meanscript core types and callbacks
 
@@ -146,6 +143,10 @@ Common::Common ()
 	StructDef* floatPrintArgs = new StructDef("one float", callbackCounter);
 	(*floatPrintArgs).addMember("a", MS_TYPE_FLOAT);
 	createCallback("printf", printFloatCallback, MS_TYPE_VOID, floatPrintArgs);
+	
+	StructDef* charsPrintArgs = new StructDef("one chars", callbackCounter);
+	(*charsPrintArgs).addMember("a", MS_TYPE_CHARS);
+	createCallback("printc", printCharsCallback, MS_TYPE_VOID, charsPrintArgs);
 }
 Common::~Common() { 	for (int32_t i=0; i < globalConfig.maxCallbacks; i++) 	{ 		delete callbacks[i]; 	} 	delete[] callbacks; }
 } // namespace meanscript(core)

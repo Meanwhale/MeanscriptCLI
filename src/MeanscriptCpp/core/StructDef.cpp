@@ -35,6 +35,7 @@ StructDef::StructDef (std::string _name, int32_t _typeID)
 	
 	{ code.reset(			globalConfig.maxStructDefSize); code.fill(0); code.description =  "StructDef: structure definitions"; };
 	{ memberOffset.reset(	globalConfig.maxStructMembers); memberOffset.fill(0); memberOffset.description =  "StructDef: structure members"; };
+	{ nameOffset.reset(		globalConfig.maxStructMembers); nameOffset.fill(0); nameOffset.description =  "StructDef: member names"; };
 	
 	numMembers = 0;
 	argsSize = -1; // set structSize after all arguments are set
@@ -48,7 +49,45 @@ StructDef::StructDef (std::string _name, int32_t _typeID)
 	code[0] = makeInstruction(OP_STRUCT_DEF, codeTop-1, typeID);
 }
 
+StructDef::StructDef (std::string _name, int32_t _typeID, int32_t _size) 
+{
+	// primitive: no need to initialize arrays (code, memberOffset, nameOffset)
+	name = _name;
+	typeID = _typeID;
+	numMembers = -1;
+	argsSize = -1; // set structSize after all arguments are set
+	structSize = _size;
+	codeTop = -1;
+}
+
+StructDef::StructDef (std::string _name, int32_t _typeID, int32_t data, int32_t size, int32_t op) 
+{
+	// generic struct: no need to initialize arrays memberOffset and nameOffset
+	name = _name;
+	typeID = _typeID;
+	
+	{ code.reset( 2); code.fill(0); code.description =  "generic struct"; };
+	code[0] = makeInstruction(op, 1, typeID);
+	code[1] = data; // chars: number of characters
+	codeTop = 2;
+	
+	numMembers = -1;
+	argsSize = -1; // set structSize after all arguments are set
+	structSize = size;
+}
+
 StructDef::~StructDef() { }
+
+bool StructDef:: isCharsDef ()
+{
+	return codeTop > 0 && (int32_t)(code[0] & OPERATION_MASK) == OP_CHARS_DEF;
+}
+
+int32_t StructDef::numCharsForCharsDef () 
+{
+	ASSERT(isCharsDef(),"not a chars def.");
+	return code[1];
+}
 
 int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t arrayType, int32_t itemCount) 
 {	
@@ -61,7 +100,9 @@ int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t ar
 	ASSERT(sd != 0, "struct missing");
 	int32_t singleMemberSize = (*sd).structSize;
 	int32_t dataSize = itemCount * singleMemberSize; // "sizeof"
+	
 	// name saving instruction
+	nameOffset[numMembers] = codeTop;
 	codeTop = addTextInstruction(name, OP_MEMBER_NAME, code, codeTop);
 	
 	// create tag
@@ -110,6 +151,7 @@ int32_t StructDef:: addMember (std::string name, int32_t type, int32_t memberSiz
 {		
 	// name saving instruction
 
+	nameOffset[numMembers] = codeTop;
 	codeTop = addTextInstruction(name, OP_MEMBER_NAME, code, codeTop);
 
 	// create tag
@@ -191,6 +233,12 @@ int32_t StructDef:: getMemberSize (int32_t index)
 {
 	ASSERT(indexInRange(index), "argument index out of range: " CAT index);
 	return code[memberOffset[index] + 2]; // see above for definition
+}
+std::string StructDef:: getMemberName (int32_t index) 
+{
+	ASSERT(indexInRange(index), "argument index out of range: " CAT index);
+	int32_t offset = nameOffset[index];
+	return readStringFromIntArray(code,  offset + 2,  code[offset + 1]);;
 }
 void StructDef::print () 
 {

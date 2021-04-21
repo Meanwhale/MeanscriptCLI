@@ -21,6 +21,7 @@ bool hasArray (std::string);
 std::string getText();
 std::string getText(std::string);
 std::string getText(int32_t);
+std::string getChars (std::string name);
 float getFloat ();
 float getFloat (std::string name);
 int32_t getInt ();

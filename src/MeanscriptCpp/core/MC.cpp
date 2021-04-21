@@ -16,6 +16,7 @@ const meanscript::MSError 	EC_SCRIPT	(				EC_CLASS, 		"Script error");	// ...exe
 const meanscript::MSError 	EC_CODE		(				EC_CLASS, 		"Code error");		// ...resolving bytecode
 const meanscript::MSError 	EC_DATA		(				EC_CLASS, 		"Data error");		// ...accessing/creating data
 const meanscript::MSError 	EC_TEST		(				EC_CLASS, 		"Test error");		// ...unit test
+const meanscript::MSError 	EC_NATIVE	(				EC_CLASS, 		"Native error");	// ...executing native code
 const meanscript::MSError 	EC_INTERNAL	(				EC_CLASS, 		"|||||||| INTERNAL ERROR ||||||||");
 
 const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected character");
@@ -59,7 +60,7 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 			
 			if (i == tagIndex)
 			{
-				PRINT(":    0x" CATHEX (data[i]) CAT "      " CAT getOpName(data[i]));
+				PRINT(":    0x").printHex(data[i]).print("      ").print(getOpName(data[i]));
 				tagIndex += instrSize(data[i]) + 1;
 			}
 			else PRINT(":    " CAT data[i]);
@@ -70,17 +71,18 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 		}
 	}
 }
- int32_t stringToIntsWithSize(std::string text, Array<int> & code, int32_t top)
+ int32_t stringToIntsWithSize(std::string text, Array<int> & code, int32_t top, int32_t maxSize) 
 {
 	int32_t numChars = text.size();
 	int32_t size32 = (numChars/4) + 1;
+	CHECK(size32 <= maxSize, EC_CODE, "text is too long, max 32-bit size: " CAT maxSize CAT ", text: " CAT text);
 	Array<int> intArray;
 	stringToIntBits(intArray, text);;
 	
 	code[top++]=numChars;
 	for (int32_t i=0; i<size32; i++)
 	{
-		VERBOSE("        0x" CATHEX intArray[i]);
+		//VERBOSE("        0x").printHex(HEXSTR(intArray[i]));
 		code[top++] = intArray[i];
 	}
 	return top;
@@ -115,6 +117,6 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	int32_t instruction = makeInstruction(instructionCode, size32 + 1, MS_TYPE_TEXT);
 	code[top++] = instruction;
 
-	return stringToIntsWithSize(text, code, top);
+	return stringToIntsWithSize(text, code, top, size32 + 1);
 }
 }

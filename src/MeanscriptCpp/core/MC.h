@@ -28,6 +28,7 @@ constexpr int32_t OP_CALLBACK_CALL = 0x03000000;
 constexpr int32_t OP_JUMP = 0x04000000;
 constexpr int32_t OP_GO_BACK = 0x05000000; // return to previous block. named to be less confusing
 constexpr int32_t OP_GO_END = 0x06000000; // go to end of the function (context's end address)
+constexpr int32_t OP_CHARS_DEF = 0x07000000;
 constexpr int32_t OP_STRUCT_DEF = 0x08000000;
 constexpr int32_t OP_STRUCT_MEMBER = 0x09000000;
 constexpr int32_t OP_SAVE_BASE = 0x0a000000; // save/load stack base index
@@ -53,11 +54,12 @@ constexpr int32_t OP_POP_STACK_TO_LOCAL_REF = 0x21000000;
 constexpr int32_t OP_POP_STACK_TO_GLOBAL_REF = 0x22000000;
 constexpr int32_t OP_PUSH_LOCAL_REF = 0x23000000;
 constexpr int32_t OP_PUSH_GLOBAL_REF = 0x24000000;
+constexpr int32_t OP_PUSH_CHARS = 0x25000000;
 constexpr int32_t OP_MAX = 0x30000000;
 constexpr int32_t NUM_OP = 0x30;
 constexpr char const * opName [] = {
  "system", "---OLD---", "---OLD---", "call",
- "jump", "go back", "go end", "---OLD---",
+ "jump", "go back", "go end", "chars definition",
  "struct definition", "struct member", "save base", "load base",
  "no operation", "---OLD---", "---OLD---", "---OLD---",
  "text", "push immediate", "---OLD---", "push from reg.",
@@ -65,7 +67,7 @@ constexpr char const * opName [] = {
  "push local", "push global", "pop to local", "pop to global",
  "pop to register", "member name", "init globals", "array member",
  "multiply array index", "pop to local ref.", "pop to global ref.", "push local ref.",
- "push global ref.", "---ERROR---", "---ERROR---", "---ERROR---",
+ "push global ref.", "push chars", "---ERROR---", "---ERROR---",
  "---ERROR---", "---ERROR---", "---ERROR---", "---ERROR---",
  "---ERROR---", "---ERROR---", "---ERROR---", "---ERROR---",
  };
@@ -98,6 +100,7 @@ constexpr int32_t MS_TYPE_BOOL = 3;
 constexpr int32_t MS_TYPE_CODE_ADDRESS = 4;
 constexpr int32_t MS_TYPE_ARGS = 5;
 constexpr int32_t MS_TYPE_FLOAT = 6;
+constexpr int32_t MS_TYPE_CHARS = 7;
 constexpr int32_t MAX_MS_TYPES = 16;
 constexpr int32_t MAX_TYPES = 256;
 // error classes
@@ -108,6 +111,7 @@ extern const meanscript::MSError EC_SCRIPT; // ...executing script
 extern const meanscript::MSError EC_CODE; // ...resolving bytecode
 extern const meanscript::MSError EC_DATA; // ...accessing/creating data
 extern const meanscript::MSError EC_TEST; // ...unit test
+extern const meanscript::MSError EC_NATIVE; // ...executing native code
 extern const meanscript::MSError EC_INTERNAL;
 extern const meanscript::MSError E_UNEXPECTED_CHAR;
 int32_t makeInstruction (int32_t operation, int32_t size, int32_t valueType);
@@ -115,7 +119,7 @@ std::string getOpName(int32_t instruction);
 int32_t instrSize(int32_t instruction);
 int32_t instrValueTypeIndex(int32_t instruction);
 void printData(Array<int> & data, int32_t top, int32_t index, bool code);
-int32_t stringToIntsWithSize(std::string text, Array<int> & code, int32_t top);
+int32_t stringToIntsWithSize(std::string text, Array<int> & code, int32_t top, int32_t maxSize);
 bool intStringsWithSizeEquals(Array<int> & a, int32_t aOffset, Array<int> & b, int32_t bOffset);
 int32_t addTextInstruction (std::string text, int32_t instructionCode, Array<int> & code, int32_t top);
 }

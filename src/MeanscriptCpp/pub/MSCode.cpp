@@ -104,6 +104,12 @@ std::string MSCode::getText (std::string name)
 	return (*(*mm).globals).getText(name);
 }
 
+std::string MSCode::getChars (std::string name) 
+{
+	checkInit();
+	return (*(*mm).globals).getChars(name);
+}
+
 std::string MSCode::getText (int32_t textID) 
 {
 	checkInit();

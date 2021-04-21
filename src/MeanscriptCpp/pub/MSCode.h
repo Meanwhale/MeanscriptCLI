@@ -24,6 +24,7 @@ int32_t getInt (std::string name);
 float getFloat (std::string name);
 std::string getText (std::string name);
 std::string getText (int32_t textID);
+std::string getChars (std::string name);
 MSData getData (std::string name);
 MSDataArray getArray (std::string name);
 void printCode();

@@ -53,7 +53,7 @@ namespace meanscript
 	}
 	void MStdOutPrint::close() { }
 
-	// Standard print
+	// Null, empty print
 
 	MSNullPrint::MSNullPrint()
 	{
@@ -146,6 +146,62 @@ namespace meanscript
 		fo->close();
 	}
 	
+	// MS file print
+
+	MSFilePrint::MSFilePrint(std::string folderName, std::string className, std::string extension)
+	{
+		std::string fileName = folderName;
+		fileName += className;
+		fileName += extension;
+		fo = new std::ofstream();
+		fo->open(fileName, std::ios::out);
+		if (!fo->is_open())
+		{
+			printer().print("file not found: ").print(fileName).endLine();
+			ERROR("MSFilePrint: exit");
+		}
+		else
+		{
+			printer().print("write file: ").print(fileName).endLine();
+		}
+	}
+
+	void MSFilePrint::writeByte(uint8_t x)
+	{
+		*fo << x;
+	}
+
+	MSOutputPrint& MSFilePrint::print(uint8_t x)
+	{
+		*fo << x;
+		return (*this);
+	}
+
+	MSOutputPrint& MSFilePrint::print(int32_t x)
+	{
+		*fo << x;
+		return (*this);
+	}
+
+	MSOutputPrint& MSFilePrint::print(std::string x)
+	{
+		*fo << x;
+		return (*this);
+	}
+
+	MSOutputPrint& MSFilePrint::print(float x)
+	{
+		*fo << x;
+		return (*this);
+	}
+
+	void MSFilePrint::close()
+	{
+		if (!fo->is_open()) return;
+		fo->flush();
+		fo->close();
+	}
+
 	// MS file input stream
 	
 	MSFileInStream::MSFileInStream(const char * fileName){
@@ -204,6 +260,11 @@ namespace meanscript
 		unsigned char * b = new unsigned char[size];
 		for (int i = 0; i < size; i++) b[i] = c[i];
 		return b;
+	}
+
+	bool compare(const std::string& a, const std::string& b)
+	{
+		return a.compare(b) == 0;
 	}
 	void println(const char* format, ...)
 	{
@@ -309,6 +370,21 @@ void msAssert(bool b, const char* m)
 void msAssert(bool b, const char* m, const char* expression, const char* sourceFile, int lineNumber)
 {
 	if (!b) msError(m, expression, sourceFile, lineNumber);
+};
+void msSyntaxAssert(bool b, meanscriptcore::NodeIterator& node, const char* msg)
+{
+	msSyntaxAssert(b, &node, msg);
+}
+void msSyntaxAssert(bool b, meanscriptcore::NodeIterator* node, const char* msg)
+{
+	if (!(b))
+	{
+		std::string s = "SCRIPT ERROR AT LINE ";
+		s += msg;
+		s += " line ";
+		if (node) s += node->line();
+		msError(s.c_str(), 0, 0, -1);
+	}
 };
 
 void msError(const char* m, const char* expression, const char* sourceFile, int lineNumber)

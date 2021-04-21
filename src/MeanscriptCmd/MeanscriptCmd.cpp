@@ -42,6 +42,7 @@ void printHelp()
 	MSPRINT("  run <bytecode>                 Read and run a bytecode.\n");
 	MSPRINT("  decode <bytecode>              Read bytecode and print its content.\n");
 	MSPRINT("  view <bytecode>                Run code and view values.\n");
+	MSPRINT("  makejava <script> <module> <package> Generate Java classes.\n");
 	MSPRINT("  test                           Run unit tests.\n");
 	MSPRINT("  help                           Print help.\n");
 	MSPRINT("  version                        Print version.\n");
@@ -61,6 +62,7 @@ enum CommandType
 	CMD_RUN,
 	CMD_DECODE,
 	CMD_VIEW,
+	CMD_MAKE_JAVA,
 	CMD_TEST,
 	CMD_HELP,
 	CMD_VERSION
@@ -89,6 +91,7 @@ int execute(int argc, char* argv[])
 	else if (arg == "run") commandType = CMD_RUN;
 	else if (arg == "decode") commandType = CMD_DECODE;
 	else if (arg == "view") commandType = CMD_VIEW;
+	else if (arg == "makejava") commandType = CMD_MAKE_JAVA;
 	else if (arg == "test") commandType = CMD_TEST;
 	else if (arg == "help") commandType = CMD_HELP;
 	else if (arg == "version") commandType = CMD_VERSION;
@@ -197,6 +200,36 @@ int execute(int argc, char* argv[])
 			
 			m.run();
 			m.printData();
+		}
+		break;
+	case CMD_MAKE_JAVA:
+		{
+			// makejava <script> <module> <package> <target folder> Generate Java classes.
+			if (argc != i + 3)
+			{
+				MSPRINT("makejava: wrong number of arguments\n");
+				return -1;
+			}
+			string script = argv[i];
+			string module = argv[i + 1];
+			string package = argv[i + 2];
+
+			MSPRINT("make Java classes!")
+				.print("\nscript: ").print(script)
+				.print("\nmodule: ").print(module)
+				.print("\npackage: ").print(package).endLine();
+
+			MSFileInStream fis = getInput(script.c_str(), true);
+			MSCode m(fis, globalConfig.STREAM_SCRIPT);
+			fis.close();
+			m.run();
+
+			string outputDir = std::getenv("MS_OUTPUT");
+			outputDir += meanscript::filePathSeparator();
+
+			meanscriptcore::ClassMaker cm;
+			cm.makeJava(m.getMM()->byteCode->code, package, outputDir);
+
 		}
 		break;
 	case CMD_TEST:

@@ -14,10 +14,6 @@
 #define CAT ).print(
 #define CATHEX ).printHex(
 #define DEBUG(x) {x;}
-//#define PR(a) printer().print(a)
-//#define VR(a) verbose().print(a)
-//#define X(a) ).print(a
-#define XO .endLine()
 #define ERROR_PRINT(a) errorPrinter().print(a).endLine()
 #define ERROR_PRINTN(a) errorPrinter().print(a)
 #define PRINT(a) printer().print(a).endLine()
@@ -29,6 +25,13 @@
 void msAssert(bool b, const char*);
 void msAssert(bool b, const char*, const char*, const char*, int);
 void msError(const char*, const char*, const char*, int);
+
+namespace meanscriptcore
+{
+	class NodeIterator;
+}
+void msSyntaxAssert(bool b, meanscriptcore::NodeIterator* node, const char* msg);
+void msSyntaxAssert(bool b, meanscriptcore::NodeIterator& node, const char* msg);
 
 #if defined MS_DEBUG && defined MS_RELEASE
 #error either MS_DEBUG or MS_RELEASE must be defined, not both
@@ -55,6 +58,7 @@ void msError(const char*, const char*, const char*, int);
 //			* MS_DEBUG: trigger break.
 //			* MS_RELEASE: Print info and source code location, and exit.
 
+// NOTE: print in-line so that CAT works!
 
 #ifdef USE_DEBUG_BREAK
 #define ASSERT(x,msg) {if (!(x)) {__debugbreak(); std::exit(-1);}}
@@ -69,7 +73,7 @@ void msError(const char*, const char*, const char*, int);
 #else
 #define CHECK(b,error,msg) {if (!(b)) {errorPrinter().print(msg).endLine(); ERROR("");}}
 #endif
-#define SYNTAX(b,node,msg) {if (!(b)) {errorPrinter().print("SCRIPT ERROR AT LINE ").print(node.line()).endLine().print(msg).endLine(); std::exit(-1);}}
+#define SYNTAX(b,node,msg) {if (!(b)) {errorPrinter().print(msg).endLine(); ERROR("");}}
 #define TEST(b) ASSERT(b,"test error")
 
 #define TRY try {
@@ -88,11 +92,9 @@ namespace meanscript
 	class MSInputArray;
 	class MSInputStream;
 	class MSOutputArray;
-	class MSOutputPrint;
+	//class MSOutputPrint;
 	class MSOutputStream;
 	class MSWriter;
-	
-
 }
 
 namespace meanscriptcore
@@ -128,6 +130,8 @@ namespace meanscriptcore
 #include "core/StructDef.h" // switched place
 #include "pub/MSInputStream.h" // switched place
 #include "pub/MSOutputStream.h" // switched place
+#include "pub/MSOutputPrint.h" // switched place
+#include "core/ClassMaker.h"
 #include "core/Context.h"
 #include "core/Common.h"
 #include "core/Generator.h"
@@ -142,7 +146,6 @@ namespace meanscriptcore
 #include "pub/MSData.h"
 #include "pub/MSDataArray.h"
 #include "pub/MSOutputArray.h"
-#include "pub/MSOutputPrint.h"
 #include "pub/MSWriter.h"
 #include "pub/MSGlobal.h"
 //#include "MVarList.h"
@@ -218,17 +221,40 @@ namespace meanscript
 	class MSFileOutStream : public MSOutputStream {
 	private:
 		std::ofstream* fo;
-		
+
 		MSFileOutStream() = delete;
-		MSFileOutStream & operator = (const MSFileOutStream &) = delete;
-		MSFileOutStream & operator & () = delete;
-		MSFileOutStream * operator * () = delete;
+		MSFileOutStream& operator = (const MSFileOutStream&) = delete;
+		MSFileOutStream& operator & () = delete;
+		MSFileOutStream* operator * () = delete;
 
 	public:
 		MSFileOutStream(const MSFileOutStream&) = default;
-		MSFileOutStream(const char *);
+		MSFileOutStream(const char*);
 		~MSFileOutStream() { close(); delete fo; }
 		virtual void writeByte(uint8_t) override;
+		virtual void close() override;
+	};
+
+	class MSFilePrint : public MSOutputPrint {
+	private:
+		std::ofstream* fo;
+
+		MSFilePrint() = delete;
+		MSFilePrint& operator = (const MSFilePrint&) = delete;
+		MSFilePrint& operator & () = delete;
+		MSFilePrint* operator * () = delete;
+		MSFilePrint(const MSFilePrint&) = delete;
+
+	public:
+		MSFilePrint(std::string folderName, std::string className, std::string extension);
+		~MSFilePrint() { close(); delete fo; }
+
+		// Inherited via MSOutputPrint
+		virtual void writeByte(uint8_t) override;
+		virtual MSOutputPrint& print(uint8_t) override;
+		virtual MSOutputPrint& print(int32_t) override;
+		virtual MSOutputPrint& print(std::string) override;
+		virtual MSOutputPrint& print(float) override;
 		virtual void close() override;
 	};
 
@@ -283,10 +309,12 @@ namespace meanscript
 
 
 	typedef unsigned char byte;
-
+	
+	char filePathSeparator();
 	int length(const char *);
 	int32_t floatToIntBits(float);
 	unsigned char * copyToByteArray(const char *, int length = -1);
+	bool compare(const std::string&, const std::string&);
 
 	void println(const char* format, ...);
 	void print(const char* format, ...);

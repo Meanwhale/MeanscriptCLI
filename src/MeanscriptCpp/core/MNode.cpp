@@ -14,6 +14,11 @@ MNode::MNode (int32_t line, int32_t ch, MNode* _parent, int32_t _type, const std
 	numChildren = 0;
 }
 
+int32_t MNode::line ()
+{
+	return lineNumber;
+}
+
 void MNode::printTree (bool deep) 
 {
 	printTree(this, 0, deep);

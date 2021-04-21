@@ -61,6 +61,15 @@ std::string MSData:: getText (int32_t id)
 	return s;
 }
 
+std::string MSData::getChars (std::string name) 
+{
+	// TODO: check type
+	int32_t address = getMemberAddress(name);
+	int32_t numChars = (*dataCode)[address];
+	std::string s = readStringFromIntArray((*dataCode),  address + 1,  numChars);;
+	return s;
+}
+
 float MSData::getFloat () 
 {
 	ASSERT(getType() != MS_TYPE_FLOAT, "not a float");
@@ -141,7 +150,7 @@ int32_t MSData::getMemberTagAddress (std::string name, bool isArray)
 	
 	Array<int> nameIntsTmp(globalConfig.maxNameLength);
 	
-	stringToIntsWithSize(name, nameIntsTmp, 0);
+	stringToIntsWithSize(name, nameIntsTmp, 0, globalConfig.maxNameLength);
 	
 	// go thru members
 	
@@ -197,11 +206,19 @@ void MSData:: printData (int32_t depth, std::string name)
 	}
 	else
 	{
-		PRINT("");
 		// NOTE: similar to getMemberTagAddress()
 		
 		int32_t i = (*mm).types[getType()];
 		int32_t code = (*structCode)[i];
+		
+		if ((code & OPERATION_MASK) == OP_CHARS_DEF)
+		{
+			int32_t numChars = (*dataCode)[dataIndex + 0];
+			std::string s = readStringFromIntArray((*dataCode),  dataIndex + 1,  numChars);;
+			PRINT(s);
+			return;
+		}
+		PRINT("");
 		ASSERT((code & OPERATION_MASK) == OP_STRUCT_DEF, "printData: struct def. expected");
 		i += instrSize(code) + 1;
 		code = (*structCode)[i];

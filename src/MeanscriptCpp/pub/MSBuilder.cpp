@@ -25,6 +25,11 @@ void MSBuilder::lockCheck ()
 	ASSERT(!structLock, "Structs can't be defined after data is added");
 }
 
+Array<int> MSBuilder::getValueArray ()
+{
+	return values;
+}
+
 void MSBuilder::addType (std::string typeName, StructDef* sd) 
 {
 	lockCheck();
@@ -62,6 +67,15 @@ void MSBuilder::addText (std::string varName, std::string value)
 	values[address] = textID;
 }
 
+void MSBuilder::addChars (std::string varName, int32_t numChars, std::string text) 
+{
+	StructDef* sd = (*semantics).addCharsType(numChars);
+	int32_t address = variables.addMember(semantics, varName, (*sd).typeID);
+	int32_t maxSize = (*sd).structSize;
+	
+	stringToIntsWithSize(text, values, address, maxSize);
+}
+
 int32_t MSBuilder::createStructDef (std::string name) 
 {
 	lockCheck();
@@ -71,10 +85,17 @@ int32_t MSBuilder::createStructDef (std::string name)
 	return id;
 }
 
-void MSBuilder::addMember (int32_t structTypeID, std::string varName, int32_t memberType) 
+void MSBuilder::addCharsMember (int32_t structTypeID, std::string varName, int32_t numChars) 
 {
 	StructDef* sd = (*semantics).getType(structTypeID);
-	(*sd).addMember(varName, memberType);
+	StructDef* charsType = (*semantics).addCharsType(numChars);
+	(*sd).addMember(semantics, varName, (*charsType).typeID);
+}
+
+int32_t MSBuilder::addMember (int32_t structTypeID, std::string varName, int32_t memberType) 
+{
+	StructDef* sd = (*semantics).getType(structTypeID);
+	return (*sd).addMember(varName, memberType);
 }
 
 void MSBuilder::addArray (int32_t typeID, std::string arrayName, int32_t arraySize) 
@@ -113,6 +134,16 @@ MSWriter MSBuilder::createStruct (int32_t typeID, std::string varName)
 	return MSWriter( 		this, 		sd, 		address 		);
 }
 
+int32_t MSBuilder::createGeneratedStruct (int32_t typeID, std::string varName) 
+{
+	return variables.addMember(semantics, varName, typeID);
+}
+
+void MSBuilder:: readStructCode (Array<int> code) 
+{
+	ClassMaker::findTypes((*semantics), code);
+	ClassMaker::createStructDefs((*semantics), code);
+}
 
 void MSBuilder::generate () 
 {
@@ -125,7 +156,7 @@ void MSBuilder::generate ()
 	// TODO: same as in Generator = make a function (?)
 	
 	int32_t numTexts = texts.size();
-	const char ** textArray = new const char * [numTexts];
+	Array<std::string>textArray(numTexts);
 	
 	for (const auto&  entry :  texts)
 	{
@@ -138,8 +169,6 @@ void MSBuilder::generate ()
 	{
 		(*byteCode).codeTop = addTextInstruction(textArray[i], OP_ADD_TEXT, (*byteCode).code, (*byteCode).codeTop);
 	}
-
-	{ delete[] textArray; textArray = 0; };
 
 	// initialize  values
 
