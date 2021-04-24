@@ -30,6 +30,7 @@ int a                   // define an integer 'a' with a default value (0)
 int a: 5                // define it with an initial value of 5
 float f: 123.456        // define a floating-point (32-bit decimal) number
 text name: "Jack"       // define an immutable string
+chars [12] ch: "Jill"   // define a mutable, fixed-sized string (max. 21 bytes)
 bool b                  // define a boolean
 
 // Function calls can be of two formats:
