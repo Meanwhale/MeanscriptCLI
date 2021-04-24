@@ -88,6 +88,8 @@ For example, if there's an array of structs, and the struct has an array member,
 public int get_member_corner_x_at(int memberIndex,int cornerIndex) { ... }
 ```
 
+Array access functions check that the indexes are inside boundaries.
+
 ### Generated classes
 
 ```java
