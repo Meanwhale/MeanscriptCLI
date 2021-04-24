@@ -18,8 +18,8 @@ while keeping it compact and easy to use.
 * **Scripting language** to store and transfer data using variables, data structures, and functions.
 * **Bytecode format** translated from a script or generated from source code.
 * **Command line interface** (CLI) to compile and run code from a terminal.
-* **C++ library** to translate scipts, and read and write bytecode data from C++ source code.
-<!--* **Generate Java code** to serialize data structures, like Protocol Buffers does.-->
+* **C++ and Java library** to translate scipts, and read and write bytecode data from C++ and Java source code.
+* **Generate Java code** to read and write data structures.
 
 <!-- * **Parser:** convert text script to bytecode
 * Bytecode **interpreter:** execute bytecode instructions
@@ -61,18 +61,6 @@ meanwhale@gmail.com<br>
 https://twitter.com/TheMeanwhale
 
 
-## Project Content
-
-This project contains
-
-* C++ source code for Meanscript library
-* Command line tool
-* Demo program
-* Visual Studio (2017) solution (_src_ folder)
-* _Makefile_ for Linux build is in the root folder
-
--->
-
 ## Build
 
 ### Microsoft Visual C++
@@ -86,17 +74,17 @@ This project contains
 
 * Requirement: GCC 6.1 or higher
 * Run `make` at project's root folder to build a command line tool
-* `make demo`: demo project
-* `make debug`: CLI debug build
+<!-- * `make demo`: demo project -->
+* `make debug`: CLI debug build for memory debugging
 
 Executables are built to `bin/` folder.
 Add it to your `PATH` environment variable to run the executables from any folder.
 
-## 5 Minutes Tutorial
+## Quick Start
 
 <!--### Hello world-->
 
-Create a text file `hello.ms` that contains:
+Build a `mean` executable with instructions above. Then create a text file `hello.ms` that contains:
 
 ```
 prints "Hello world!"
@@ -150,6 +138,31 @@ int main()
 ```
 
 Compile and run `meandemo` to see the result!
+
+### Java example
+
+Java library code is under `java` folder in this project.
+To use Meanscript in your Java source code, include that folder to your Java path.
+Import the packages:
+
+```
+import net.meanscript.*;
+import net.meanscript.java.*;
+```
+
+Then you can try to run a small Meanscript script with this code:
+
+```
+MSCode m = new MSCode();
+m.compileAndRun("int a: 5");
+System.out.println("a = " + m.getInt("a"));
+```
+
+It should print
+
+```
+a = 5
+```
 
 ## To be continued...
 
