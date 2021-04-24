@@ -197,3 +197,28 @@ public class vec extends IData
   public int         get_name_max_chars() { return 7; }
 }
 ```
+
+## Use example
+
+Here's a small example how to write and read data with generated classes:
+
+```java
+// create a MSBuilder and create a 'person' called 'boss'
+
+MSBuilder builder = ModuleMS.getBuilder();
+person p = new person(builder, "boss");
+p.set_corner_x_at(2, 789); // assign some member variable
+builder.generate();
+
+// now you can write the data to a file, or something
+
+// try reading data with an MSCode object		
+
+MSCode code = builder.createMS();
+
+// get access to a 'person' data
+person p2 = new person(code, "boss");
+
+// prints "789"
+System.out.println("boss corner: " + p2.get_corner_x_at(2));
+```
