@@ -5,7 +5,7 @@ Class maker generates source code for **serializing fixed-sized data structures*
 The structures can contain following type of members/variables:
  * ints and floats
  * fixed-leght text
- * user defined data structures (classes)
+ * user-defined data structures (classes)
  * arrays of anything above
 
 You can use generated classes to create data with `MSBuilder`.
