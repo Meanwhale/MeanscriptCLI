@@ -1,14 +1,21 @@
 # Class Maker
 
-Class maker generates source code for serializing fixed-sized data structures (classes).
+Class maker generates source code for **serializing fixed-sized data structures** (classes).
 
-The structures can contain
+The structures can contain following type of members/variables:
  * ints and floats
  * fixed-leght text
- * other data structures
+ * user defined data structures (classes)
  * arrays of anything above
 
-It's a work-in-progress and generates only Java for now.
+You can use generated classes to create data with `MSBuilder`.
+It writes data to an integer array, and with the generated classes you get direct access to the array.
+Then you can use a `MSOutputStream`'s subclass to write the data (array) to a file, network, etc.
+
+Use `MSCode` to read data. Internally the data is saved to an integer array, like with `MSBuilder`.
+Generated classes can be used to read data directly from the array.
+
+_This feature is work-in-progress and generates only Java for now._
 
 ## Simple example
 
