@@ -82,6 +82,13 @@ struct group [
 ```
 
 Class maker genearates three Java classes from it. Direct accesses to member structures and arrays are generated recursively.
+For example, if there's an array of structs, and the struct has an array member, you can access the member directly like this:
+
+```
+public int get_member_corner_x_at(int memberIndex,int cornerIndex) { ... }
+```
+
+### Generated classes
 
 ```java
 public class group extends IData
