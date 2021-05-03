@@ -1,21 +1,22 @@
 # Class Maker
 
-Class maker generates source code for **serializing fixed-sized data structures** (classes).
+Class maker generates source code for **serializing fixed-sized data structures**.
 
 The structures can contain following type of members/variables:
  * ints and floats
  * fixed-leght text
  * user-defined data structures (classes)
- * arrays of anything above
+ * arrays
 
-You can use generated classes to create data with `MSBuilder`.
-It writes data to an integer array, and with the generated classes you get direct access to the array.
-Then you can use a `MSOutputStream`'s subclass to write the data (array) to a file, network, etc.
+You can use generated classes to save data with `MSBuilder`.
+Internally, it uses an integer array to save all types of data.
+You get direct access to the array with generated classes.
+Use a `MSOutputStream`'s subclass to write the data (array) to a file, network, etc.
 
 Use `MSCode` to read data. Internally the data is saved to an integer array, like with `MSBuilder`.
 Generated classes can be used to read data directly from the array.
 
-_This feature is work-in-progress and generates only Java for now._
+_This feature is work-in-progress and generates only Java code for now._
 
 ## Simple example
 
@@ -59,13 +60,14 @@ There's two public constructors to access the data structure.
 You can create a `vec` with a name using `MSBuilder` when writing data, or
 you can get an access to a `vec` from `MSCode` when reading data.
 The third constructor is to create a `vec` object from other generated class that has a `vec` as a member.
+**See _Use example_ below for a code example**.
 
 When reading or writing data with a generated class, the get and set functions access directly to the integer array where all bytecode is saved.
-All access happens in a constant time (_O(1)_ time complexity) without any extra memory allocation.
+All access happens in a constant time (_O(1)_ time complexity) without any extra memory allocations.
 
 ## Advanced Example
 
-Here's a group of data structures that has references to each other:
+Here's a group of data structures with structure members:
 
 ```
 struct vec [
@@ -209,7 +211,7 @@ public class vec extends IData
 
 ## Use example
 
-Here's a small example how to write and read data with generated classes:
+Here's a small Java example how to write and read data with generated classes:
 
 ```java
 // create a MSBuilder and create a 'person' called 'boss'
@@ -219,7 +221,8 @@ person p = new person(builder, "boss");
 p.set_corner_x_at(2, 789); // assign some member variable
 builder.generate();
 
-// now you can write the data to a file, or something
+// now you can write the data to a file, or something:
+// call builder.write(os), where 'os' inherts MSOutputStream
 
 // try reading data with an MSCode object		
 
