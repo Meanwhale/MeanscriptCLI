@@ -99,38 +99,92 @@ For example, compiling this script
 
 ```
 int a: 5
+text foo: "bar"
+struct person [text name, int id] 
+func int increase [int foo] {
+  return (sum foo 1)
+}
 ```
 
-results this bytecode:
+results this bytecode (hex codes, starting with `0x`, are operation codes (`OP`)and others are operation data):
 
 ```
-address      operation or data   description
------------  ------------------  ------------------------------------
-      0:     0x15010102          OPERATION: start init
-      1:     1    
-      2:     0x08030000          OPERATION: struct definition
-      3:     6    
-      4:     1651469415    
-      5:     27745    
-      6:     0x1d020002          OPERATION: member name
-      7:     1    
-      8:     97    
-      9:     0x09020001          OPERATION: struct member
-      10:    0    
-      11:    1    
-      12:    0x14050000          OPERATION: function data
-      13:    0    
-      14:    19    
-      15:    1    
-      16:    -1    
-      17:    24    
-      18:    0x16000000          OPERATION: end init
-      19:    0x11010001          OPERATION: push immediate
-      20:    5    
-      21:    0x1b020000          OPERATION: pop to global
-      22:    1    
-      23:    0    
-      24:    0x05000000          OPERATION: go back
+address   operation or data   description
+--------  ------------------  ------------------------------------
+    0:    0x15010102          OP: start init
+    1:    2                   
+    2:    0x10020002          OP: text
+    3:    3                   constant text "foo", length 3
+    4:    7496034             ASCII bytes
+    5:    0x08020000          OP: struct definition
+    6:    0                   struct for global variables
+    7:    0    
+    8:    0x1d020002          OP: member name
+    9:    1                   variable "a" name
+    10:   97    
+    11:   0x09020001          OP: struct member
+    12:   0    
+    13:   1    
+    14:   0x1d020002          OP: member name
+    15:   3    
+    16:   7303014    
+    17:   0x09020002          struct member
+    18:   1    
+    19:   1    
+    20:   0x08030010          struct definition
+    21:   6    
+    22:   1936876912    
+    23:   28271    
+    24:   0x1d030002          OP: member name
+    25:   4    
+    26:   1701667182    
+    27:   0    
+    28:   0x09020002          OP: struct member
+    29:   0    
+    30:   1    
+    31:   0x1d020002          OP: member name
+    32:   2    
+    33:   25705    
+    34:   0x09020001          OP: struct member
+    35:   1    
+    36:   1    
+    37:   0x14050000          OP: function data
+    38:   0    
+    39:   50    
+    40:   2    
+    41:   -1    
+    42:   60    
+    43:   0x14050000          OP: function data
+    44:   1    
+    45:   61    
+    46:   1    
+    47:   1    
+    48:   73    
+    49:   0x16000000          OP: end init
+    50:   0x11010001          OP: push immediate
+    51:   5    
+    52:   0x1b020000          OP: pop to global
+    53:   1    
+    54:   0    
+    55:   0x11010002          OP: push immediate
+    56:   1    
+    57:   0x1b020000          OP: pop to global
+    58:   1    
+    59:   1    
+    60:   0x05000000          OP: go back
+    61:   0x18020001          OP: push local
+    62:   0    
+    63:   1    
+    64:   0x11010001          OP: push immediate
+    65:   1    
+    66:   0x03010000          OP: call
+    67:   16    
+    68:   0x13010000          OP: push from reg.
+    69:   1    
+    70:   0x1c010001          OP: pop to register
+    71:   1    
+    72:   0x06000000          OP: go end
+    73:   0x05000000          OP: go back
 ```
 
 ## List of bytecode operations:
