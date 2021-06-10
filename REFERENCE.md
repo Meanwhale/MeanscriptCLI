@@ -30,7 +30,7 @@ int a                   // define an integer 'a' with a default value (0)
 int a: 5                // define it with an initial value of 5
 float f: 123.456        // define a floating-point (32-bit decimal) number
 text name: "Jack"       // define an immutable string
-chars [12] ch: "Jill"   // define a mutable, fixed-sized string (max. 21 bytes)
+chars [12] ch: "Jill"   // define a mutable, fixed-sized string (max. 12 bytes)
 bool b                  // define a boolean
 
 // Function calls can be of two formats:
@@ -114,77 +114,77 @@ address   operation or data   description
     0:    0x15010102          OP: start init
     1:    2                   
     2:    0x10020002          OP: text
-    3:    3                   constant text "foo", length 3
+    3:    3                   Constant text "foo", length 3
     4:    7496034             ASCII bytes
-    5:    0x08020000          OP: struct definition
-    6:    0                   struct for global variables
-    7:    0    
+    5:    0x08020000          OP: struct definition for global variables
+    6:    0
+    7:    0
     8:    0x1d020002          OP: member name
-    9:    1                   variable "a" name
-    10:   97    
-    11:   0x09020001          OP: struct member
-    12:   0    
-    13:   1    
-    14:   0x1d020002          OP: member name
-    15:   3    
-    16:   7303014    
-    17:   0x09020002          struct member
-    18:   1    
-    19:   1    
-    20:   0x08030010          struct definition
-    21:   6    
+    9:    1                   Variable "a" name length
+    10:   97                  ASCII character "a"
+    11:   0x09020001          OP: struct member, last bit are 0x01 for integer type (see: Bytecode format)
+    12:   0                   Member "a"'s address in global memory context
+    13:   1                   Member "a"'s size
+    14:   0x1d020002          OP: member name, 0x02 for text type
+    15:   3                   Variable "foo" name length
+    16:   7303014             ASCII characters "f", "o", and "o"
+    17:   0x09020002          OP: struct member
+    18:   1                   Member "foo"'s address in global memory context
+    19:   1                   "foo"'s size, i.e. reference to a constant text "bar"
+    20:   0x08030010          OP: struct definition for "person"
+    21:   6                   Struct name length and ASCII characters
     22:   1936876912    
     23:   28271    
     24:   0x1d030002          OP: member name
-    25:   4    
+    25:   4                   "person"'s member "name"
     26:   1701667182    
     27:   0    
-    28:   0x09020002          OP: struct member
-    29:   0    
-    30:   1    
-    31:   0x1d020002          OP: member name
+    28:   0x09020002          OP: struct member: text
+    29:   0                   Member address
+    30:   1                   Member size
+    31:   0x1d020002          OP: member name "id"
     32:   2    
     33:   25705    
     34:   0x09020001          OP: struct member
     35:   1    
     36:   1    
-    37:   0x14050000          OP: function data
-    38:   0    
-    39:   50    
-    40:   2    
-    41:   -1    
-    42:   60    
-    43:   0x14050000          OP: function data
-    44:   1    
+    37:   0x14050000          OP: function data for global variable assignments
+    38:   0                   Function ID
+    39:   50                  Function start address, after "OP: end init"
+    40:   2                   Function's local variable's size
+    41:   -1                  Function argument's size
+    42:   60                  Function end address
+    43:   0x14050000          OP: function data for function "increase"
+    44:   1                   (see above)
     45:   61    
     46:   1    
     47:   1    
     48:   73    
     49:   0x16000000          OP: end init
-    50:   0x11010001          OP: push immediate
-    51:   5    
-    52:   0x1b020000          OP: pop to global
-    53:   1    
-    54:   0    
-    55:   0x11010002          OP: push immediate
-    56:   1    
+    50:   0x11010001          OP: push immediate.                       <--- START GLOBAL FUNCTION
+    51:   5                   Assignment value of expression "int a: 5"
+    52:   0x1b020000          OP: pop to global. Write the pushed value to global address
+    53:   1                   Data size
+    54:   0                   Data address
+    55:   0x11010002          OP: push immediate. Assignment expression "text foo: "bar""
+    56:   1                   ID of constant text "bar"
     57:   0x1b020000          OP: pop to global
-    58:   1    
-    59:   1    
-    60:   0x05000000          OP: go back
-    61:   0x18020001          OP: push local
-    62:   0    
-    63:   1    
+    58:   1                   Data size
+    59:   1                   Data address
+    60:   0x05000000          OP: go back                               <--- END GLOBAL FUNCTION
+    61:   0x18020001          OP: push local, type 0x01 for integer     <--- START FUNCTION "increase"
+    62:   0                   Push function argument "foo" to stack
+    63:   1
     64:   0x11010001          OP: push immediate
-    65:   1    
+    65:   1                   Push value of 1 to stack
     66:   0x03010000          OP: call
-    67:   16    
+    67:   16                  Call internal function "sum". Arguments are pushed to stack before.
     68:   0x13010000          OP: push from reg.
-    69:   1    
+    69:   1                   Push return value from register to stack.
     70:   0x1c010001          OP: pop to register
-    71:   1    
+    71:   1                   Write return value to register for function's return value.
     72:   0x06000000          OP: go end
-    73:   0x05000000          OP: go back
+    73:   0x05000000          OP: go back                               <--- END FUNCTION "increase"
 ```
 
 ## List of bytecode operations:
