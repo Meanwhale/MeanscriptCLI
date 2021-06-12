@@ -1,5 +1,5 @@
 
-<img src=nutshell.png>
+<!-- <img src=nutshell.png> -->
 
 ## Command line interface (CLI) and C++ library for Meanscript
 
@@ -20,6 +20,60 @@ while keeping it compact and easy to use. It's working with C++, C#, and Java.
 * **C++ and Java library** to translate scipts, and read and write bytecode data from C++ and Java source code.
 * **Generate Java code** to read and write data structures.
 
+<img src=rnd/circle.png>
+
+## Examples
+
+<ul>
+<li>Save data to a text file in Meanscript syntax:
+
+```
+text name: “Jack”
+int age: 43
+```
+
+<li>Read data from your source code (example in Java):
+
+```java
+String name = ms.getText(“name”);
+int age = ms.getInt(“age”);
+```
+
+<li>Define structures to save formatted data space-savingly:
+
+```
+struct person [
+  vec coordinates,
+  text name,
+  int age]
+
+person john: [56,78], "John Doe", 28
+person jane: [96,64], "Jane Doe", 34
+```
+
+<li>Read data from structures from your source code:
+
+```java
+MSData person = code.getData("john");
+print(person.getText("name")); // prints "John Doe"
+```
+
+<li>Save data to a bytecode file from your source code:
+
+```java
+MSBuilder builder ("example");
+builder.addText("name","Jack");
+builder.addInt("age", 43);
+MSFileOutStream output = getOutput("example.mb", true);
+builder.write(output);
+```
+
+<li>By overriding Meanscript API's stream reading and writing classes, you can read and write data from/to anywhere, like custom network connection.
+
+<li>Use **class maker** to generate classes from Meanscript structures to read and write formatted data (see [CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md)).
+
+ </ul>
+
 <!-- * **Parser:** convert text script to bytecode
 * Bytecode **interpreter:** execute bytecode instructions
 * **MSCode:** access bytecode data from your source code
@@ -30,10 +84,10 @@ while keeping it compact and easy to use. It's working with C++, C#, and Java.
 * Create custom input/output streams to read/write data
 * _Web editor_ -->
 
-### New features coming up next
-* **Work-in-progress:** Generate Java/C#/C++ code to serializate data. See [CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md) for more information.
+## New features coming up next
+* **Work-in-progress: Class maker** for C++ and C#, in addition to Java .
 * Enumeration (enum) data type.
-* Support for C#, in addition to C++ and Java.
+* C# API library, in addition to C++ and Java.
 * Custom data types and callbacks (called from script or RPC).
 
 <!--Meanscript is implemented in syntax that is common to C++, C#, and Java, with a lot of macros (GCC).
