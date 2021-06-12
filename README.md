@@ -19,7 +19,7 @@ while keeping it compact and easy to use. It's working with C++, C#, and Java.
 * **Scripting language** to store and transfer data using variables, data structures, and functions.
 * **Bytecode format** translated from a script or generated from source code.
 * **Command line interface** (CLI) to compile and run code from a terminal.
-* **C++ and Java library** to translate scipts, and read and write bytecode data from C++ and Java source code.
+* **C++ and Java library** to translate scripts, and read and write bytecode data from C++ and Java source code.
 * **Generate Java code** to read and write data structures.
 
 
@@ -40,7 +40,7 @@ String name = ms.getText(“name”);
 int age = ms.getInt(“age”);
 ```
 
-<li>Define structures to save formatted data space-savingly:
+<li>Define structures to save formatted data space-efficiently:
 
 ```
 struct person [
@@ -69,10 +69,10 @@ MSFileOutStream output = getOutput("example.mb", true);
 builder.write(output);
 ```
 
-<li>By overriding Meanscript API's stream reading and writing classes, you can read and write data from/to anywhere, like custom network connection.
+<li>By overriding Meanscript API's stream reading and writing classes, you can read and write data from/to a custom network connection, for example.
 
-<li>Use **class maker** to generate classes from Meanscript structures to read and write formatted data (see [CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md)).
-
+ <li>Use <b>Class Maker</b> to generate classes from Meanscript structures to read and write formatted data.
+ 
  </ul>
 
 <!-- * **Parser:** convert text script to bytecode
