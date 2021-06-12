@@ -86,7 +86,7 @@ builder.write(output);
 * _Web editor_ -->
 
 ## New features coming up next
-* **Work-in-progress: Class maker** for C++ and C#, in addition to Java .
+* **Work-in-progress: Class maker** for C++ and C#, in addition to Java.
 * Enumeration (enum) data type.
 * C# API library, in addition to C++ and Java.
 * Custom data types and callbacks (called from script or RPC).
@@ -102,7 +102,7 @@ More information about Meanscript:
 
 [EXAMPLES.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/EXAMPLES.md): Script and C++ examples.<br>
 [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md): About script syntax, API, etc.<br>
-[CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md): Genearate Java classes from Meanscript structs to serialize data.<br>
+[CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md): Generate Java classes from Meanscript structs to serialize data.<br>
 [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md): About Meanscript design.
 
 ### Contact
