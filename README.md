@@ -14,13 +14,14 @@ while keeping it compact and easy to use. It's working with C++, C#, and Java.
 
 ## Featuring
 
+<img src=rnd/circle.png>
+
 * **Scripting language** to store and transfer data using variables, data structures, and functions.
 * **Bytecode format** translated from a script or generated from source code.
 * **Command line interface** (CLI) to compile and run code from a terminal.
 * **C++ and Java library** to translate scipts, and read and write bytecode data from C++ and Java source code.
 * **Generate Java code** to read and write data structures.
 
-<img src=rnd/circle.png>
 
 ## Examples
 
