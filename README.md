@@ -1,20 +1,22 @@
 
-<!-- <img src=nutshell.png> -->
+<img src=logo.png width=50%>
 
-## Command line interface (CLI) and C++ library for Meanscript
+**_Command Line Interface (CLI) and  Application Programming Interface for Java and C++_**
 
-<!-- USE CASES -->
 
-Meanscript is a **Light-weight**, **stand-alone** tool to write and read data in both human-readable **text script** and **bytecode** formats.
+meanwhale@gmail.com<br>
+https://twitter.com/TheMeanwhale
 
+<hr>
+
+Meanscript is a **Light-weight**, **stand-alone** scripting language featuring **text script** and **bytecode** formats.
 
 Meanscript is **still a prototype**, but the plan is to combine the best parts of existing techniques like XML, JSON, and Protocol Buffers,
 while keeping it compact and easy to use. It's working with C++, C#, and Java.
- 
+
+<img src=rnd/circle.png width=50%>
 
 ## Featuring
-
-<img src=rnd/circle.png>
 
 * **Scripting language** to store and transfer data using variables, data structures, and functions.
 * **Bytecode format** translated from a script or generated from source code.
@@ -104,18 +106,6 @@ More information about Meanscript:
 [REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md): About script syntax, API, etc.<br>
 [CLASS_MAKER.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/CLASS_MAKER.md): Generate Java classes from Meanscript structs to serialize data.<br>
 [ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md): About Meanscript design.
-
-### Contact
-
-If you have any questions, comments, or ideas, don't hesitate to send a message!
-
-<!--
-**Discord chat**<br>
-https://discord.gg/R4Rhr7E
--->
-
-meanwhale@gmail.com<br>
-https://twitter.com/TheMeanwhale
 
 
 ## How to Build CLI
@@ -221,16 +211,13 @@ It should print
 a = 5
 ```
 
-## To be continued...
+## Contact
 
-Meanscript is still work-in-progress, so stay connected for further updates by **Starring** this project and/or Twitter:
+Meanscript is still work-in-progress, so stay connected for further updates by **Starring** this project and/or Twitter.
 
+If you have any questions, comments, or ideas, don't hesitate to send a message!
+
+meanwhale@gmail.com<br>
 https://twitter.com/TheMeanwhale
-
-Check out
-[ABOUT.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/ABOUT.md)
-and
-[REFERENCE.md](https://github.com/Meanwhale/MeanscriptCLI/blob/master/REFERENCE.md)
-for more information.
 
 _Cheers, Juha H._
