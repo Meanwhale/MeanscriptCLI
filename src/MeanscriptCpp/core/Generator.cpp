@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -35,19 +34,19 @@ ByteCode* Generator::generate ()
 	
 	// add texts in numeral order, id = 0, 1, 2, 3, ...
 	int32_t numTexts = (*tree).texts.size();
-	Array<std::string>textArray(numTexts);
+	Array<const MSText*>textArray(numTexts);
 	
 	for (const auto&  entry :  (*tree).texts)
 	{
 		// (key, value) = (text, id)
 		int32_t id = entry.second;
 		ASSERT(id >= 0 && id < numTexts, "unexpected text ID");
-		textArray[id] = entry.first.c_str();
+		textArray[id] = (&(entry.first));
 	}
 	// skip text 0: empty
 	for (int32_t i=1; i<numTexts; i++)
 	{
-		bc.codeTop = addTextInstruction(textArray[i], OP_ADD_TEXT, bc.code, bc.codeTop);
+		bc.codeTop = addTextInstruction((*textArray[i]), OP_ADD_TEXT, bc.code, bc.codeTop);
 	}
 	
 	// define structure types
@@ -143,7 +142,7 @@ void Generator::generateCodeBlock (NodeIterator it)
 		}
 		else
 		{
-			ERROR("expression expected");
+			SYNTAX(false, it, "expression expected");
 		}
 	}
 }
@@ -162,11 +161,11 @@ void Generator::generateExpression (NodeIterator it)
 		{
 			generateFunctionCall(it, context);
 		}
-		else if ((common.callbackIDs.find( it.data()) != common.callbackIDs.end()))
+		else if ((common.callbackIDs.find( (*it.data())) != common.callbackIDs.end()))
 		{
 			generateCallbackCall(it);
 		}
-		else if(((*currentContext).variables.memberNames.find( it.data()) != (*currentContext).variables.memberNames.end()))
+		else if(((*currentContext).variables.memberNames.find( (*it.data())) != (*currentContext).variables.memberNames.end()))
 		{
 			generateAssignment(it);
 		}
@@ -181,10 +180,10 @@ void Generator::generateExpression (NodeIterator it)
 				it.toNext();
 			}
 
-			SYNTAX(((*currentContext).variables.memberNames.find( it.data()) != (*currentContext).variables.memberNames.end()), it, "unknown variable: " CAT it.data());
+			SYNTAX(((*currentContext).variables.memberNames.find( (*it.data())) != (*currentContext).variables.memberNames.end()), it, "unknown variable: " CAT (*it.data()));
 			if (it.hasNext()) generateAssignment(it);
 		}
-		else if ((compare(it.data(), keywords[KEYWORD_RETURN_ID])))
+		else if ((*(it.data())).match(keywords[KEYWORD_RETURN_ID]))
 		{
 			VERBOSE("Generate a return call");
 			SYNTAX(it.hasNext(),it,  "'return' is missing a value"); // TODO: return from a void context
@@ -199,17 +198,17 @@ void Generator::generateExpression (NodeIterator it)
 			bc.addWord((*sem.getType((*currentContext).returnType, (&(it)))).structSize);
 			bc.addInstruction(OP_GO_END, 0 , 0);
 		}
-		else if ((compare(it.data(), keywords[KEYWORD_STRUCT_ID])))
+		else if ((*(it.data())).match(keywords[KEYWORD_STRUCT_ID]))
 		{
 			VERBOSE("Skip a struct definition");
 		}
-		else if ((compare(it.data(), keywords[KEYWORD_FUNC_ID])))
+		else if ((*(it.data())).match(keywords[KEYWORD_FUNC_ID]))
 		{
 			VERBOSE("Skip a function definition for now");
 		}
 		else
 		{
-			SYNTAX(false, it, "unknown word: " CAT it.data().c_str());
+			SYNTAX(false, it, "unknown word: " CAT (*it.data()));
 		}
 	}
 	else
@@ -239,8 +238,11 @@ MCallback* Generator::generateCallbackCall (NodeIterator it)
 	int32_t callbackID = nameTreeGet(common.callbackIDs, it.data());
 	MCallback* callback = common.callbacks[callbackID];
 	VERBOSE("Callback call, id " CAT callbackID);
-	it.toNext();
-	callArgumentPush(it.copy(), (*callback).argStruct, (*(*callback).argStruct).numMembers);
+	if ((*(*callback).argStruct).numMembers > 0)
+	{
+		it.toNext();
+		callArgumentPush(it.copy(), (*callback).argStruct, (*(*callback).argStruct).numMembers);
+	}
 	bc.addInstructionWithData(OP_CALLBACK_CALL, 1, 0, callbackID);
 	return callback;
 }
@@ -423,10 +425,10 @@ void Generator::argumentStructPush (NodeIterator it, StructDef* sd, int32_t numA
 	SYNTAX(!(it.hasNext()) && argIndex == numArgs, it, "wrong number of arguments");
 }
 
-bool Generator::isFunctionOrCallback (std::string name)
+bool Generator::isFunctionOrCallback (MSText* name)
 {
 	Context* context = sem.findContext(name);
-	if (context == 0) return ((common.callbackIDs.find( name) != common.callbackIDs.end()));
+	if (context == 0) return ((common.callbackIDs.find( (*name)) != common.callbackIDs.end()));
 	return true;
 }
 
@@ -437,7 +439,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 	int32_t lastOffsetCodeIndex = -1;
 	int32_t arrayItemCount = -1;
 	
-	std::string data = it.data();
+	MSText* data = it.data();
 	
 	StructDef* currentStruct = (&((*currentContext).variables));
 	int32_t memberTag = (*currentStruct).getMemberTag(data);
@@ -501,7 +503,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 				SYNTAX(!it.hasNext(), it, "array index expected");
 				
 				// array index (number) expected");
-				int32_t arrayIndex = std::stoi(it.data());
+				int32_t arrayIndex = std::stoi((*it.data()).getString());
 				// mul. size * index, and plus one as the array size is at [0]
 				SYNTAX(arrayIndex >= 0 && arrayIndex < arrayItemCount, it, "index out of range: " CAT arrayIndex CAT " of " CAT arrayItemCount);
 				size = itemSize;
@@ -527,7 +529,8 @@ VarGen Generator::resolveMember (NodeIterator & it)
 					// create a auxiliar variable
 					std::string auxAddressName = "~";
 					auxAddressName += (*currentContext).variables.structSize;
-					auxAddress = (*currentStruct).addMember(auxAddressName, MS_TYPE_INT);
+					MSText tmp (auxAddressName);
+					auxAddress = (*currentStruct).addMember((&(tmp)), MS_TYPE_INT, 1);
 				}
 				
 				// write index value to variable
@@ -579,7 +582,7 @@ VarGen Generator::resolveMember (NodeIterator & it)
 
 void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_t arrayItemCount) 
 {
-	VERBOSE("Assign an argument [" CAT it.data() CAT "]");
+	VERBOSE("Assign an argument [" CAT (*it.data()) CAT "]");
 	
 	int32_t targetType = (int32_t)(targetTag & VALUE_TYPE_MASK);
 	
@@ -595,26 +598,67 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 		return;
 	}
 	
-	if (it.type() == NT_NUMBER_TOKEN)
+	if (it.type() == NT_HEX_TOKEN)
 	{
 		if (targetType == MS_TYPE_INT)
 		{
-			int32_t number = std::stoi(it.data());
+			int64_t number = parseHex((*(it.data())).getString(), 8);
+			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_INT, int64lowBits(number));
+			return;
+		}
+		else if (targetType == MS_TYPE_INT64)
+		{
+			int64_t number = parseHex((*(it.data())).getString(), 16);
+			bc.addInstruction(OP_PUSH_IMMEDIATE, 2, MS_TYPE_INT64);
+			bc.addWord(int64highBits(number));
+			bc.addWord(int64lowBits(number));
+			return;
+		}
+		else
+		{
+			SYNTAX(false, it, "number error");
+		}
+	}
+	else if (it.type() == NT_NUMBER_TOKEN)
+	{
+		if (targetType == MS_TYPE_INT)
+		{
+			int32_t number = std::stoi((*(it.data())).getString());
 			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_INT, number);
 			return;
 		}
-		else 
+		else if (targetType == MS_TYPE_INT64)
 		{
-			SYNTAX(targetType == MS_TYPE_FLOAT, it, "number expected");
-			float f = std::stof(it.data());
+			int64_t number = std::stoll((*(it.data())).getString());
+			bc.addInstruction(OP_PUSH_IMMEDIATE, 2, MS_TYPE_INT64);
+			bc.addWord(int64highBits(number));
+			bc.addWord(int64lowBits(number));
+			return;
+		}
+		else if (targetType == MS_TYPE_FLOAT)
+		{
+			float f = std::stof((*it.data()).getString());
 			int32_t floatToInt = floatToIntBits(f);
 			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_FLOAT, floatToInt);
 			return;
 		}
+		else if (targetType == MS_TYPE_FLOAT64)
+		{
+			double f = std::stod((*(it.data())).getString());
+			int64_t number = ((int64_t&)(*(&f)));
+			bc.addInstruction(OP_PUSH_IMMEDIATE, 2, MS_TYPE_FLOAT64);
+			bc.addWord(int64highBits(number));
+			bc.addWord(int64lowBits(number));
+			return;
+		}
+		else
+		{
+			SYNTAX(false, it, "number error");
+		}
 	}
 	else if (it.type() == NT_TEXT)
 	{
-		ASSERT(((*tree).texts.find( it.data()) != (*tree).texts.end()), "text not found");
+		ASSERT(((*tree).texts.find( (*it.data())) != (*tree).texts.end()), "text not found");
 		int32_t textID = nameTreeGet((*tree).texts, it.data());
 		if (targetType == MS_TYPE_TEXT)
 		{
@@ -645,7 +689,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 			bc.addInstructionWithData(OP_PUSH_REG_TO_STACK, 1, MS_TYPE_VOID, (*returnData).structSize);
 			return;
 		}
-		else if ((common.callbackIDs.find( it.data()) != common.callbackIDs.end()))
+		else if ((common.callbackIDs.find( (*it.data())) != common.callbackIDs.end()))
 		{
 			
 			// PUSH A CALLBACK ARGUMENT
@@ -759,4 +803,3 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 
 
 } // namespace meanscript(core)
-// C++ END

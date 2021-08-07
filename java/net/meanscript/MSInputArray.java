@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSInputArray extends MSInputStream {
 byte buffer [];
 int size;
@@ -22,7 +17,7 @@ public MSInputArray (MSOutputArray output)
 
 public MSInputArray (String s)
 {
-	buffer =  s.getBytes();
+	buffer =  s.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 	size = buffer.length;
 	index = 0;
 }

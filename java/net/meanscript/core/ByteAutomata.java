@@ -1,18 +1,13 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class ByteAutomata extends MC {
  boolean ok;
  byte[] tr;
  byte currentInput;
  byte currentState;
  java.util.TreeMap<Integer, String> stateNames = new java.util.TreeMap<Integer, String>();
- MJAction actions[]=new MJAction[64];
+ MJAction actions[]=new MJAction[128];
  byte stateCounter;
  byte actionCounter; // 0 = end
 
@@ -39,6 +34,7 @@ public ByteAutomata()
 	actionCounter = 0;
 	tr = new  byte[ MAX_STATES * 256];
 	for (int i=0; i<MAX_STATES * 256; i++) tr[i] = (byte)0xff;
+	for (int i=0; i<128; i++) actions[i] = null;
 
 	inputByte = 0;
 	index = 0;
@@ -82,7 +78,7 @@ public void transition (byte state, String input, MJAction action)
 		actionIndex = addAction(action);
 	}
 
-	byte[] bytes = input.getBytes();
+	byte[] bytes = input.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
 	int i = 0;
 	while (i<input.length())
@@ -120,6 +116,7 @@ public void next (byte nextState)
 	{if (MSJava.debug) {{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Next state: " + stateNames.get( (int)currentState)).endLine();};}};
 }
 
+// NOTE: don't use exceptions. On error, use error print and set ok = false
 
 public boolean step (byte input) throws MException
 {
@@ -130,7 +127,8 @@ public boolean step (byte input) throws MException
 	if (actionIndex == 0) return true; // stay on same state and do nothing else
 	if (actionIndex == 0xff||actionIndex < 0)
 	{
-		MSJava.assertion(false, E_UNEXPECTED_CHAR, "unexpected char: '" + (input) + "'" + " #" + ((int)input));
+		MSJava.errorOut.print("unexpected char: ").printCharSymbol(input).print("").print(" code = ").print((((int) input) & 0xff)).endLine();
+
 		ok = false;
 		return false; // end
 	}
@@ -172,7 +170,7 @@ public String getString (int start, int length) throws MException
 		tmp[i] = buffer[start++ % BUFFER_SIZE];
 	}
 
-	return new String(tmp,0,length);
+	return MSJava.bytesToString(tmp,0,length);
 }
 
 public void run (MSInputStream input) throws MException
@@ -196,8 +194,6 @@ public void run (MSInputStream input) throws MException
 		{
 			stayNextStep = false;
 		}
-		{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("[ " + (char)(inputByte) + " ]").endLine();};
-
 		running = step(inputByte);
 	}
 	
@@ -206,8 +202,8 @@ public void run (MSInputStream input) throws MException
 
 public void printError ()
 {
-	MSJava.printOut.print("ERROR: parser state [" + stateNames.get( (int)currentState) + "]").endLine();
-	MSJava.printOut.print("Line " + lineNumber + ": \"").endLine();
+	MSJava.errorOut.print("ERROR: parser state [" + stateNames.get( (int)currentState) + "]");
+	MSJava.errorOut.print("Line " + lineNumber + ": \"");
 	
 	// print nearby code
 	int start = index-1;
@@ -217,9 +213,9 @@ public void printError ()
 	}
 	while (++start < index)
 	{
-		{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print((char)(buffer[start % BUFFER_SIZE])).endLine();};
+		MSJava.errorOut.print((char)(buffer[start % BUFFER_SIZE]));
 	}
-	MSJava.printOut.print("\"").endLine();
+	MSJava.errorOut.print("\"");
 }
 
 }

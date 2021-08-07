@@ -34,8 +34,12 @@ namespace meanscript
 	void MStdOutPrint::writeByte(uint8_t b) {
 		print(b);
 	}
+	MSOutputPrint& MStdOutPrint::print(const char * s) {
+		os << s;
+		return *this;
+	}
 	MSOutputPrint& MStdOutPrint::print(std::string s) {
-		os<<s;
+		os << s;
 		return *this;
 	}
 	MSOutputPrint& MStdOutPrint::print(std::int32_t i) {
@@ -51,6 +55,16 @@ namespace meanscript
 		os<<f;
 		return *this;
 	}
+	MSOutputPrint& MStdOutPrint::print(double d)
+	{
+		os << d;
+		return *this;
+	}
+	MSOutputPrint& MStdOutPrint::print(std::int64_t l)
+	{
+		os << l;
+		return *this;
+	}
 	void MStdOutPrint::close() { }
 
 	// Null, empty print
@@ -59,6 +73,9 @@ namespace meanscript
 	{
 	}
 	void MSNullPrint::writeByte(uint8_t) {
+	}
+	MSOutputPrint& MSNullPrint::print(const char *) {
+		return *this;
 	}
 	MSOutputPrint& MSNullPrint::print(std::string) {
 		return *this;
@@ -70,6 +87,12 @@ namespace meanscript
 		return *this;
 	}
 	MSOutputPrint& MSNullPrint::print(float) {
+		return *this;
+	}
+	MSOutputPrint& MSNullPrint::print(double) {
+		return *this;
+	}
+	MSOutputPrint& MSNullPrint::print(int64_t) {
 		return *this;
 	}
 	void MSNullPrint::close() { }
@@ -183,6 +206,11 @@ namespace meanscript
 		return (*this);
 	}
 
+	MSOutputPrint& MSFilePrint::print(const char * x)
+	{
+		*fo << x;
+		return (*this);
+	}
 	MSOutputPrint& MSFilePrint::print(std::string x)
 	{
 		*fo << x;
@@ -190,6 +218,20 @@ namespace meanscript
 	}
 
 	MSOutputPrint& MSFilePrint::print(float x)
+	{
+		*fo << x;
+		return (*this);
+	}
+
+
+	MSOutputPrint& MSFilePrint::print(double x)
+	{
+		*fo << x;
+		return (*this);
+	}
+
+
+	MSOutputPrint& MSFilePrint::print(int64_t x)
 	{
 		*fo << x;
 		return (*this);
@@ -239,7 +281,7 @@ namespace meanscript
 	{
 		int i = 0;
 		while (c[i] != 0)i++;
-		return i + 1;
+		return i;
 	};
 	int32_t floatToIntBits(float f)
 	{
@@ -262,7 +304,7 @@ namespace meanscript
 		return b;
 	}
 
-	bool compare(const std::string& a, const std::string& b)
+	bool compareStrings(const std::string& a, const std::string& b)
 	{
 		return a.compare(b) == 0;
 	}
@@ -279,14 +321,14 @@ namespace meanscript
 		va_start(args, format);
 		vprintf(format, args);
 	}
-	int nameTreeGet(std::map<std::string, int> & tree, std::string name)
+	int nameTreeGet(std::map<MSText, int> & tree, MSText* name)
 	{
-		if (tree.find(name) == tree.end())
+		if (tree.find(*name) == tree.end())
 		{
 			msAssert(false, "nameTreeGet");
 			return -1;
 		}
-		return tree[name];
+		return tree[*name];
 	}
 	std::string readStringFromIntArray(Array<int>& data, int offset, int count)
 	{	
@@ -358,6 +400,11 @@ namespace meanscript
 	std::string toString(float f)
 	{
 		return std::to_string(f);
+	}
+
+	void nativeTest()
+	{
+		std::cout << "C++ nativeTest: TODO" << std::endl;
 	}
 }
 

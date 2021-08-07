@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -11,11 +10,11 @@ MSBuilder::MSBuilder (std::string _packageName)
 	{ values.reset( globalConfig.builderValuesSize); values.fill(0); values.description =  "MSBuilder: values"; };
 	common = new Common();
 	byteCode = new ByteCode(common);
-	(*common).includePrimitives((*semantics));
+	(*common).initialize((*semantics));
 	structLock = false;
 	
 	textIDCounter = 0;
-	texts.insert(std::make_pair( "", textIDCounter++));;
+	texts.insert(std::make_pair( MSText(""), textIDCounter++));;
 }
 
 MSBuilder::~MSBuilder() { delete semantics; delete byteCode; delete common; };
@@ -35,42 +34,58 @@ void MSBuilder::addType (std::string typeName, StructDef* sd)
 	lockCheck();
 	int32_t id = (*semantics).typeIDCounter++;
 	(*sd).typeID = id;
-	(*semantics).addStructDef(typeName, id, sd);
+	MSText tn (typeName);
+	(*semantics).addStructDef((&(tn)), id, sd);
 }
 
 void MSBuilder::addInt (std::string name, int32_t value) 
 {
 	structLock = true;
-	ASSERT((*semantics).assumeNotReserved(name), "variable name error");
+	ASSERT((*semantics).isNameValidAndAvailable(name), "variable name error");
 	VERBOSE("BUILDER: New int: " CAT name);
-	int32_t address = variables.addMember(semantics, name, MS_TYPE_INT);
+	MSText tn (name);
+	int32_t address = variables.addMember(semantics, (&(tn)), MS_TYPE_INT);
 	values[address] = value;
+}
+void MSBuilder::addInt64 (std::string name, int64_t value) 
+{
+	structLock = true;
+	MSText tn (name);
+	ASSERT((*semantics).isNameValidAndAvailable((&(tn))), "variable name error");
+	VERBOSE("BUILDER: New int64: " CAT name);
+	int32_t address = variables.addMember(semantics, (&(tn)), MS_TYPE_INT64);
+	values[address] = int64highBits(value);
+	values[address+1] = int64lowBits(value);
 }
 
 int32_t MSBuilder::createText (std::string value) 
 {
+	MSText tmp (value);
 	structLock = true;
-	if (!(texts.find( value) != texts.end()))
+	if (!(texts.find( tmp) != texts.end()))
 	{
-		texts.insert(std::make_pair( value, textIDCounter++));;
+		texts.insert(std::make_pair( MSText(value), textIDCounter++));;
 	}
-	return nameTreeGet(texts, value);
+	return nameTreeGet(texts, (&(tmp)));
 }
 
-void MSBuilder::addText (std::string varName, std::string value) 
+void MSBuilder::addText (std::string name, std::string value) 
 {
 	structLock = true;
-	ASSERT((*semantics).assumeNotReserved(varName), "variable name error");
+	ASSERT((*semantics).isNameValidAndAvailable(name), "variable name error");
 	// add string to tree
 	int32_t textID = createText(value);
-	int32_t address = variables.addMember(semantics, varName, MS_TYPE_TEXT);
+	MSText tn (name);
+	int32_t address = variables.addMember(semantics, (&(tn)), MS_TYPE_TEXT);
 	values[address] = textID;
 }
 
-void MSBuilder::addChars (std::string varName, int32_t numChars, std::string text) 
+void MSBuilder::addChars (std::string name, int32_t numChars, std::string text) 
 {
 	StructDef* sd = (*semantics).addCharsType(numChars);
-	int32_t address = variables.addMember(semantics, varName, (*sd).typeID);
+	ASSERT((*semantics).isNameValidAndAvailable(name), "variable name error");
+	MSText tn (name);
+	int32_t address = variables.addMember(semantics, (&(tn)), (*sd).typeID);
 	int32_t maxSize = (*sd).structSize;
 	
 	stringToIntsWithSize(text, values, address, maxSize);
@@ -80,38 +95,43 @@ int32_t MSBuilder::createStructDef (std::string name)
 {
 	lockCheck();
 	int32_t id = (*semantics).typeIDCounter++;
-	StructDef* sd = new StructDef(name, id);
-	(*semantics).addStructDef(name, id, sd);
+	MSText tn (name);
+	StructDef* sd = new StructDef((&(tn)), id);
+	(*semantics).addStructDef((&(tn)), id, sd);
 	return id;
 }
 
-void MSBuilder::addCharsMember (int32_t structTypeID, std::string varName, int32_t numChars) 
+void MSBuilder::addCharsMember (int32_t structTypeID, std::string name, int32_t numChars) 
 {
 	StructDef* sd = (*semantics).getType(structTypeID);
 	StructDef* charsType = (*semantics).addCharsType(numChars);
-	(*sd).addMember(semantics, varName, (*charsType).typeID);
+	MSText tn (name);
+	(*sd).addMember(semantics, (&(tn)), (*charsType).typeID);
 }
 
-int32_t MSBuilder::addMember (int32_t structTypeID, std::string varName, int32_t memberType) 
+int32_t MSBuilder::addMember (int32_t structTypeID, std::string name, int32_t memberType) 
 {
 	StructDef* sd = (*semantics).getType(structTypeID);
-	return (*sd).addMember(varName, memberType);
+	MSText tn (name);
+	return (*sd).addMember(semantics, (&(tn)), memberType);
 }
 
 void MSBuilder::addArray (int32_t typeID, std::string arrayName, int32_t arraySize) 
 {
-	variables.addArray(semantics, arrayName, typeID, arraySize);
+	MSText tn (arrayName);
+	variables.addArray(semantics, (&(tn)), typeID, arraySize);
 }
 
 MSWriter MSBuilder::arrayItem (std::string arrayName, int32_t arrayIndex) 
 {
-	int32_t tag = variables.getMemberTag(arrayName);
+	MSText tn (arrayName);
+	int32_t tag = variables.getMemberTag((&(tn)));
 	ASSERT((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, "not an array");
-	int32_t itemCount = variables.getMemberArrayItemCount(arrayName);
+	int32_t itemCount = variables.getMemberArrayItemCount((&(tn)));
 	ASSERT(arrayIndex >= 0 && arrayIndex < itemCount, "index out of bounds: " CAT arrayIndex CAT " / " CAT itemCount);
 	StructDef* arrayItemType = (*semantics).getType((int32_t)(tag & VALUE_TYPE_MASK));
 	int32_t itemSize = (*arrayItemType).structSize;
-	int32_t address = variables.getMemberAddress(arrayName);
+	int32_t address = variables.getMemberAddress((&(tn)));
 	address += arrayIndex * itemSize;
 	
 	return MSWriter( 		this, 		arrayItemType, 		address 		);
@@ -119,24 +139,27 @@ MSWriter MSBuilder::arrayItem (std::string arrayName, int32_t arrayIndex)
 
 MSWriter MSBuilder::createStruct (std::string typeName, std::string varName) 
 {
-	StructDef* sd = (*semantics).getType(typeName);
+	MSText tn (typeName);
+	StructDef* sd = (*semantics).getType((&(tn)));
 	return createStruct((*sd).typeID, varName);
 }
 
 MSWriter MSBuilder::createStruct (int32_t typeID, std::string varName) 
 {
+	MSText* tn = new MSText(varName);
 	structLock = true;
-	ASSERT((*semantics).assumeNotReserved(varName), "variable name error");
-	VERBOSE("BUILDER: New struct: " CAT varName);
+	ASSERT((*semantics).isNameValidAndAvailable(tn), "variable name error");
+	VERBOSE("BUILDER: New struct: " CAT tn);
 	StructDef* sd = (*semantics).getType(typeID);
-	int32_t address = variables.addMember(semantics, varName, typeID);
-	
+	int32_t address = variables.addMember(semantics, tn, typeID);
+	{ delete tn; tn = 0; };
 	return MSWriter( 		this, 		sd, 		address 		);
 }
 
 int32_t MSBuilder::createGeneratedStruct (int32_t typeID, std::string varName) 
 {
-	return variables.addMember(semantics, varName, typeID);
+	MSText tn (varName);
+	return variables.addMember(semantics, (&(tn)), typeID);
 }
 
 void MSBuilder:: readStructCode (Array<int> code) 
@@ -156,18 +179,18 @@ void MSBuilder::generate ()
 	// TODO: same as in Generator = make a function (?)
 	
 	int32_t numTexts = texts.size();
-	Array<std::string>textArray(numTexts);
+	Array<const MSText*>textArray(numTexts);
 	
 	for (const auto&  entry :  texts)
 	{
 		// (key, value) = (text, id)
 		int32_t id = entry.second;
 		ASSERT(id >= 0 && id < numTexts, "unexpected text ID");
-		textArray[id] = entry.first.c_str();
+		textArray[id] = (&(entry.first));
 	}
 	for (int32_t i=1; i<numTexts; i++)
 	{
-		(*byteCode).codeTop = addTextInstruction(textArray[i], OP_ADD_TEXT, (*byteCode).code, (*byteCode).codeTop);
+		(*byteCode).codeTop = addTextInstruction((*textArray[i]), OP_ADD_TEXT, (*byteCode).code, (*byteCode).codeTop);
 	}
 
 	// initialize  values
@@ -196,4 +219,3 @@ void MSBuilder::write (MSOutputStream & output)
 
 
 } // namespace meanscript(core)
-// C++ END

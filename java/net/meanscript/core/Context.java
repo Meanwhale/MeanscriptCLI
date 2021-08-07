@@ -1,13 +1,7 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class Context extends MC {
- String name;
  int functionID;
  int returnType;
  int tagAddress;
@@ -17,10 +11,9 @@ public StructDef variables;
  int numArgs; // number of arguments in the beginning of 'variables' struct
  MNode codeNode; // code block node where the function code is
 
-public Context (String _name, int _functionID, int _returnType) throws MException
+public Context (MSText _name, int _functionID, int _returnType) throws MException
 {
 	variables = new StructDef(_name, _functionID);
-	name = _name;
 	functionID = _functionID;
 	returnType = _returnType;
 	tagAddress = -1;

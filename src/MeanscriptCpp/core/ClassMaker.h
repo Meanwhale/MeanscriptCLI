@@ -1,11 +1,9 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class ClassMaker
 {
 public:
  Semantics* semantics;
- MSCode* config;
  Array<int> offsetStack;
  Array<int> arrayItemSizeStack;
  Array<int> arrayItemCountStack;
@@ -23,4 +21,3 @@ void makeJava (Array<int> & code, std::string packageName, std::string folderNam
 ~ClassMaker();
 };
 } // namespace meanscript(core)
-// C++ header END

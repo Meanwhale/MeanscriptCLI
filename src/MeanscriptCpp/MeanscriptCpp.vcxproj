@@ -48,7 +48,7 @@
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <OutDir>$(SolutionDir)\..\bin\</OutDir>
-    <TargetName>mean</TargetName>
+    <TargetName>meancpp</TargetName>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)/MeanscriptCpp;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -111,7 +111,6 @@
     <ClInclude Include="core\StructDef.h" />
     <ClInclude Include="core\TokenTree.h" />
     <ClInclude Include="core\VarGen.h" />
-    <ClInclude Include="Link.h" />
     <ClInclude Include="NativeTest.h" />
     <ClInclude Include="MS.h" />
     <ClInclude Include="pub\MSBuilder.h" />
@@ -124,6 +123,7 @@
     <ClInclude Include="pub\MSOutputArray.h" />
     <ClInclude Include="pub\MSOutputPrint.h" />
     <ClInclude Include="pub\MSOutputStream.h" />
+    <ClInclude Include="pub\MSText.h" />
     <ClInclude Include="pub\MSWriter.h" />
     <ClInclude Include="Unique.h" />
   </ItemGroup>
@@ -157,6 +157,7 @@
     <ClCompile Include="pub\MSOutputArray.cpp" />
     <ClCompile Include="pub\MSOutputPrint.cpp" />
     <ClCompile Include="pub\MSOutputStream.cpp" />
+    <ClCompile Include="pub\MSText.cpp" />
     <ClCompile Include="pub\MSWriter.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,22 +1,17 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class MNode {
  int type;
  int numChildren;
  int lineNumber;
  int characterNumber;
- String data;
+ MSText data;
  MNode next = null;
  MNode child = null;
  MNode parent = null;
 
-public MNode (int line, int ch, MNode _parent, int _type, String _data)
+public MNode (int line, int ch, MNode _parent, int _type, MSText _data)
 {
 	data = _data;
 	lineNumber = line;

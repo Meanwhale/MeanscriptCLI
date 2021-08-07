@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -12,4 +11,3 @@ MArgs::MArgs (ByteCode* _byteCode, StructDef* _structDef, int32_t _base)
 }
 
 } // namespace meanscript(core)
-// C++ END

@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class NodeIterator
@@ -12,7 +11,7 @@ int32_t type();
 int32_t nextType();
 int32_t numChildren();
 int32_t line();
-std::string data();
+MSText* data();
 bool hasNext();
 bool hasChild();
 bool hasParent();
@@ -35,4 +34,3 @@ NodeIterator & operator = (const NodeIterator &) = delete;
 //CLASS_NAME * operator * () = delete;
 };
 } // namespace meanscript(core)
-// C++ header END

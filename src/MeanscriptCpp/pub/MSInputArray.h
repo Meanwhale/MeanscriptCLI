@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSInputArray
 : public MSInputStream
@@ -17,4 +16,3 @@ void close() override;
 virtual ~MSInputArray () {};
 };
 } // namespace meanscript(core)
-// C++ header END

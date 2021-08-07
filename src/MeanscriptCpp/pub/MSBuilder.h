@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSBuilder
 {
@@ -9,13 +8,14 @@ std::string packageName;
 meanscriptcore::StructDef & variables;
 meanscriptcore::ByteCode* byteCode;
 meanscriptcore::Common* common;
-std::map<std::string, int> texts;
+std::map<MSText, int> texts;
 int32_t textIDCounter;
 bool structLock;
 void lockCheck();
 Array<int> getValueArray();
 void addType (std::string typeName, meanscriptcore::StructDef* sd);
 void addInt(std::string n, int32_t value);
+void addInt64(std::string n, int64_t value);
 void addText(std::string varName, std::string value);
 void addChars (std::string varName, int32_t numChars, std::string text);
 int32_t createText(std::string value);
@@ -35,4 +35,3 @@ MSBuilder(std::string _packageName);
 ~MSBuilder();
 };
 } // namespace meanscript(core)
-// C++ header END

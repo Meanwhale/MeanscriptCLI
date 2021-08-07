@@ -1,11 +1,6 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class Generator extends MC {
 Context currentContext;
 TokenTree tree;
@@ -49,9 +44,9 @@ public ByteCode generate () throws MException
 	
 	// add texts in numeral order, id = 0, 1, 2, 3, ...
 	int numTexts = tree.texts.size();
-	String[] textArray = new String[numTexts];
+	 MSText[] textArray = new  MSText[numTexts];
 	
-	for(java.util.Map.Entry<String,Integer>  entry :  tree.texts.entrySet())
+	for(java.util.Map.Entry<MSText,Integer>  entry :  tree.texts.entrySet())
 	{
 		// (key, value) = (text, id)
 		int id = entry.getValue();
@@ -157,7 +152,7 @@ public void generateCodeBlock (NodeIterator it) throws MException
 		}
 		else
 		{
-			throw new MException(MC.EC_INTERNAL, "expression expected");
+			MSJava.syntaxAssertion(false, it, "expression expected");
 		}
 	}
 }
@@ -198,7 +193,7 @@ public void generateExpression (NodeIterator it) throws MException
 			MSJava.syntaxAssertion((currentContext.variables.memberNames.containsKey( it.data())), it, "unknown variable: " + it.data());
 			if (it.hasNext()) generateAssignment(it);
 		}
-		else if ((it.data().equals( keywords[KEYWORD_RETURN_ID])))
+		else if ((it.data()).match(keywords[KEYWORD_RETURN_ID]))
 		{
 			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Generate a return call").endLine();};
 			MSJava.syntaxAssertion(it.hasNext(),it,  "'return' is missing a value"); // TODO: return from a void context
@@ -213,11 +208,11 @@ public void generateExpression (NodeIterator it) throws MException
 			bc.addWord(sem.getType(currentContext.returnType, it).structSize);
 			bc.addInstruction(OP_GO_END, 0 , 0);
 		}
-		else if ((it.data().equals( keywords[KEYWORD_STRUCT_ID])))
+		else if ((it.data()).match(keywords[KEYWORD_STRUCT_ID]))
 		{
 			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Skip a struct definition").endLine();};
 		}
-		else if ((it.data().equals( keywords[KEYWORD_FUNC_ID])))
+		else if ((it.data()).match(keywords[KEYWORD_FUNC_ID]))
 		{
 			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Skip a function definition for now").endLine();};
 		}
@@ -253,8 +248,11 @@ public MCallback generateCallbackCall (NodeIterator it) throws MException
 	int callbackID = common.callbackIDs.get( it.data());
 	MCallback callback = common.callbacks[callbackID];
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Callback call, id " + callbackID).endLine();};
-	it.toNext();
-	callArgumentPush(it.copy(), callback.argStruct, callback.argStruct.numMembers);
+	if (callback.argStruct.numMembers > 0)
+	{
+		it.toNext();
+		callArgumentPush(it.copy(), callback.argStruct, callback.argStruct.numMembers);
+	}
 	bc.addInstructionWithData(OP_CALLBACK_CALL, 1, 0, callbackID);
 	return callback;
 }
@@ -437,7 +435,7 @@ public void argumentStructPush (NodeIterator it, StructDef sd, int numArgs, bool
 	MSJava.syntaxAssertion(!(it.hasNext()) && argIndex == numArgs, it, "wrong number of arguments");
 }
 
-public boolean isFunctionOrCallback (String name)
+public boolean isFunctionOrCallback (MSText name)
 {
 	Context context = sem.findContext(name);
 	if (context == null) return ((common.callbackIDs.containsKey( name)));
@@ -451,7 +449,7 @@ public VarGen resolveMember (NodeIterator it) throws MException
 	int lastOffsetCodeIndex = -1;
 	int arrayItemCount = -1;
 	
-	String data = it.data();
+	MSText data = it.data();
 	
 	StructDef currentStruct = currentContext.variables;
 	int memberTag = currentStruct.getMemberTag(data);
@@ -515,7 +513,7 @@ public VarGen resolveMember (NodeIterator it) throws MException
 				MSJava.syntaxAssertion(!it.hasNext(), it, "array index expected");
 				
 				// array index (number) expected");
-				int arrayIndex = Integer.parseInt(it.data());
+				int arrayIndex = MSJava.parseInt32(it.data().getString());
 				// mul. size * index, and plus one as the array size is at [0]
 				MSJava.syntaxAssertion(arrayIndex >= 0 && arrayIndex < arrayItemCount, it, "index out of range: " + arrayIndex + " of " + arrayItemCount);
 				size = itemSize;
@@ -541,7 +539,8 @@ public VarGen resolveMember (NodeIterator it) throws MException
 					// create a auxiliar variable
 					String auxAddressName = "~";
 					auxAddressName += currentContext.variables.structSize;
-					auxAddress = currentStruct.addMember(auxAddressName, MS_TYPE_INT);
+					MSText tmp = new MSText (auxAddressName);
+					auxAddress = currentStruct.addMember(tmp, MS_TYPE_INT, 1);
 				}
 				
 				// write index value to variable
@@ -609,21 +608,62 @@ public void singleArgumentPush (int targetTag, NodeIterator it, int arrayItemCou
 		return;
 	}
 	
-	if (it.type() == NT_NUMBER_TOKEN)
+	if (it.type() == NT_HEX_TOKEN)
 	{
 		if (targetType == MS_TYPE_INT)
 		{
-			int number = Integer.parseInt(it.data());
+			long number = parseHex((it.data()).getString(), 8);
+			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_INT, int64lowBits(number));
+			return;
+		}
+		else if (targetType == MS_TYPE_INT64)
+		{
+			long number = parseHex((it.data()).getString(), 16);
+			bc.addInstruction(OP_PUSH_IMMEDIATE, 2, MS_TYPE_INT64);
+			bc.addWord(int64highBits(number));
+			bc.addWord(int64lowBits(number));
+			return;
+		}
+		else
+		{
+			MSJava.syntaxAssertion(false, it, "number error");
+		}
+	}
+	else if (it.type() == NT_NUMBER_TOKEN)
+	{
+		if (targetType == MS_TYPE_INT)
+		{
+			int number = MSJava.parseInt32((it.data()).getString());
 			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_INT, number);
 			return;
 		}
-		else 
+		else if (targetType == MS_TYPE_INT64)
 		{
-			MSJava.syntaxAssertion(targetType == MS_TYPE_FLOAT, it, "number expected");
-			float f = MSJava.parseFloat(it.data());
+			long number = MSJava.parseInt64((it.data()).getString());
+			bc.addInstruction(OP_PUSH_IMMEDIATE, 2, MS_TYPE_INT64);
+			bc.addWord(int64highBits(number));
+			bc.addWord(int64lowBits(number));
+			return;
+		}
+		else if (targetType == MS_TYPE_FLOAT)
+		{
+			float f = MSJava.parseFloat32(it.data().getString());
 			int floatToInt = MSJava.floatToIntFormat(f);
 			bc.addInstructionWithData(OP_PUSH_IMMEDIATE, 1, MS_TYPE_FLOAT, floatToInt);
 			return;
+		}
+		else if (targetType == MS_TYPE_FLOAT64)
+		{
+			double f = MSJava.parseFloat64((it.data()).getString());
+			long number = MSJava.float64ToInt64Format(f);
+			bc.addInstruction(OP_PUSH_IMMEDIATE, 2, MS_TYPE_FLOAT64);
+			bc.addWord(int64highBits(number));
+			bc.addWord(int64lowBits(number));
+			return;
+		}
+		else
+		{
+			MSJava.syntaxAssertion(false, it, "number error");
 		}
 	}
 	else if (it.type() == NT_TEXT)

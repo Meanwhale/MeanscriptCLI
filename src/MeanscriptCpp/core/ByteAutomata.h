@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class ByteAutomata
@@ -9,7 +8,7 @@ public:
  uint8_t currentInput;
  uint8_t currentState;
  std::map<int, std::string> stateNames;
- void (*actions[64])();
+ void (*actions[128])();
  uint8_t stateCounter;
  uint8_t actionCounter; // 0 = end
 // running:
@@ -38,4 +37,3 @@ void run(meanscript::MSInputStream & input);
 ~ByteAutomata();
 };
 } // namespace meanscript(core)
-// C++ header END

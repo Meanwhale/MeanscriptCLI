@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class VarGen
@@ -12,4 +11,3 @@ public:
 VarGen(int32_t,int32_t,int32_t,int32_t,bool);
 };
 } // namespace meanscript(core)
-// C++ header END

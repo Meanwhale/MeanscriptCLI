@@ -63,7 +63,7 @@ public:
 		data = new T[s];
 		size = s;
 	}
-	bool inRange(int i)
+	bool inRange(int i) const
 	{
 		return i >= 0 && i < size;
 	}
@@ -137,12 +137,12 @@ public:
 		if (!inRange(i)) msError("out of range", description, 0, -1);
 		return data[i];
 	}
-	T & operator[] (int i)
+	T & operator[] (int i) const
 	{
 		if (!inRange(i)) msError("out of range", description, 0, -1);
 		return data[i];
 	}
-	int length()
+	int length() const
 	{
 		return size;
 	}

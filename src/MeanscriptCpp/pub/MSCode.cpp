@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -86,16 +85,33 @@ bool MSCode::hasArray (std::string name)
 	return (*(*mm).globals).hasArray(name);
 }
 
+bool MSCode::getBool (std::string name) 
+{
+	checkInit();
+	return (*(*mm).globals).getBool(name);
+}
+
 int32_t MSCode::getInt (std::string name) 
 {
 	checkInit();
 	return (*(*mm).globals).getInt(name);
 }
 
+int64_t MSCode::getInt64 (std::string name) 
+{
+	checkInit();
+	return (*(*mm).globals).getInt64(name);
+}
+
 float MSCode::getFloat (std::string name) 
 {
 	checkInit();
 	return (*(*mm).globals).getFloat(name);
+}
+double MSCode::getFloat64 (std::string name) 
+{
+	checkInit();
+	return (*(*mm).globals).getFloat64(name);
 }
 
 std::string MSCode::getText (std::string name) 
@@ -162,7 +178,7 @@ ByteCode* MSCode::compile (MSInputStream & input)
 	
 	TokenTree* tree = Parser::Parse (input);
 	Semantics semantics = Semantics();
-	(*common).includePrimitives(semantics);
+	(*common).initialize(semantics);
 	semantics.analyze(tree);
 	ByteCode* bc = Generator::generate (tree, semantics, (*common));
 	{ delete tree; tree = 0; };	
@@ -200,4 +216,3 @@ void MSCode::compileAndRun (std::string s)
 
 
 } // namespace meanscript(core)
-// C++ END

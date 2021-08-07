@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -17,7 +16,7 @@ int32_t NodeIterator:: type ()
 {
 	return (*node).type;
 }
-std::string NodeIterator:: data ()
+MSText* NodeIterator:: data ()
 {
 	return (*node).data;
 }
@@ -84,4 +83,3 @@ void NodeIterator::printTree(bool deep)
 	(*node).printTree(deep);
 }
 } // namespace meanscript(core)
-// C++ END

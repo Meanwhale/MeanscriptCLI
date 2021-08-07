@@ -1,12 +1,10 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
 
-Context::Context (std::string _name, int32_t _functionID, int32_t _returnType) 
+Context::Context (MSText* _name, int32_t _functionID, int32_t _returnType) 
   :  variables(_name, _functionID)
 {
-	name = _name;
 	functionID = _functionID;
 	returnType = _returnType;
 	tagAddress = -1;
@@ -22,4 +20,3 @@ void Context::print ()
 }
 
 } // namespace meanscript(core)
-// C++ END

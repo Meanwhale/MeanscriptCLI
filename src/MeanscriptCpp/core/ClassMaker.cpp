@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -8,7 +7,7 @@ ClassMaker::ClassMaker ()
 {
 	semantics = new Semantics();
 	Common* common = new Common();
-	(*common).includePrimitives((*semantics));
+	(*common).initialize((*semantics));
 	{ delete common; common = 0; };
 	
 	{ offsetStack.reset( 8); offsetStack.fill(0); offsetStack.description =  "offsetStack"; };
@@ -37,7 +36,8 @@ void ClassMaker:: findTypes (Semantics & semantics, Array<int> & code)
 		if ((instr & OPERATION_MASK) == OP_STRUCT_DEF)
 		{
 			if (codeStart < 0) codeStart = i;
-			std::string name = readStringFromIntArray(code,  i + 2,  code[i+1]);;
+			//std::string name = readStringFromIntArray(code,  i + 2,  code[i+1]);;
+			MSText* name = new MSText(code, i + 1);
 			int32_t id = (instr & VALUE_TYPE_MASK);
 			
 			// add struct to Semantics
@@ -53,7 +53,7 @@ void ClassMaker:: findTypes (Semantics & semantics, Array<int> & code)
 			int32_t arraySize = (numChars / 4) + 2;
 			SYNTAX(arraySize > 0 && arraySize < globalConfig.maxArraySize, 0, "invalid array size");
 			int32_t typeID = (instr & VALUE_TYPE_MASK);
-			StructDef* sd = new StructDef("", typeID, numChars, arraySize, OP_CHARS_DEF);
+			StructDef* sd = new StructDef(new MSText(""), typeID, numChars, arraySize, OP_CHARS_DEF);
 			semantics.typeStructDefs[typeID] = sd;
 		}
 		i += instrSize(instr) + 1;
@@ -86,33 +86,28 @@ void ClassMaker:: createStructDefs (Semantics & semantics, Array<int> & code)
 			{
 				// get member name
 				
-				std::string memberName = readStringFromIntArray(code,  i + 2,  code[i+1]);;
+				MSText* memberName = new MSText(code, i + 1);
 				
 				i += instrSize(instr) + 1;
 				instr = code[i];
 				
 				int32_t type = (instr & VALUE_TYPE_MASK);
-				int32_t dataAddress = code[i + 1];
 				
 				if ((instr & OPERATION_MASK) == OP_STRUCT_MEMBER)
 				{
-					// PRINT("// member: " CAT memberName CAT ", type: " CAT type CAT ", addr.:" CAT dataAddress);
 					(*structDef).addMember((&(semantics)), memberName, type);
 				}
 				else if ((instr & OPERATION_MASK) == OP_ARRAY_MEMBER)
 				{
-					//PRINT("// array: " CAT memberName CAT ", type: " CAT type CAT ", addr.:" CAT dataAddress CAT ", count: " CAT code[i+3]);
 					(*structDef).addArray((&(semantics)), memberName, type, code[i+3]);
 				}			
 				else
 				{
-					ERROR("invalid tag: " CATHEX instr);
+					ERROR("invalid tag");
 				}
 				i += instrSize(instr) + 1;
 				instr = code[i];
-				
-			}			
-			
+			}
 		}
 		else
 		{
@@ -124,9 +119,9 @@ void ClassMaker:: createStructDefs (Semantics & semantics, Array<int> & code)
 
 void ClassMaker:: pushName (int32_t offset, std::string memberName, std::string arrayName, int32_t arrayItemSize, int32_t arrayItemCount, int32_t depth) 
 {
-	//ASSERT(!(compare(memberName,"")), "pushName: memberName is empty");
-	//ASSERT(!(compare(arrayName,"")), "pushName: arrayName is empty");
-	ASSERT((compare(memberName,"")) || (compare(arrayName,"")), "pushName error");
+	//ASSERT(!(compareStrings(memberName,"")), "pushName: memberName is empty");
+	//ASSERT(!(compareStrings(arrayName,"")), "pushName: arrayName is empty");
+	ASSERT((compareStrings(memberName,"")) || (compareStrings(arrayName,"")), "pushName error");
 	offsetStack[depth] = offset;
 	memberStack[depth] = memberName;
 	arrayStack[depth] = arrayName;
@@ -145,7 +140,7 @@ void ClassMaker:: makeJavaAcc (MSOutputPrint & os, std::string setterData, int32
 	
 	ASSERT(depth < 8, "makeJavaAcc: too deep");
 	
-	if ((compare(setterData,""))) os.print("get");
+	if ((compareStrings(setterData,""))) os.print("get");
 	else os.print("set");
 	
 	bool array = false;
@@ -155,7 +150,7 @@ void ClassMaker:: makeJavaAcc (MSOutputPrint & os, std::string setterData, int32
 		os.print("_");
 		// NOTE: other one is empty
 		os.print(memberStack[i]);
-		if (!(compare(arrayStack[i],"")))
+		if (!(compareStrings(arrayStack[i],"")))
 		{
 			array = true;
 			os.print(arrayStack[i]);
@@ -176,7 +171,7 @@ void ClassMaker:: makeJavaAcc (MSOutputPrint & os, std::string setterData, int32
 		bool first = true;
 		for (int32_t i=0; i <= depth; i++)
 		{
-			if (!(compare(arrayStack[i],"")))
+			if (!(compareStrings(arrayStack[i],"")))
 			{
 				if (!first) os.print(",");
 				os.print("int ");
@@ -188,7 +183,7 @@ void ClassMaker:: makeJavaAcc (MSOutputPrint & os, std::string setterData, int32
 	}		
 	else os.print("(");
 	
-	if (!(compare(setterData,"")))
+	if (!(compareStrings(setterData,"")))
 	{
 		if (array) os.print(", ");
 		os.print(setterData);
@@ -202,7 +197,7 @@ void ClassMaker:: makeIndexedAddress (MSOutputPrint & os, int32_t baseAddress, i
 	bool array = false;
 	for (int32_t i=0; i <= depth; i++)
 	{
-		if (!(compare(arrayStack[i],"")))
+		if (!(compareStrings(arrayStack[i],"")))
 		{
 			if (array) os.print("+");
 			else os.print("+(");
@@ -219,7 +214,7 @@ void ClassMaker:: makeIndexCheck (MSOutputPrint & os, int32_t depth)
 {
 	for (int32_t i=0; i <= depth; i++)
 	{
-		if (!(compare(arrayStack[i],"")))
+		if (!(compareStrings(arrayStack[i],"")))
 		{
 			os.print("indexCheck(" CAT (arrayStack[i]) CAT "Index," CAT (arrayItemCountStack[i]) CAT "); ");
 		}
@@ -336,7 +331,7 @@ void ClassMaker:: makeJavaMembers (MSOutputPrint & os, StructDef* sd, int32_t ad
 		else
 		{
 			StructDef* memberStruct = (*semantics).getType(memberTypeID);
-			std::string memberStructName = (*memberStruct).name;
+			MSText* memberStructName = (*memberStruct).name;
 			
 			if ((*memberStruct).isCharsDef())
 			{
@@ -438,11 +433,11 @@ void ClassMaker:: makeJava (Array<int> & code, std::string packageName, std::str
 		
 		if ((*sd).isCharsDef()) continue;
 		
-		std::string typeName = (*sd).name;  // Meanscript type
-		std::string className = (*sd).name; // Java class
+		MSText* typeName = (*sd).name;  // Meanscript type
+		MSText* className = (*sd).name; // Java class
 		int32_t typeID = ((*sd).typeID);
 		
-		MSFilePrint os( folderName, className, ".java");;
+		MSFilePrint os( folderName, (*className).getString(), ".java");;
 				
 		// PRINT("// create class " CAT className);
 
@@ -472,4 +467,3 @@ void ClassMaker:: makeJava (Array<int> & code, std::string packageName, std::str
 	
 }
 } // namespace meanscript(core)
-// C++ END

@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -17,4 +16,3 @@ void MSOutputStream:: writeInt (int32_t i)
 
 
 } // namespace meanscript(core)
-// C++ END

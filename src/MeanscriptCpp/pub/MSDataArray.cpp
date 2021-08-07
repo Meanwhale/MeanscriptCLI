@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -41,4 +40,3 @@ MSData MSDataArray::getAt (int32_t i)
 MSDataArray::~MSDataArray() { };
 
 } // namespace meanscript(core)
-// C++ END

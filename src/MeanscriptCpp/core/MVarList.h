@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class MVarList
@@ -6,4 +5,3 @@ class MVarList
 public:
 };
 } // namespace meanscript(core)
-// C++ header END

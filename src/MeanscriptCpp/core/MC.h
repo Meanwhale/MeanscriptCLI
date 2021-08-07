@@ -19,6 +19,7 @@ constexpr int32_t NT_MUL = 14;
 constexpr int32_t NT_TEXT = 15;
 constexpr int32_t NT_MEMBER = 16;
 constexpr int32_t NT_COMMA = 17;
+constexpr int32_t NT_HEX_TOKEN = 18;
 // bytecode types
 constexpr int BYTECODE_READ_ONLY = 0x101;
 constexpr int BYTECODE_EXECUTABLE = 0x102;
@@ -84,23 +85,23 @@ constexpr char const * keywords [] = {
  };
   constexpr char const * HORIZONTAL_LINE = "------------------------------------------";
 //INITIALIZED_CONST_STRING(HORIZONTAL_LINE,"__________________________________________\n");
-constexpr int OPERATION_MASK = 0xff000000;
-//CD INT SCOPE_MASK			= 0x00f00000;
-constexpr int SIZE_MASK = 0x00ff0000; // NOTE: erikoistapauksissa voisi käyttää 0x00FFFFFF
-constexpr int VALUE_TYPE_MASK= 0x0000ffff; // max. 64K
-constexpr int AUX_DATA_MASK = 0x0000ffff; // same size as VALUE_TYPE_MASK for commands to use other data than value type.
+constexpr uint32_t OPERATION_MASK = 0xff000000;
+constexpr uint32_t SIZE_MASK = 0x00ff0000; // NOTE: erikoistapauksissa voisi käyttää 0x00FFFFFF
+constexpr uint32_t VALUE_TYPE_MASK= 0x0000ffff; // max. 64K
+constexpr uint32_t AUX_DATA_MASK = 0x0000ffff; // same size as VALUE_TYPE_MASK for commands to use other data than value type.
 constexpr int32_t OP_SHIFT = 24;
-//CD INT SCOPE_SHIFT		= 20;
 constexpr int32_t SIZE_SHIFT = 16;
 constexpr int32_t VALUE_TYPE_SHIFT = 0;
 constexpr int32_t MS_TYPE_VOID = 0;
 constexpr int32_t MS_TYPE_INT = 1;
-constexpr int32_t MS_TYPE_TEXT = 2;
-constexpr int32_t MS_TYPE_BOOL = 3;
-constexpr int32_t MS_TYPE_CODE_ADDRESS = 4;
-constexpr int32_t MS_TYPE_ARGS = 5;
-constexpr int32_t MS_TYPE_FLOAT = 6;
-constexpr int32_t MS_TYPE_CHARS = 7;
+constexpr int32_t MS_TYPE_INT64 = 2;
+constexpr int32_t MS_TYPE_FLOAT = 3;
+constexpr int32_t MS_TYPE_FLOAT64 = 4;
+constexpr int32_t MS_TYPE_TEXT = 5;
+constexpr int32_t MS_TYPE_BOOL = 6;
+constexpr int32_t MS_TYPE_CODE_ADDRESS = 7;
+constexpr int32_t MS_TYPE_ARGS = 8;
+constexpr int32_t MS_TYPE_CHARS = 9;
 constexpr int32_t MAX_MS_TYPES = 16;
 constexpr int32_t MAX_TYPES = 256;
 // error classes
@@ -112,14 +113,21 @@ extern const meanscript::MSError EC_CODE; // ...resolving bytecode
 extern const meanscript::MSError EC_DATA; // ...accessing/creating data
 extern const meanscript::MSError EC_TEST; // ...unit test
 extern const meanscript::MSError EC_NATIVE; // ...executing native code
-extern const meanscript::MSError EC_INTERNAL;
+extern const meanscript::MSError EC_INTERNAL; // General error when executing script, accessing data, etc.
 extern const meanscript::MSError E_UNEXPECTED_CHAR;
 int32_t makeInstruction (int32_t operation, int32_t size, int32_t valueType);
 std::string getOpName(int32_t instruction);
 int32_t instrSize(int32_t instruction);
 int32_t instrValueTypeIndex(int32_t instruction);
+int32_t int64highBits(int64_t x);
+int32_t int64lowBits(int64_t x);
+int64_t intsToInt64(int32_t high, int32_t low);
 void printData(Array<int> & data, int32_t top, int32_t index, bool code);
-int32_t stringToIntsWithSize(std::string text, Array<int> & code, int32_t top, int32_t maxSize);
+int32_t stringToIntsWithSize(const std::string & text, Array<int> & code, int32_t top, int32_t maxSize);
 bool intStringsWithSizeEquals(Array<int> & a, int32_t aOffset, Array<int> & b, int32_t bOffset);
-int32_t addTextInstruction (std::string text, int32_t instructionCode, Array<int> & code, int32_t top);
+void intsToBytes(Array<int> & ints, int32_t intsOffset, Array<uint8_t> & bytes, int32_t bytesOffset, int32_t bytesLength);
+void bytesToInts(const uint8_t bytes[], int32_t bytesOffset, Array<int> & ints, int32_t intsOffset, int32_t bytesLength);
+int32_t addTextInstruction (const MSText & text, int32_t instructionCode, Array<int> & code, int32_t top);
+int64_t parseHex(std::string text, int32_t maxChars);
+uint8_t hexCharToByte(uint8_t c);
 }

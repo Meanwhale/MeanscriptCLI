@@ -94,6 +94,7 @@ namespace meanscript
 	class MSOutputArray;
 	//class MSOutputPrint;
 	class MSOutputStream;
+	class MSText;
 	class MSWriter;
 }
 
@@ -139,6 +140,7 @@ namespace meanscriptcore
 #include "core/MCallback.h"
 #include "core/MeanMachine.h"
 #include "core/MeanscriptUnitTest.h"
+#include "pub/MSText.h"
 #include "core/MNode.h"
 #include "pub/MSInputArray.h"
 #include "pub/MSBuilder.h"
@@ -189,9 +191,12 @@ namespace meanscript
 		MStdOutPrint(std::ostream&);
 		virtual void writeByte(uint8_t) override;
 		virtual MSOutputPrint& print(uint8_t) override;
+		virtual MSOutputPrint& print(const char*) override;
 		virtual MSOutputPrint& print(std::string) override;
 		virtual MSOutputPrint& print(int32_t) override;
 		virtual MSOutputPrint& print(float) override;
+		virtual MSOutputPrint& print(double) override;
+		virtual MSOutputPrint& print(int64_t) override;
 		virtual void close() override;
 	};
 
@@ -200,9 +205,12 @@ namespace meanscript
 		MSNullPrint();
 		virtual void writeByte(uint8_t) override;
 		virtual MSOutputPrint& print(uint8_t) override;
+		virtual MSOutputPrint& print(const char *) override;
 		virtual MSOutputPrint& print(std::string) override;
 		virtual MSOutputPrint& print(int32_t) override;
 		virtual MSOutputPrint& print(float) override;
+		virtual MSOutputPrint& print(double) override;
+		virtual MSOutputPrint& print(int64_t) override;
 		virtual void close() override;
 	};
 
@@ -253,8 +261,11 @@ namespace meanscript
 		virtual void writeByte(uint8_t) override;
 		virtual MSOutputPrint& print(uint8_t) override;
 		virtual MSOutputPrint& print(int32_t) override;
+		virtual MSOutputPrint& print(const char *) override;
 		virtual MSOutputPrint& print(std::string) override;
 		virtual MSOutputPrint& print(float) override;
+		virtual MSOutputPrint& print(double) override;
+		virtual MSOutputPrint& print(int64_t) override;
 		virtual void close() override;
 	};
 
@@ -314,12 +325,12 @@ namespace meanscript
 	int length(const char *);
 	int32_t floatToIntBits(float);
 	unsigned char * copyToByteArray(const char *, int length = -1);
-	bool compare(const std::string&, const std::string&);
+	bool compareStrings(const std::string&, const std::string&);
 
 	void println(const char* format, ...);
 	void print(const char* format, ...);
 	void printCompact(int *, int top);
-	int nameTreeGet(std::map<std::string, int> &, std::string);
+	int nameTreeGet(std::map<MSText, int>& tree, MSText* name);
 	std::string readStringFromIntArray(Array<int> &, int offset, int count);
 	void stringToIntBits(Array<int>&, std::string);
 	
@@ -327,6 +338,8 @@ namespace meanscript
 	std::string toString(std::string);
 	std::string toString(int);
 	std::string toString(float);
+
+	void nativeTest();
 }
 
 // constants

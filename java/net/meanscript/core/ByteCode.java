@@ -1,11 +1,6 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class ByteCode extends MC {
 public int codeTop;
 public int code [];
@@ -66,12 +61,6 @@ public void addWord(int data)
 {
 	//{if (MSJava.debug) {MSJava.printOut.print("data: " + data).endLine();}};
 	code[codeTop++] = data;
-}
-
-
-public void  addTextInstr (String text) throws MException
-{
-	codeTop = addTextInstruction(text, OP_ADD_TEXT, code, codeTop);
 }
 
 public void  writeCode (MSOutputStream output) throws MException

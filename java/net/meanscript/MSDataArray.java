@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSDataArray extends MC {
 MeanMachine mm;
 int tag,		// instruction code

@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSCode
 {
@@ -21,6 +20,14 @@ void initBytecode (meanscriptcore::ByteCode* bc);
 bool hasData(std::string);
 bool hasArray(std::string);
 int32_t getInt (std::string name);
+bool getBool ();
+bool getBool (std::string name);
+int64_t getInt64 ();
+int64_t getInt64 (std::string name);
+int64_t getInt64At (int address);
+double getFloat64 ();
+double getFloat64 (std::string name);
+double getFloat64At (int address);
 float getFloat (std::string name);
 std::string getText (std::string name);
 std::string getText (int32_t textID);
@@ -41,4 +48,3 @@ MSCode & operator & () = delete;
 MSCode * operator * () = delete;
 };
 } // namespace meanscript(core)
-// C++ header END

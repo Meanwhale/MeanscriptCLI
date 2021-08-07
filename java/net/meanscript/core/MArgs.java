@@ -1,11 +1,6 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class MArgs extends MC {
  ByteCode byteCode;
  StructDef structDef;

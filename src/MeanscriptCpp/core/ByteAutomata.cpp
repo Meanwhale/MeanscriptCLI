@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -15,6 +14,7 @@ ByteAutomata::ByteAutomata()
 	actionCounter = 0;
 	tr.reset( MAX_STATES * 256);
 	for (int32_t i=0; i<MAX_STATES * 256; i++) tr[i] = (uint8_t)0xff;
+	for (int32_t i=0; i<128; i++) actions[i] = 0;
 
 	inputByte = 0;
 	index = 0;
@@ -96,6 +96,7 @@ void ByteAutomata::next (uint8_t nextState)
 	DEBUG(VERBOSE("Next state: " CAT stateNames[ (int32_t)currentState]));
 }
 
+// NOTE: don't use exceptions. On error, use error print and set ok = false
 
 bool ByteAutomata::step (uint8_t input) 
 {
@@ -106,7 +107,8 @@ bool ByteAutomata::step (uint8_t input)
 	if (actionIndex == 0) return true; // stay on same state and do nothing else
 	if (actionIndex == 0xff||actionIndex < 0)
 	{
-		CHECK(false, E_UNEXPECTED_CHAR, "unexpected char: '" CAT (input) CAT "'" CAT " #" CAT ((int)input));
+		ERROR_PRINT("unexpected char: ").printCharSymbol(input).print("").print(" code = ").print((((int) input) & 0xff)).endLine();
+
 		ok = false;
 		return false; // end
 	}
@@ -173,8 +175,6 @@ void ByteAutomata::run (MSInputStream & input)
 		{
 			stayNextStep = false;
 		}
-		VERBOSE("[ " CAT (char)(inputByte) CAT " ]");
-
 		running = step(inputByte);
 	}
 	
@@ -183,8 +183,8 @@ void ByteAutomata::run (MSInputStream & input)
 
 void ByteAutomata::printError ()
 {
-	PRINT("ERROR: parser state [" CAT stateNames[ (int32_t)currentState] CAT "]");
-	PRINT("Line " CAT lineNumber CAT ": \"");
+	ERROR_PRINT("ERROR: parser state [" CAT stateNames[ (int32_t)currentState] CAT "]");
+	ERROR_PRINT("Line " CAT lineNumber CAT ": \"");
 	
 	// print nearby code
 	int32_t start = index-1;
@@ -194,10 +194,9 @@ void ByteAutomata::printError ()
 	}
 	while (++start < index)
 	{
-		VERBOSE((char)(buffer[start % BUFFER_SIZE]));
+		ERROR_PRINT((char)(buffer[start % BUFFER_SIZE]));
 	}
-	PRINT("\"");
+	ERROR_PRINT("\"");
 }
 
 } // namespace meanscript(core)
-// C++ END

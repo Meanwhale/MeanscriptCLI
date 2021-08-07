@@ -1,15 +1,9 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class ClassMaker extends MC {
 
  Semantics semantics;
- MSCode config;
  int [] offsetStack;
  int [] arrayItemSizeStack;
  int [] arrayItemCountStack;
@@ -22,7 +16,7 @@ public ClassMaker () throws MException
 {
 	semantics = new Semantics();
 	Common common = new Common();
-	common.includePrimitives(semantics);
+	common.initialize(semantics);
 	common = null;
 	
 	{offsetStack = new int[ 8]; };
@@ -51,7 +45,8 @@ public static void  findTypes (Semantics semantics, int [] code) throws MExcepti
 		if ((instr & OPERATION_MASK) == OP_STRUCT_DEF)
 		{
 			if (codeStart < 0) codeStart = i;
-			String name = new String(MSJava.intsToBytes(code, i + 2, code[i+1]));
+			//String name = new String(MSJava.intsToBytes(code, i + 2, code[i+1]),java.nio.charset.StandardCharsets.UTF_8);
+			MSText name = new MSText(code, i + 1);
 			int id = (instr & VALUE_TYPE_MASK);
 			
 			// add struct to Semantics
@@ -67,7 +62,7 @@ public static void  findTypes (Semantics semantics, int [] code) throws MExcepti
 			int arraySize = (numChars / 4) + 2;
 			MSJava.syntaxAssertion(arraySize > 0 && arraySize < MSJava.globalConfig.maxArraySize, null, "invalid array size");
 			int typeID = (instr & VALUE_TYPE_MASK);
-			StructDef sd = new StructDef("", typeID, numChars, arraySize, OP_CHARS_DEF);
+			StructDef sd = new StructDef(new MSText(""), typeID, numChars, arraySize, OP_CHARS_DEF);
 			semantics.typeStructDefs[typeID] = sd;
 		}
 		i += instrSize(instr) + 1;
@@ -100,33 +95,28 @@ public static void  createStructDefs (Semantics semantics, int [] code) throws M
 			{
 				// get member name
 				
-				String memberName = new String(MSJava.intsToBytes(code, i + 2, code[i+1]));
+				MSText memberName = new MSText(code, i + 1);
 				
 				i += instrSize(instr) + 1;
 				instr = code[i];
 				
 				int type = (instr & VALUE_TYPE_MASK);
-				int dataAddress = code[i + 1];
 				
 				if ((instr & OPERATION_MASK) == OP_STRUCT_MEMBER)
 				{
-					// MSJava.printOut.print("// member: " + memberName + ", type: " + type + ", addr.:" + dataAddress).endLine();
 					structDef.addMember(semantics, memberName, type);
 				}
 				else if ((instr & OPERATION_MASK) == OP_ARRAY_MEMBER)
 				{
-					//MSJava.printOut.print("// array: " + memberName + ", type: " + type + ", addr.:" + dataAddress + ", count: " + code[i+3]).endLine();
 					structDef.addArray(semantics, memberName, type, code[i+3]);
 				}			
 				else
 				{
-					throw new MException(MC.EC_INTERNAL, "invalid tag: " + instr);
+					throw new MException(MC.EC_INTERNAL, "invalid tag");
 				}
 				i += instrSize(instr) + 1;
 				instr = code[i];
-				
-			}			
-			
+			}
 		}
 		else
 		{
@@ -350,7 +340,7 @@ public void  makeJavaMembers (MSOutputPrint os, StructDef sd, int addressOffset,
 		else
 		{
 			StructDef memberStruct = semantics.getType(memberTypeID);
-			String memberStructName = memberStruct.name;
+			MSText memberStructName = memberStruct.name;
 			
 			if (memberStruct.isCharsDef())
 			{
@@ -452,11 +442,11 @@ public void  makeJava (int [] code, String packageName, String folderName) throw
 		
 		if (sd.isCharsDef()) continue;
 		
-		String typeName = sd.name;  // Meanscript type
-		String className = sd.name; // Java class
+		MSText typeName = sd.name;  // Meanscript type
+		MSText className = sd.name; // Java class
 		int typeID = (sd.typeID);
 		
-		MSFilePrint os = new MSFilePrint( folderName +  className +  ".java");;
+		MSFilePrint os = new MSFilePrint( folderName +  className.getString() +  ".java");;
 				
 		// MSJava.printOut.print("// create class " + className).endLine();
 

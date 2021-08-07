@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class Generator
@@ -25,9 +24,8 @@ void argumentStructPush(NodeIterator it, StructDef* targetType, int32_t numArgs,
 void callArgumentPush(NodeIterator it, StructDef* targetType, int32_t numArgs);
 VarGen resolveMember (NodeIterator & it);
 int32_t arrayPush (NodeIterator it, int32_t targetTag, int32_t arraySize);
-bool isFunctionOrCallback (std::string name);
+bool isFunctionOrCallback (MSText* name);
 bool inGlobal();
 ~Generator();
 };
 } // namespace meanscript(core)
-// C++ header END

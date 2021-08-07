@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSBuilder extends MC {
 String packageName;
  int [] values;
@@ -13,7 +8,7 @@ String packageName;
 StructDef variables;
 ByteCode byteCode;
 Common common;
-java.util.TreeMap<String, Integer> texts = new java.util.TreeMap<String, Integer>();
+java.util.TreeMap<MSText, Integer> texts = new java.util.TreeMap<MSText, Integer>(MSJava.textComparator);
 int textIDCounter;
 boolean structLock;
 
@@ -25,11 +20,11 @@ public MSBuilder (String _packageName) throws MException
 	{values = new int[ MSJava.globalConfig.builderValuesSize]; };
 	common = new Common();
 	byteCode = new ByteCode(common);
-	common.includePrimitives(semantics);
+	common.initialize(semantics);
 	structLock = false;
 	
 	textIDCounter = 0;
-	texts.put( "", textIDCounter++);
+	texts.put( new MSText(""), textIDCounter++);
 }
 
 //;
@@ -49,42 +44,58 @@ public void addType (String typeName, StructDef sd) throws MException
 	lockCheck();
 	int id = semantics.typeIDCounter++;
 	sd.typeID = id;
-	semantics.addStructDef(typeName, id, sd);
+	MSText tn = new MSText (typeName);
+	semantics.addStructDef(tn, id, sd);
 }
 
 public void addInt (String name, int value) throws MException
 {
 	structLock = true;
-	MSJava.assertion(semantics.assumeNotReserved(name),   "variable name error");
+	MSJava.assertion(semantics.isNameValidAndAvailable(name),   "variable name error");
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New int: " + name).endLine();};
-	int address = variables.addMember(semantics, name, MS_TYPE_INT);
+	MSText tn = new MSText (name);
+	int address = variables.addMember(semantics, tn, MS_TYPE_INT);
 	values[address] = value;
+}
+public void addInt64 (String name, long value) throws MException
+{
+	structLock = true;
+	MSText tn = new MSText (name);
+	MSJava.assertion(semantics.isNameValidAndAvailable(tn),   "variable name error");
+	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New int64: " + name).endLine();};
+	int address = variables.addMember(semantics, tn, MS_TYPE_INT64);
+	values[address] = int64highBits(value);
+	values[address+1] = int64lowBits(value);
 }
 
 public int createText (String value) throws MException
 {
+	MSText tmp = new MSText (value);
 	structLock = true;
-	if (!(texts.containsKey( value)))
+	if (!(texts.containsKey( tmp)))
 	{
-		texts.put( value, textIDCounter++);
+		texts.put( new MSText(value), textIDCounter++);
 	}
-	return texts.get( value);
+	return texts.get( tmp);
 }
 
-public void addText (String varName, String value) throws MException
+public void addText (String name, String value) throws MException
 {
 	structLock = true;
-	MSJava.assertion(semantics.assumeNotReserved(varName),   "variable name error");
+	MSJava.assertion(semantics.isNameValidAndAvailable(name),   "variable name error");
 	// add string to tree
 	int textID = createText(value);
-	int address = variables.addMember(semantics, varName, MS_TYPE_TEXT);
+	MSText tn = new MSText (name);
+	int address = variables.addMember(semantics, tn, MS_TYPE_TEXT);
 	values[address] = textID;
 }
 
-public void addChars (String varName, int numChars, String text) throws MException
+public void addChars (String name, int numChars, String text) throws MException
 {
 	StructDef sd = semantics.addCharsType(numChars);
-	int address = variables.addMember(semantics, varName, sd.typeID);
+	MSJava.assertion(semantics.isNameValidAndAvailable(name),   "variable name error");
+	MSText tn = new MSText (name);
+	int address = variables.addMember(semantics, tn, sd.typeID);
 	int maxSize = sd.structSize;
 	
 	stringToIntsWithSize(text, values, address, maxSize);
@@ -94,38 +105,43 @@ public int createStructDef (String name) throws MException
 {
 	lockCheck();
 	int id = semantics.typeIDCounter++;
-	StructDef sd = new StructDef(name, id);
-	semantics.addStructDef(name, id, sd);
+	MSText tn = new MSText (name);
+	StructDef sd = new StructDef(tn, id);
+	semantics.addStructDef(tn, id, sd);
 	return id;
 }
 
-public void addCharsMember (int structTypeID, String varName, int numChars) throws MException
+public void addCharsMember (int structTypeID, String name, int numChars) throws MException
 {
 	StructDef sd = semantics.getType(structTypeID);
 	StructDef charsType = semantics.addCharsType(numChars);
-	sd.addMember(semantics, varName, charsType.typeID);
+	MSText tn = new MSText (name);
+	sd.addMember(semantics, tn, charsType.typeID);
 }
 
-public int addMember (int structTypeID, String varName, int memberType) throws MException
+public int addMember (int structTypeID, String name, int memberType) throws MException
 {
 	StructDef sd = semantics.getType(structTypeID);
-	return sd.addMember(varName, memberType);
+	MSText tn = new MSText (name);
+	return sd.addMember(semantics, tn, memberType);
 }
 
 public void addArray (int typeID, String arrayName, int arraySize) throws MException
 {
-	variables.addArray(semantics, arrayName, typeID, arraySize);
+	MSText tn = new MSText (arrayName);
+	variables.addArray(semantics, tn, typeID, arraySize);
 }
 
 public MSWriter arrayItem (String arrayName, int arrayIndex) throws MException
 {
-	int tag = variables.getMemberTag(arrayName);
+	MSText tn = new MSText (arrayName);
+	int tag = variables.getMemberTag(tn);
 	MSJava.assertion((tag & OPERATION_MASK) == OP_ARRAY_MEMBER,   "not an array");
-	int itemCount = variables.getMemberArrayItemCount(arrayName);
+	int itemCount = variables.getMemberArrayItemCount(tn);
 	MSJava.assertion(arrayIndex >= 0 && arrayIndex < itemCount,   "index out of bounds: " + arrayIndex + " / " + itemCount);
 	StructDef arrayItemType = semantics.getType((int)(tag & VALUE_TYPE_MASK));
 	int itemSize = arrayItemType.structSize;
-	int address = variables.getMemberAddress(arrayName);
+	int address = variables.getMemberAddress(tn);
 	address += arrayIndex * itemSize;
 	
 	return new MSWriter( 		this, 		arrayItemType, 		address 		);
@@ -133,24 +149,27 @@ public MSWriter arrayItem (String arrayName, int arrayIndex) throws MException
 
 public MSWriter createStruct (String typeName, String varName) throws MException
 {
-	StructDef sd = semantics.getType(typeName);
+	MSText tn = new MSText (typeName);
+	StructDef sd = semantics.getType(tn);
 	return createStruct(sd.typeID, varName);
 }
 
 public MSWriter createStruct (int typeID, String varName) throws MException
 {
+	MSText tn = new MSText(varName);
 	structLock = true;
-	MSJava.assertion(semantics.assumeNotReserved(varName),   "variable name error");
-	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New struct: " + varName).endLine();};
+	MSJava.assertion(semantics.isNameValidAndAvailable(tn),   "variable name error");
+	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New struct: " + tn).endLine();};
 	StructDef sd = semantics.getType(typeID);
-	int address = variables.addMember(semantics, varName, typeID);
-	
+	int address = variables.addMember(semantics, tn, typeID);
+	tn = null;
 	return new MSWriter( 		this, 		sd, 		address 		);
 }
 
 public int createGeneratedStruct (int typeID, String varName) throws MException
 {
-	return variables.addMember(semantics, varName, typeID);
+	MSText tn = new MSText (varName);
+	return variables.addMember(semantics, tn, typeID);
 }
 
 public void  readStructCode (int [] code) throws MException
@@ -170,9 +189,9 @@ public void generate () throws MException
 	// TODO: same as in Generator = make a function (?)
 	
 	int numTexts = texts.size();
-	String[] textArray = new String[numTexts];
+	 MSText[] textArray = new  MSText[numTexts];
 	
-	for(java.util.Map.Entry<String,Integer>  entry :  texts.entrySet())
+	for(java.util.Map.Entry<MSText,Integer>  entry :  texts.entrySet())
 	{
 		// (key, value) = (text, id)
 		int id = entry.getValue();

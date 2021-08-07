@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -28,9 +27,10 @@ using namespace meanscript;
 //			structSize = 5
 
 
-StructDef::StructDef (std::string _name, int32_t _typeID) 
+StructDef::StructDef (MSText* _name, int32_t _typeID) 
 {
-	name = _name;
+	if (_name != 0) name = new MSText((*_name));
+	else name = 0;
 	typeID = _typeID;
 	
 	{ code.reset(			globalConfig.maxStructDefSize); code.fill(0); code.description =  "StructDef: structure definitions"; };
@@ -43,16 +43,26 @@ StructDef::StructDef (std::string _name, int32_t _typeID)
 	codeTop = 0;
 
 	// save name
-	codeTop = addTextInstruction(name, OP_STRUCT_DEF, code, codeTop);
+	if (name != 0)
+	{
+		codeTop = addTextInstruction((*name), OP_STRUCT_DEF, code, codeTop);
+		// change type to start tag
+		code[0] = makeInstruction(OP_STRUCT_DEF, codeTop-1, typeID);
+	}
+	else
+	{
+		code[0] = makeInstruction(OP_STRUCT_DEF, 1, typeID);
+		code[1] = 0; // empty name
+		codeTop = 2;
+	}
 	
-	// change type to start tag
-	code[0] = makeInstruction(OP_STRUCT_DEF, codeTop-1, typeID);
 }
 
-StructDef::StructDef (std::string _name, int32_t _typeID, int32_t _size) 
+StructDef::StructDef (MSText* _name, int32_t _typeID, int32_t _size) 
 {
 	// primitive: no need to initialize arrays (code, memberOffset, nameOffset)
-	name = _name;
+	if (_name != 0) name = new MSText((*_name));
+	else name = 0;
 	typeID = _typeID;
 	numMembers = -1;
 	argsSize = -1; // set structSize after all arguments are set
@@ -60,10 +70,11 @@ StructDef::StructDef (std::string _name, int32_t _typeID, int32_t _size)
 	codeTop = -1;
 }
 
-StructDef::StructDef (std::string _name, int32_t _typeID, int32_t data, int32_t size, int32_t op) 
+StructDef::StructDef (MSText* _name, int32_t _typeID, int32_t data, int32_t size, int32_t op) 
 {
 	// generic struct: no need to initialize arrays memberOffset and nameOffset
-	name = _name;
+	if (_name != 0) name = new MSText((*_name));
+	else name = 0;
 	typeID = _typeID;
 	
 	{ code.reset( 2); code.fill(0); code.description =  "generic struct"; };
@@ -76,7 +87,7 @@ StructDef::StructDef (std::string _name, int32_t _typeID, int32_t data, int32_t 
 	structSize = size;
 }
 
-StructDef::~StructDef() { }
+StructDef::~StructDef() { delete name; }
 
 bool StructDef:: isCharsDef ()
 {
@@ -89,7 +100,7 @@ int32_t StructDef::numCharsForCharsDef ()
 	return code[1];
 }
 
-int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t arrayType, int32_t itemCount) 
+int32_t StructDef:: addArray (Semantics* semantics, MSText* name, int32_t arrayType, int32_t itemCount) 
 {	
 	// array with it's item count at first, e.g.
 	// 		vec2 [3] -> [3] [x0] [y0] [x1] [y1] [x2] [y2]
@@ -103,7 +114,7 @@ int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t ar
 	
 	// name saving instruction
 	nameOffset[numMembers] = codeTop;
-	codeTop = addTextInstruction(name, OP_MEMBER_NAME, code, codeTop);
+	codeTop = addTextInstruction((*name), OP_MEMBER_NAME, code, codeTop);
 	
 	// create tag
 	memberOffset[numMembers] = codeTop;
@@ -117,7 +128,7 @@ int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t ar
 	
 	structSize += dataSize;
 	
-	memberNames.insert(std::make_pair( name, codeTop));;
+	memberNames.insert(std::make_pair( MSText((*name)), codeTop));;
 	codeTop += 4;
 
 	numMembers++;
@@ -125,35 +136,29 @@ int32_t StructDef:: addArray (Semantics* semantics, std::string name, int32_t ar
 	return address;
 }
 
-int32_t StructDef:: addMember (Semantics* semantics, std::string name, int32_t type) 
+int32_t StructDef:: addMember (Semantics* semantics, MSText* name, int32_t type) 
 {	
 	// get size
 
-	// TODO: StructDef löytyy kaikille tyypeille joten if on turha ja huono jos koko > 1
-	int32_t memberSize = 1;
-	if (type >= MAX_MS_TYPES)
-	{
-		StructDef* sd = (*semantics).typeStructDefs[type];
-		ASSERT(sd != 0, "struct missing");
-		memberSize = (*sd).structSize;
-	}
-	
+	StructDef* sd = (*semantics).typeStructDefs[type];
+	ASSERT(sd != 0, "struct missing");
+	int32_t memberSize = (*sd).structSize;
 	return addMember(name, type, memberSize);
 }
 
-int32_t StructDef:: addMember (std::string name, int32_t type) 
-{	
-	ASSERT(type >= 0 && type < MAX_MS_TYPES, "invalid member type");
-	return addMember(name, type, 1);
-}
-
-int32_t StructDef:: addMember (std::string name, int32_t type, int32_t memberSize) 
+int32_t StructDef:: addMember (MSText* name, int32_t type, int32_t memberSize) 
 {		
 	// name saving instruction
 
-	nameOffset[numMembers] = codeTop;
-	codeTop = addTextInstruction(name, OP_MEMBER_NAME, code, codeTop);
-
+	if (name != 0)
+	{
+		nameOffset[numMembers] = codeTop;
+		codeTop = addTextInstruction((*name), OP_MEMBER_NAME, code, codeTop);
+	}
+	else
+	{
+		nameOffset[numMembers] = -1;
+	}
 	// create tag
 
 	memberOffset[numMembers] = codeTop;
@@ -166,7 +171,8 @@ int32_t StructDef:: addMember (std::string name, int32_t type, int32_t memberSiz
 
 	structSize += memberSize;
 	
-	memberNames.insert(std::make_pair( name, codeTop));;
+	if (name != 0) { memberNames.insert(std::make_pair( MSText((*name)), codeTop));; }
+	
 	codeTop += 3;
 
 	numMembers++;
@@ -174,35 +180,35 @@ int32_t StructDef:: addMember (std::string name, int32_t type, int32_t memberSiz
 	return address;
 }
 
-int32_t StructDef:: getMemberTag (std::string varName) 
+int32_t StructDef:: getMemberTag (MSText* varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
+	ASSERT((memberNames.find( (*varName)) != memberNames.end()), "undefined variable: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	return code[index];
 }
-int32_t StructDef:: getMemberAddress (std::string varName) 
+int32_t StructDef:: getMemberAddress (MSText* varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
+	ASSERT((memberNames.find( (*varName)) != memberNames.end()), "undefined variable: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	return code[index+1]; // see above for definition
 }
-int32_t StructDef:: getMemberSize (std::string varName) 
+int32_t StructDef:: getMemberSize (MSText* varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
+	ASSERT((memberNames.find( (*varName)) != memberNames.end()), "undefined variable: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	return code[index+2]; // see above for definition
 }
-int32_t StructDef:: getMemberArrayItemCount (std::string varName) 
+int32_t StructDef:: getMemberArrayItemCount (MSText* varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
+	ASSERT((memberNames.find( (*varName)) != memberNames.end()), "undefined variable: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	int32_t tag = code[index];
 	CHECK((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, EC_SYNTAX, "not an array: " CAT varName);
 	return code[index + 3]; // see above for definition
 }
-int32_t StructDef:: getMemberArrayItemCountOrNegative (std::string varName) 
+int32_t StructDef:: getMemberArrayItemCountOrNegative (MSText* varName) 
 {
-	ASSERT((memberNames.find( varName) != memberNames.end()), "member not found: " CAT varName);
+	ASSERT((memberNames.find( (*varName)) != memberNames.end()), "undefined variable: " CAT varName);
 	int32_t index = nameTreeGet(memberNames, varName);
 	int32_t tag = code[index];
 	if ((tag & OPERATION_MASK) != OP_ARRAY_MEMBER) return -1;
@@ -257,4 +263,3 @@ void StructDef::print ()
 }
 
 } // namespace meanscript(core)
-// C++ END

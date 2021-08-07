@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class MeanMachine
@@ -59,4 +58,3 @@ void init();
 MeanMachine() = delete;
 };
 } // namespace meanscript(core)
-// C++ header END

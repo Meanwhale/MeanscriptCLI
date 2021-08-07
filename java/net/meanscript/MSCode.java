@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSCode extends MC {
 Common common;
 
@@ -96,16 +91,33 @@ public boolean hasArray (String name) throws MException
 	return mm.globals.hasArray(name);
 }
 
+public boolean getBool (String name) throws MException
+{
+	checkInit();
+	return mm.globals.getBool(name);
+}
+
 public int getInt (String name) throws MException
 {
 	checkInit();
 	return mm.globals.getInt(name);
 }
 
+public long getInt64 (String name) throws MException
+{
+	checkInit();
+	return mm.globals.getInt64(name);
+}
+
 public float getFloat (String name) throws MException
 {
 	checkInit();
 	return mm.globals.getFloat(name);
+}
+public double getFloat64 (String name) throws MException
+{
+	checkInit();
+	return mm.globals.getFloat64(name);
 }
 
 public String getText (String name) throws MException
@@ -172,7 +184,7 @@ public ByteCode compile (MSInputStream input) throws MException
 	
 	TokenTree tree = Parser.Parse (input);
 	Semantics semantics = new Semantics();
-	common.includePrimitives(semantics);
+	common.initialize(semantics);
 	semantics.analyze(tree);
 	ByteCode bc = Generator.generate (tree, semantics, common);
 	tree = null;	

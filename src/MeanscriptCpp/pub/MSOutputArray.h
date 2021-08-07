@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSOutputArray
 : public MSOutputStream
@@ -14,4 +13,3 @@ void print();
 virtual ~MSOutputArray () {};
 };
 } // namespace meanscript(core)
-// C++ header END

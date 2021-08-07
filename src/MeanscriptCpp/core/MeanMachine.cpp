@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -265,7 +264,7 @@ void MeanMachine::initStep ()
 	}
 	else
 	{
-		ERROR("unknown op. code");
+		CHECK(false, EC_CODE, "unknown op. code");
 	}
 	instructionPointer += 1 + instrSize(instruction);
 }
@@ -526,7 +525,7 @@ void MeanMachine::pushData (Array<int> & source, int32_t address, int32_t size)
 	// push words from the source
 	for (int32_t i=0; i<size; i++)
 	{
-		VERBOSE("push from address " CAT address + i);
+		VERBOSE("push from address " CAT (address + i));
 		push(source[address + i]);
 	}
 }
@@ -536,7 +535,7 @@ void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t 
 	for (int32_t i=0; i<size; i++)
 	{
 		target[address + i] = stack[stackTop - size + i];
-		VERBOSE("write " CAT stack[stackTop - size + i] CAT " to address " CAT address + i);
+		VERBOSE("write " CAT stack[stackTop - size + i] CAT " to address " CAT (address + i));
 	}
 	VERBOSE("clean stack");
 	stackTop -= size;
@@ -632,4 +631,3 @@ void MeanMachine::dataPrint()
 }
 
 } // namespace meanscript(core)
-// C++ END

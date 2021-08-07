@@ -1,22 +1,17 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class StructDef extends MC {
 public int typeID;
  int [] code;
  int [] memberOffset; // memberOffset[n] = code address of _n_th member
  int [] nameOffset; // nameOffset[n] = name address of _n_th member
- String name;
+ MSText name;
  int numMembers;
  int argsSize;
 public int structSize;
  int codeTop;
- java.util.TreeMap<String, Integer> memberNames = new java.util.TreeMap<String, Integer>();
+ java.util.TreeMap<MSText, Integer> memberNames = new java.util.TreeMap<MSText, Integer>(MSJava.textComparator);
 
 
 //	DEFINITION
@@ -43,9 +38,10 @@ public int structSize;
 //			structSize = 5
 
 
-public StructDef (String _name, int _typeID) throws MException
+public StructDef (MSText _name, int _typeID) throws MException
 {
-	name = _name;
+	if (_name != null) name = new MSText(_name);
+	else name = null;
 	typeID = _typeID;
 	
 	{code = new int[			MSJava.globalConfig.maxStructDefSize]; };
@@ -58,16 +54,26 @@ public StructDef (String _name, int _typeID) throws MException
 	codeTop = 0;
 
 	// save name
-	codeTop = addTextInstruction(name, OP_STRUCT_DEF, code, codeTop);
+	if (name != null)
+	{
+		codeTop = addTextInstruction(name, OP_STRUCT_DEF, code, codeTop);
+		// change type to start tag
+		code[0] = makeInstruction(OP_STRUCT_DEF, codeTop-1, typeID);
+	}
+	else
+	{
+		code[0] = makeInstruction(OP_STRUCT_DEF, 1, typeID);
+		code[1] = 0; // empty name
+		codeTop = 2;
+	}
 	
-	// change type to start tag
-	code[0] = makeInstruction(OP_STRUCT_DEF, codeTop-1, typeID);
 }
 
-public StructDef (String _name, int _typeID, int _size) throws MException
+public StructDef (MSText _name, int _typeID, int _size) throws MException
 {
 	// primitive: no need to initialize arrays (code, memberOffset, nameOffset)
-	name = _name;
+	if (_name != null) name = new MSText(_name);
+	else name = null;
 	typeID = _typeID;
 	numMembers = -1;
 	argsSize = -1; // set structSize after all arguments are set
@@ -75,10 +81,11 @@ public StructDef (String _name, int _typeID, int _size) throws MException
 	codeTop = -1;
 }
 
-public StructDef (String _name, int _typeID, int data, int size, int op) throws MException
+public StructDef (MSText _name, int _typeID, int data, int size, int op) throws MException
 {
 	// generic struct: no need to initialize arrays memberOffset and nameOffset
-	name = _name;
+	if (_name != null) name = new MSText(_name);
+	else name = null;
 	typeID = _typeID;
 	
 	{code = new int[ 2]; };
@@ -104,7 +111,7 @@ public int numCharsForCharsDef () throws MException
 	return code[1];
 }
 
-public int  addArray (Semantics semantics, String name, int arrayType, int itemCount) throws MException
+public int  addArray (Semantics semantics, MSText name, int arrayType, int itemCount) throws MException
 {	
 	// array with it's item count at first, e.g.
 	// 		vec2 [3] -> [3] [x0] [y0] [x1] [y1] [x2] [y2]
@@ -132,7 +139,7 @@ public int  addArray (Semantics semantics, String name, int arrayType, int itemC
 	
 	structSize += dataSize;
 	
-	memberNames.put( name, codeTop);
+	memberNames.put( new MSText(name), codeTop);
 	codeTop += 4;
 
 	numMembers++;
@@ -140,35 +147,29 @@ public int  addArray (Semantics semantics, String name, int arrayType, int itemC
 	return address;
 }
 
-public int  addMember (Semantics semantics, String name, int type) throws MException
+public int  addMember (Semantics semantics, MSText name, int type) throws MException
 {	
 	// get size
 
-	// TODO: StructDef löytyy kaikille tyypeille joten if on turha ja huono jos koko > 1
-	int memberSize = 1;
-	if (type >= MAX_MS_TYPES)
-	{
-		StructDef sd = semantics.typeStructDefs[type];
-		MSJava.assertion(sd != null,   "struct missing");
-		memberSize = sd.structSize;
-	}
-	
+	StructDef sd = semantics.typeStructDefs[type];
+	MSJava.assertion(sd != null,   "struct missing");
+	int memberSize = sd.structSize;
 	return addMember(name, type, memberSize);
 }
 
-public int  addMember (String name, int type) throws MException
-{	
-	MSJava.assertion(type >= 0 && type < MAX_MS_TYPES,   "invalid member type");
-	return addMember(name, type, 1);
-}
-
-public int  addMember (String name, int type, int memberSize) throws MException
+public int  addMember (MSText name, int type, int memberSize) throws MException
 {		
 	// name saving instruction
 
-	nameOffset[numMembers] = codeTop;
-	codeTop = addTextInstruction(name, OP_MEMBER_NAME, code, codeTop);
-
+	if (name != null)
+	{
+		nameOffset[numMembers] = codeTop;
+		codeTop = addTextInstruction(name, OP_MEMBER_NAME, code, codeTop);
+	}
+	else
+	{
+		nameOffset[numMembers] = -1;
+	}
 	// create tag
 
 	memberOffset[numMembers] = codeTop;
@@ -181,7 +182,8 @@ public int  addMember (String name, int type, int memberSize) throws MException
 
 	structSize += memberSize;
 	
-	memberNames.put( name, codeTop);
+	if (name != null) { memberNames.put( new MSText(name), codeTop); }
+	
 	codeTop += 3;
 
 	numMembers++;
@@ -189,35 +191,35 @@ public int  addMember (String name, int type, int memberSize) throws MException
 	return address;
 }
 
-public int  getMemberTag (String varName) throws MException
+public int  getMemberTag (MSText varName) throws MException
 {
-	MSJava.assertion((memberNames.containsKey( varName)),   "member not found: " + varName);
+	MSJava.assertion((memberNames.containsKey( varName)),   "undefined variable: " + varName);
 	int index = memberNames.get( varName);
 	return code[index];
 }
-public int  getMemberAddress (String varName) throws MException
+public int  getMemberAddress (MSText varName) throws MException
 {
-	MSJava.assertion((memberNames.containsKey( varName)),   "member not found: " + varName);
+	MSJava.assertion((memberNames.containsKey( varName)),   "undefined variable: " + varName);
 	int index = memberNames.get( varName);
 	return code[index+1]; // see above for definition
 }
-public int  getMemberSize (String varName) throws MException
+public int  getMemberSize (MSText varName) throws MException
 {
-	MSJava.assertion((memberNames.containsKey( varName)),   "member not found: " + varName);
+	MSJava.assertion((memberNames.containsKey( varName)),   "undefined variable: " + varName);
 	int index = memberNames.get( varName);
 	return code[index+2]; // see above for definition
 }
-public int  getMemberArrayItemCount (String varName) throws MException
+public int  getMemberArrayItemCount (MSText varName) throws MException
 {
-	MSJava.assertion((memberNames.containsKey( varName)),   "member not found: " + varName);
+	MSJava.assertion((memberNames.containsKey( varName)),   "undefined variable: " + varName);
 	int index = memberNames.get( varName);
 	int tag = code[index];
 	MSJava.assertion((tag & OPERATION_MASK) == OP_ARRAY_MEMBER, EC_SYNTAX, "not an array: " + varName);
 	return code[index + 3]; // see above for definition
 }
-public int  getMemberArrayItemCountOrNegative (String varName) throws MException
+public int  getMemberArrayItemCountOrNegative (MSText varName) throws MException
 {
-	MSJava.assertion((memberNames.containsKey( varName)),   "member not found: " + varName);
+	MSJava.assertion((memberNames.containsKey( varName)),   "undefined variable: " + varName);
 	int index = memberNames.get( varName);
 	int tag = code[index];
 	if ((tag & OPERATION_MASK) != OP_ARRAY_MEMBER) return -1;
@@ -253,7 +255,7 @@ public String  getMemberName (int index) throws MException
 {
 	MSJava.assertion(indexInRange(index),   "argument index out of range: " + index);
 	int offset = nameOffset[index];
-	return new String(MSJava.intsToBytes(code, offset + 2, code[offset + 1]));
+	return new String(MSJava.intsToBytes(code, offset + 2, code[offset + 1]),java.nio.charset.StandardCharsets.UTF_8);
 }
 public void print () throws MException
 {

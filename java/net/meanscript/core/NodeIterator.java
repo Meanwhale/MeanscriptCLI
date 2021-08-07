@@ -1,11 +1,6 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class NodeIterator {
  MNode node;
 
@@ -24,7 +19,7 @@ public int  type ()
 {
 	return node.type;
 }
-public String  data ()
+public MSText  data ()
 {
 	return node.data;
 }

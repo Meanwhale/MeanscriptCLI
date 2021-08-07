@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -44,4 +43,3 @@ void MSInputArray:: close ()
 }
 
 } // namespace meanscript(core)
-// C++ END

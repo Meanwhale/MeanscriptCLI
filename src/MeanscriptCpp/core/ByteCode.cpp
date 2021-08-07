@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
@@ -59,12 +58,6 @@ void ByteCode::addWord(int32_t data)
 	code[codeTop++] = data;
 }
 
-
-void ByteCode:: addTextInstr (std::string text) 
-{
-	codeTop = addTextInstruction(text, OP_ADD_TEXT, code, codeTop);
-}
-
 void ByteCode:: writeCode (MSOutputStream & output) 
 {
 	for (int32_t i=0; i < codeTop; i++)
@@ -113,4 +106,3 @@ void ByteCode:: writeStructInit (MSOutputStream & output)
 }
 
 } // namespace meanscript(core)
-// C++ END

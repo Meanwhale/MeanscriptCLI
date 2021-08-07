@@ -1,11 +1,11 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
 
 
-const char * letters =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char * letters =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 const char * numbers =  "1234567890";
+const char * hexNumbers =  "1234567890abcdefABCDEF";
 const char * whitespace =  " \t\n\r";
 const char * linebreak =  "\n\r";
 const char * expressionBreak =  ",;\n";
@@ -13,21 +13,21 @@ const char * blockStart =  "([{";
 const char * blockEnd =  ")]}";
 const char * op =  "+*<>="; // '-' or '/' will be special cases
 
-uint8_t space, name, reference, number, minus, decimalNumber, slash, quote, comment, skipLineBreaks;
+uint8_t space, name, reference, number, hex, hexStart, minus, decimalNumber, slash, quote, comment, skipLineBreaks, escapeChar, hexByte;
 
 
-Array<uint8_t> tmp(512);
+Array<uint8_t> tmp(4096);
 Array<uint8_t> buffer(512);
+Array<uint8_t> quoteBuffer(4096);
 
 ByteAutomata* baPtr;
 bool goBackwards, running, assignment;
-int32_t index, lastStart, textCount = 0, lineNumber, characterNumber;
+int32_t index, lastStart, textCount = 0, lineNumber, characterNumber, quoteIndex;
 MNode* root;
 MNode* currentBlock;
 MNode* currentExpr;
 MNode* currentToken;
 TokenTree* tokenTree;
-
 
 constexpr char const * nodeTypeName [] = { "root","expr","sub-call","struct","block","token" };
 
@@ -52,16 +52,7 @@ void bwd()
 	goBackwards = true;
 }
 
-//void copy(uint8_t * dst, const uint8_t * src, int32_t start, int32_t end)
-//{
-//	for (int32_t i = start, n = 0; i < end; i++, n++)
-//	{
-//		dst[n] = src[i];
-//	}
-//}
-
-
-std::string getNewName() 
+MSText* getNewName() 
 {
 	int32_t start = lastStart;
 	int32_t length = index - start;
@@ -72,15 +63,20 @@ std::string getNewName()
 	{
 		tmp[i] = buffer[start++ % 512];
 	}
-	
-	tmp[i] = '\0';
-	return std::string((char*)tmp.get());
+	return new MSText (tmp.get(), 0, length);
+}
+
+MSText* getQuoteText() 
+{
+	int32_t start = 0;
+	int32_t length = quoteIndex - start;
+	return new MSText (quoteBuffer.get(), start, length);
 }
 
 
-void addExpr()
+void addExpr() 
 {
-	MNode* expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, "<EXPR>");
+	MNode* expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, new MSText ("<EXPR>"));
 	(*currentExpr).next = expr;
 	currentExpr = expr;
 	currentToken = 0;
@@ -90,29 +86,33 @@ void addExpr()
 void addToken(int32_t tokenType) 
 { 
 	if (tokenType == NT_REFERENCE_TOKEN) lastStart++; // skip '#'
-
-	std::string data = getNewName();
-
-	DEBUG(VERBOSE("TOKEN: " CAT data));
-
+	
+	MNode* token = 0;
+	
 	if (tokenType == NT_TEXT)
 	{
+		MSText* data = getQuoteText();
 		// add text to the tree if same text is not already there
-		if (!((*tokenTree).texts.find( data) != (*tokenTree).texts.end()))
+		if (!((*tokenTree).texts.find( (*data)) != (*tokenTree).texts.end()))
 		{
-			(*tokenTree).texts.insert(std::make_pair( data, textCount++));;
+			(*tokenTree).texts.insert(std::make_pair( MSText((*data)), textCount++));;
 		}
+		token = new MNode(lineNumber, characterNumber, currentExpr, NT_TEXT, data);
 	}
-
-	MNode* token = new MNode(lineNumber, characterNumber, currentExpr, tokenType, data);
-
+	else
+	{
+		MSText* data = getNewName();
+		DEBUG(VERBOSE("TOKEN: " CAT (*data)));
+		token = new MNode(lineNumber, characterNumber, currentExpr, tokenType, data);
+	}
+	
 	if (currentToken == 0) (*currentExpr).child = token;
 	else (*currentToken).next = token;
 	(*currentExpr).numChildren++;
 	currentToken = token;
 	lastStart = index;
 }
-void addOperator(int32_t tokenType, std::string name)
+void addOperator(int32_t tokenType, MSText* name)
 { 
 	MNode* token = new MNode(lineNumber, characterNumber, currentExpr, tokenType, name);
 	if (currentToken == 0) (*currentExpr).child = token;
@@ -175,23 +175,26 @@ void exprBreak()
 void addBlock(int32_t blockType) 
 {
 
-	const char * blockTypeName = "???";
+	MSText* blockTypeName = 0;
 	
-	if (blockType == NT_PARENTHESIS) blockTypeName = "<PARENTHESIS>";
-	else if (blockType == NT_SQUARE_BRACKETS) blockTypeName = "<SQUARE_BRACKETS>";
+	if (blockType == NT_PARENTHESIS) blockTypeName = new MSText("<PARENTHESIS>");
+	else if (blockType == NT_SQUARE_BRACKETS) blockTypeName = new MSText("<SQUARE_BRACKETS>");
 	else if (blockType == NT_ASSIGNMENT)
 	{
 		assignment = true;
-		blockTypeName = "<ASSIGNMENT>";
+		blockTypeName = new MSText("<ASSIGNMENT>");
 	}
-	else if (blockType == NT_CODE_BLOCK) blockTypeName = "<CODE_BLOCK>";
+	else if (blockType == NT_CODE_BLOCK) blockTypeName = new MSText("<CODE_BLOCK>");
 	else ASSERT(false, "invalid block type");
 	
 	DEBUG(VERBOSE("add block: " CAT blockType));
 	
 	lastStart = -1;
-	std::string tmp123(blockTypeName);
-	MNode* block = new MNode(lineNumber, characterNumber, currentExpr, blockType, tmp123);
+
+	ASSERT(blockTypeName != 0, "blockTypeName is null");
+
+	MNode* block = new MNode(lineNumber, characterNumber, currentExpr, blockType, blockTypeName);
+	
 	if (currentToken == 0)
 	{
 		// expression starts with a block, eg. "[1,2]" in "[[1,2],34,56]"
@@ -206,12 +209,11 @@ void addBlock(int32_t blockType)
 	
 	currentBlock = block;
 
-	MNode* expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, "<EXPR>");
+	MNode* expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, new MSText("<EXPR>"));
 	(*currentBlock).child = expr;
 	currentExpr = expr;
 	currentToken = 0;
 }
-
 
 void parseError(const char * msg)
 {
@@ -219,6 +221,24 @@ void parseError(const char * msg)
 	PRINT(msg);
 	(*baPtr).ok = false;
 	running = false;
+}
+
+void addQuoteByte(uint8_t b)
+{
+	if (quoteIndex >= 4096)
+	{
+		parseError("text is too long");
+		return;
+	}
+	quoteBuffer[quoteIndex++] = b;
+}
+
+void addHexByte() 
+{
+	uint8_t high = buffer[(lastStart + 1) % 512];
+	uint8_t low = buffer [(lastStart + 2) % 512];
+	uint8_t b = (uint8_t)(((hexCharToByte(high)<<4) & 0xf0) | hexCharToByte(low));
+	addQuoteByte(b);
 }
 
 void defineTransitions() 
@@ -230,6 +250,8 @@ void defineTransitions()
 	//member = ba.addState("member");
 	reference = ba.addState("reference");
 	number = ba.addState("number");
+	hexStart = ba.addState("hex start");
+	hex = ba.addState("hex");
 	minus = ba.addState("minus");
 	decimalNumber = ba.addState("decimal number");
 	//expNumber = ba.addState("exp. number");
@@ -237,14 +259,17 @@ void defineTransitions()
 	quote = ba.addState("quote");
 	comment = ba.addState("comment");
 	skipLineBreaks = ba.addState("skip line breaks");
+	escapeChar = ba.addState("escape character");
+	hexByte = ba.addState("hex byte");
 
 	ba.transition(space, whitespace, 0);
 	ba.transition(space, letters, []() { next(name); });
 	ba.transition(space, "#", []() { next(reference); });
 	ba.transition(space, "-", []() { next(minus); });
 	ba.transition(space, "/", []() { next(slash); });
-	ba.transition(space, "\"", []() { next(quote); });
+	ba.transition(space, "\"", []() { next(quote); quoteIndex = 0; });
 	ba.transition(space, numbers, []() { next(number); });
+	ba.transition(space, "0", []() { next(hexStart); }); // start hex
 	ba.transition(space, expressionBreak, []() { exprBreak(); });
 	ba.transition(space, "(", []() { addBlock(NT_PARENTHESIS); next(skipLineBreaks); });
 	ba.transition(space, ")", []() { endBlock(NT_PARENTHESIS); });
@@ -253,21 +278,18 @@ void defineTransitions()
 	ba.transition(space, "{", []() { addBlock(NT_CODE_BLOCK); next(skipLineBreaks); });
 	ba.transition(space, "}", []() { endBlock(NT_CODE_BLOCK); });
 	ba.transition(space, ":", []() { addBlock(NT_ASSIGNMENT); next(skipLineBreaks); });
-	ba.transition(space, ".", []() { addOperator(NT_DOT,"."); });
+	ba.transition(space, ".", []() { addOperator(NT_DOT,new MSText(".")); });
 
 	ba.transition(name, letters, 0);
+	ba.transition(name, numbers, 0);
 	ba.transition(name, whitespace, []() { addToken(NT_NAME_TOKEN); next(space); });
 	ba.transition(name, "#", []() { addToken(NT_REF_TYPE_TOKEN); next(space); });
 	ba.transition(name, expressionBreak, []() { addToken(NT_NAME_TOKEN); exprBreak(); next(space); });
 	ba.transition(name, blockStart, []() { addToken(NT_NAME_TOKEN); bwd(); next(space); });
 	ba.transition(name, blockEnd, []() { addToken(NT_NAME_TOKEN); bwd(); next(space); });
 	ba.transition(name, ":", []() { addToken(NT_NAME_TOKEN); addBlock(NT_ASSIGNMENT); next(skipLineBreaks); });
-	ba.transition(name, ".", []() { addToken(NT_NAME_TOKEN); addOperator(NT_DOT,"."); next(space); });
+	ba.transition(name, ".", []() { addToken(NT_NAME_TOKEN); addOperator(NT_DOT,new MSText(".")); next(space); });
 	
-	//ba.fillTransition(member, []() { addMember(); bwd(); next(space); });
-	//ba.transition(member, letters, 0);
-	//ba.transition(member, ".", []() { addMember(); next(member); });
-
 	ba.transition(reference, letters, 0);
 	ba.transition(reference, whitespace, []() { addToken(NT_REFERENCE_TOKEN); next(space); });
 	ba.transition(reference, expressionBreak, []() { addToken(NT_REFERENCE_TOKEN); exprBreak(); next(space); });
@@ -275,11 +297,24 @@ void defineTransitions()
 	ba.transition(reference, blockEnd,   []() { addToken(NT_REFERENCE_TOKEN); bwd(); next(space); });
 
 	ba.transition(number, numbers, 0);
-	ba.transition(number, whitespace, []() { addToken(NT_NUMBER_TOKEN); next(space); });
-	ba.transition(number, expressionBreak, []() { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
-	ba.transition(number, blockStart, []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
-	ba.transition(number, blockEnd,   []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(number, whitespace,       []() { addToken(NT_NUMBER_TOKEN); next(space); });
+	ba.transition(number, expressionBreak,  []() { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
+	ba.transition(number, blockStart,       []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(number, blockEnd,         []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
 	ba.transition(number, ".", []() { nextCont(decimalNumber); });
+	
+	ba.transition(hexStart, numbers, []() { nextCont(number); });
+	ba.transition(hexStart, "x", []() { next(hex); lastStart++; });
+	ba.transition(hexStart, whitespace,       []() { addToken(NT_NUMBER_TOKEN); next(space); });
+	ba.transition(hexStart, expressionBreak,  []() { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
+	ba.transition(hexStart, blockStart,       []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(hexStart, blockEnd,         []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	
+	ba.transition(hex, hexNumbers, 0);
+	ba.transition(hex, whitespace,       []() { addToken(NT_HEX_TOKEN); next(space); });
+	ba.transition(hex, expressionBreak,  []() { addToken(NT_HEX_TOKEN); exprBreak(); next(space); });
+	ba.transition(hex, blockStart,       []() { addToken(NT_HEX_TOKEN); bwd(); next(space); });
+	ba.transition(hex, blockEnd,         []() { addToken(NT_HEX_TOKEN); bwd(); next(space); });
 
 	ba.transition(minus, whitespace, []() { addToken(NT_MINUS); next(space); });
 	ba.transition(minus, numbers, []() { nextCont(number); }); // change state without reseting starting index
@@ -298,9 +333,31 @@ void defineTransitions()
 	ba.fillTransition(slash, []() { addToken(NT_DIV); bwd(); next(space); });
 	ba.transition(slash, "/", []() { next(comment); });
 
-	ba.fillTransition(quote, 0);
+	ba.fillTransition(quote, []() { addQuoteByte((*baPtr).currentInput); });
 	ba.transition(quote, linebreak, []() { parseError("line break inside a quotation"); });
 	ba.transition(quote, "\"", []() { lastStart++; addToken(NT_TEXT); next(space); });
+	ba.transition(quote, "\\", []() { next(escapeChar); });
+	
+	ba.fillTransition(escapeChar, []() { parseError("invalid escape character in quotes"); });
+	
+	// standard character literals: https://en.cppreference.com/w/cpp/language/escape
+	
+	ba.transition(escapeChar, "'",  []() { addQuoteByte((uint8_t)0x27); next(quote); });
+	ba.transition(escapeChar, "\"", []() { addQuoteByte((uint8_t)0x22); next(quote); });
+	ba.transition(escapeChar, "?",  []() { addQuoteByte((uint8_t)0x3f); next(quote); });
+	ba.transition(escapeChar, "\\", []() { addQuoteByte((uint8_t)0x5c); next(quote); });
+	ba.transition(escapeChar, "a",  []() { addQuoteByte((uint8_t)0x07); next(quote); });
+	ba.transition(escapeChar, "b",  []() { addQuoteByte((uint8_t)0x08); next(quote); });
+	ba.transition(escapeChar, "f",  []() { addQuoteByte((uint8_t)0x0c); next(quote); });
+	ba.transition(escapeChar, "n",  []() { addQuoteByte((uint8_t)0x0a); next(quote); });
+	ba.transition(escapeChar, "r",  []() { addQuoteByte((uint8_t)0x0d); next(quote); });
+	ba.transition(escapeChar, "t",  []() { addQuoteByte((uint8_t)0x09); next(quote); });
+	ba.transition(escapeChar, "v",  []() { addQuoteByte((uint8_t)0x0b); next(quote); });
+	
+	ba.transition(escapeChar, "x", []() { next(hexByte); });
+	
+	ba.fillTransition(hexByte, []() { parseError("invalid hexadecimal byte"); });
+	ba.transition(hexByte, hexNumbers, []() { if (index - lastStart >= 2) { addHexByte(); next(quote); } });
 	
 	ba.fillTransition(comment, 0);
 	ba.transition(comment, linebreak, []() { exprBreak(); next(space); });
@@ -310,6 +367,60 @@ void defineTransitions()
 	ba.transition(skipLineBreaks, linebreak, 0);
 }
 
+Array<bool> validNameChars;
+Array<bool> validNumberChars;
+bool nameValidatorInitialized = false;
+
+bool Parser:: isValidName (MSText* name) 
+{
+	// name validator
+	// initialize if needed
+	
+	int32_t length, i;
+	
+	if (!nameValidatorInitialized) {
+		uint8_t * letterBytes = (uint8_t *)letters;
+		uint8_t * numberBytes = (uint8_t *)numbers;
+		//uint8_t * numberBytes = (uint8_t *)numbers;
+		validNameChars.reset( 256);
+		validNumberChars.reset( 256);
+		validNameChars.fill(false);
+		validNumberChars.fill(false);
+		
+		std::string lettersString = letters;
+		length = lettersString.size();
+		for (i=0; i<length; i++) {
+			validNameChars[letterBytes[i]] = true;
+		}
+		std::string numbersString = numbers;
+		length = numbersString.size();
+		for (i=0; i<length; i++) {
+			validNumberChars[numberBytes[i]] = true;
+		}
+		
+		nameValidatorInitialized = true;
+	}
+	
+	length = (*name).numBytes();
+	
+	if (length < 1 || length > globalConfig.maxNameLength) return false;
+	
+	// first character must be a letter or under-score
+	if (!validNameChars[(*name).byteAt(0)]) return false;
+	
+	for (i=1; i<length; i++) {
+		uint8_t b = (*name).byteAt(i);
+		if (!validNameChars[b] && !validNumberChars[b]) return false;
+	}
+
+	return true;
+}
+
+bool Parser:: isValidName (const char * name) 
+{
+	MSText t (name);
+	return isValidName((&(t)));
+}
 
 TokenTree* Parser:: Parse (MSInputStream & input) 
 {
@@ -324,7 +435,7 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 
 	ba.next((uint8_t)1);
 
-	root = new MNode(1, 1, 0, NT_EXPR, "<ROOT>");
+	root = new MNode(1, 1, 0, NT_EXPR, new MSText("<ROOT>"));
 	currentExpr = root;
 	currentBlock = 0;
 	currentToken = 0;
@@ -336,7 +447,7 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 	goBackwards = false;
 	
 	// text ID 0: empty
-	(*tokenTree).texts.insert(std::make_pair( "", textCount++));;
+	(*tokenTree).texts.insert(std::make_pair( MSText (""), textCount++));;
 	
 	lineNumber = 1;
 	characterNumber = 1;
@@ -364,13 +475,16 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 		{
 			goBackwards = false;
 		}
-		DEBUG(VERBOSE("[ " CAT (char)(inputByte) CAT " ]"));
+		if (globalConfig.verboseOn())
+		{
+			PRINTN(" [").printCharSymbol(inputByte).print("]\n");
+		}
 
 		running = ba.step(inputByte);
 	}
 
 	if (!goBackwards) index++;
-	ba.step((uint8_t)'\n'); // ended cleanly: last command break
+	if (ba.ok) ba.step((uint8_t)'\n'); // ended cleanly: last command break
 	if (currentBlock != 0)
 	{
 		PRINT("closing parenthesis missing at the end");
@@ -379,8 +493,8 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 	
 	if (!running || !(ba.ok))
 	{
-		PRINT("Parser state [" CAT ba.stateNames[ (int32_t)ba.currentState] CAT "]");
-		PRINT("Line " CAT lineNumber CAT ": \"");
+		ERROR_PRINT("Parser state [" CAT ba.stateNames[ (int32_t)ba.currentState] CAT "]\n");
+		ERROR_PRINT("Line " CAT lineNumber CAT ": \"");
 		
 		// print nearby code
 		int32_t start = index-1;
@@ -388,14 +502,14 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 			start --;
 		while (++start < index)
 		{
-			VERBOSE((char)(buffer[start % 512]));
+			ERROR_PRINT("").printCharSymbol((uint8_t)(buffer[start % 512]));
 		}
-		PRINT("\"");
+		ERROR_PRINT("\"\n");
 		
 		{ delete baPtr; baPtr = 0; };
 		{ delete root; root = 0; };
 		{ delete tokenTree; tokenTree = 0; };
-		ERROR("Parse error");
+		CHECK(false, EC_PARSE, 0);
 	}
 
 	if (globalConfig.verboseOn())
@@ -412,4 +526,3 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 
 
 } // namespace meanscript(core)
-// C++ END

@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSGlobal extends MC {
 
 // configuration parameters
@@ -17,7 +12,7 @@ public final int baseStackSize			= 1024;
 public final int maxFunctions			= 256;
 public final int registerSize			= 256;
 public final int maxArraySize			= 4096;
-public final int maxNameLength			= 128;
+public final int maxNameLength			= 128; // TODO: not a configurable, but according to language spex
 public final int codeSize				= 65536; // 2^16
 public final int stackSize				= 65536;
 public final int builderValuesSize		= 65536;

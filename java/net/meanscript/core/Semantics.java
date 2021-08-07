@@ -1,16 +1,11 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class Semantics extends MC {
 public int typeIDCounter;
  int maxContexts;
  int numContexts;
- java.util.TreeMap<String, Integer> types = new java.util.TreeMap<String, Integer>();
+ java.util.TreeMap<MSText, Integer> types = new java.util.TreeMap<MSText, Integer>(MSJava.textComparator);
  StructDef [] typeStructDefs;
  Context [] contexts;
 public Context globalContext;
@@ -29,7 +24,7 @@ public Semantics () throws MException
 	maxContexts = MSJava.globalConfig.maxFunctions;
 	contexts = new Context[maxContexts];
 	
-	contexts[0] = new Context("global", 0, -1);
+	contexts[0] = new Context(null, 0, -1); // global context
 	globalContext = contexts[0];
 	currentContext = globalContext;
 	for (int i=1; i<maxContexts; i++)
@@ -40,10 +35,10 @@ public Semantics () throws MException
 }
 //;
 
-public void addPrimitiveType (String name, StructDef sd, int id)
+public void addPrimitiveType (MSText name, StructDef sd, int id) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Add primitive type [" + id + "] " + name).endLine();};
-	types.put( name, id);
+	types.put( new MSText(name), id);
 	typeStructDefs[id] = sd;
 	
 }
@@ -51,8 +46,9 @@ public void addPrimitiveType (String name, StructDef sd, int id)
 public void addElementaryType (String name, int typeID, int size) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Add elementary type [" + typeID + "] " + name).endLine();};
-	types.put( name, typeID);
-	StructDef sd = new StructDef(name, typeID, size);
+	types.put( new MSText(name), typeID);
+	MSText tmp = new MSText (name);
+	StructDef sd = new StructDef(tmp, typeID, size);
 	typeStructDefs[typeID] = sd;
 }
 
@@ -65,12 +61,12 @@ public StructDef addCharsType (int numChars) throws MException
 	int arraySize = (numChars / 4) + 2;
 	MSJava.syntaxAssertion(arraySize > 0 && arraySize < MSJava.globalConfig.maxArraySize, null, "invalid array size");
 	int typeID = typeIDCounter++;
-	StructDef sd = new StructDef("", typeID, numChars, arraySize, OP_CHARS_DEF);
+	StructDef sd = new StructDef(null, typeID, numChars, arraySize, OP_CHARS_DEF);
 	typeStructDefs[typeID] = sd;
 	return sd;
 }
 
-public boolean hasType(String name)
+public boolean hasType(MSText name)
 {
 	return (types.containsKey( name));
 }
@@ -83,30 +79,30 @@ public boolean hasType(int id)
 public StructDef  getType (int id) throws MException
 {
 	StructDef userType = typeStructDefs[id];
-	MSJava.assertion(userType != null,   "Unkown type");
+	MSJava.assertion(userType != null,   "Data type error");
 	return userType;
 }
 
-public StructDef  getType (String name) throws MException
+public StructDef  getType (MSText name) throws MException
 {
 	int id = types.get( name);
 	StructDef userType = typeStructDefs[id];
-	MSJava.assertion(userType != null,   "Unkown type: " + name);
+	MSJava.assertion(userType != null,   "Data type error: " + name);
 	return userType;
 }
 
 public StructDef  getType (int id, NodeIterator itPtr) throws MException
 {
 	StructDef userType = typeStructDefs[id];
-	MSJava.syntaxAssertion(userType != null, itPtr, "Unkown type: #" + id);
+	MSJava.syntaxAssertion(userType != null, itPtr, "Data type error: #" + id);
 	return userType;
 }
 
-public StructDef  getType (String name, NodeIterator itPtr) throws MException
+public StructDef  getType (MSText name, NodeIterator itPtr) throws MException
 {
 	int id = types.get( name);
 	StructDef userType = typeStructDefs[id];
-	MSJava.syntaxAssertion(userType != null, itPtr, "Unkown type: " + name);
+	MSJava.syntaxAssertion(userType != null, itPtr, "Data type error: " + name);
 	return userType;
 }
 
@@ -115,18 +111,33 @@ public boolean inGlobal ()
 	return currentContext == contexts[0];
 }
 
-public Context  findContext (String name)
+public Context  findContext (MSText name)
 {
 	for (int i=1; i<maxContexts; i++)
 	{
 		if (contexts[i] == null) continue;
-		if ((contexts[i].name.equals( name))) return contexts[i];			
+		if (name.match(contexts[i].variables.name)) return contexts[i];			
 	}
 	return null;
 }
 
-public boolean  assumeNotReserved (String name) throws MException
+public boolean  isNameValidAndAvailable (String name) throws MException
 {
+	MSText n = new MSText (name);
+	return isNameValidAndAvailable(n);
+}
+
+public boolean  isNameValidAndAvailable (MSText name) throws MException
+{
+	// check it has valid characters
+	if (!Parser.isValidName(name)) {
+		return false;
+	}
+	
+	if(name.numBytes() >= MSJava.globalConfig.maxNameLength) {
+		MSJava.errorOut.print("name is too long, max length: " + (MSJava.globalConfig.maxNameLength) + " name: " + name);
+		return false;
+	}
 	// return true if not reserved, otherwise print error message and return false
 	
 	if(findContext(name) != null) {
@@ -150,7 +161,7 @@ public boolean  assumeNotReserved (String name) throws MException
 	}
 	for(int i=0; i<NUM_KEYWORDS; i++)
 	{
-		if ((name.equals( keywords[i]))) {
+		if (name.match(keywords[i])) {
 			MSJava.errorOut.print("unexpected keyword: " + name);
 			return false;
 		}
@@ -236,7 +247,7 @@ public void analyzeExpr (NodeIterator it) throws MException
 		{
 			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("-------- function call!!!").endLine();};
 		}
-		else if ((it.data().equals( keywords[KEYWORD_FUNC_ID])))
+		else if (it.data().match(keywords[KEYWORD_FUNC_ID]))
 		{
 			// get return type
 
@@ -250,9 +261,9 @@ public void analyzeExpr (NodeIterator it) throws MException
 			MSJava.syntaxAssertion(it.hasNext(), it, "function name expected");
 			it.toNext();
 			MSJava.syntaxAssertion(it.type() == NT_NAME_TOKEN, it, "function name expected");
-			String functionName = it.data();
+			MSText functionName = it.data();
 
-			MSJava.syntaxAssertion(assumeNotReserved(functionName), it, "variable name error");
+			MSJava.syntaxAssertion(isNameValidAndAvailable(functionName), it, "variable name error");
 			
 			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Create a new function: " + functionName).endLine();};
 			
@@ -287,14 +298,14 @@ public void analyzeExpr (NodeIterator it) throws MException
 
 			MSJava.syntaxAssertion(!it.hasNext(), it, "unexpected token after code block");
 		}
-		else if ((it.data().equals( keywords[KEYWORD_STRUCT_ID])))
+		else if (it.data().match(keywords[KEYWORD_STRUCT_ID]))
 		{
 			// e.g. "struct Vec [int x, INT y, INT z]"
 
 			MSJava.syntaxAssertion(it.hasNext(), it, "struct name expected");
 			it.toNext();
-			String structName = it.data();
-			MSJava.syntaxAssertion(assumeNotReserved(structName), it, "variable name error");
+			MSText structName = it.data();
+			MSJava.syntaxAssertion(isNameValidAndAvailable(structName), it, "variable name error");
 			MSJava.syntaxAssertion(it.hasNext(), it, "struct definition expected");
 			it.toNext();
 			MSJava.syntaxAssertion(!it.hasNext(), it, "unexpected token after struct definition");
@@ -306,7 +317,7 @@ public void analyzeExpr (NodeIterator it) throws MException
 			// expr. starts with a type name, eg. "int foo" OR "person [5] players"
 			
 			int type = types.get( it.data());
-			MSJava.assertion(type == MS_TYPE_INT || type == MS_TYPE_FLOAT || type == MS_TYPE_TEXT || type == MS_TYPE_CHARS || type >= MAX_MS_TYPES,   "semantics: unknown type: " + type);
+			MSJava.assertion(type == MS_TYPE_INT || type == MS_TYPE_INT64 || type == MS_TYPE_FLOAT || type == MS_TYPE_FLOAT64 || type == MS_TYPE_BOOL || type == MS_TYPE_TEXT || type == MS_TYPE_CHARS || type >= MAX_MS_TYPES,   "semantics: unknown type: " + type);
 
 			it.toNext();
 			
@@ -322,18 +333,18 @@ public void analyzeExpr (NodeIterator it) throws MException
 				
 				// parse size and calculate array size
 				
-				int charsSize = Integer.parseInt(it.data());
+				int charsSize = MSJava.parseInt32(it.data().getString());
 				
 				it.toParent();
 				it.toParent();
 				
 				it.toNext();
-				String varName = it.data();
-				MSJava.syntaxAssertion(assumeNotReserved(varName), it, "variable name error");
+				MSJava.syntaxAssertion(it.type() == NT_NAME_TOKEN, it, "name expected");
+				MSJava.syntaxAssertion(isNameValidAndAvailable(it.data()), it, "variable name error");
 				
 				StructDef charsType = addCharsType(charsSize);
 				
-				currentContext.variables.addMember(this, varName, charsType.typeID);				
+				currentContext.variables.addMember(this, it.data(), charsType.typeID);				
 			}
 			else if (it.type() == NT_SQUARE_BRACKETS)
 			{
@@ -357,7 +368,7 @@ public void analyzeExpr (NodeIterator it) throws MException
 					it.toChild();
 					MSJava.syntaxAssertion(!it.hasNext(), it, "array size expected");
 					MSJava.syntaxAssertion(it.type() == NT_NUMBER_TOKEN, it, "array size (number) expected");
-					arraySize = Integer.parseInt(it.data());
+					arraySize = MSJava.parseInt32(it.data().getString());
 					MSJava.syntaxAssertion(arraySize > 0 && arraySize < MSJava.globalConfig.maxArraySize, it, "invalid array size");
 					it.toParent();
 				}
@@ -365,8 +376,9 @@ public void analyzeExpr (NodeIterator it) throws MException
 				
 				// array name
 				it.toNext();
-				String varName = it.data();
-				MSJava.syntaxAssertion(assumeNotReserved(varName), it, "variable name error");
+				MSJava.syntaxAssertion(it.type() == NT_NAME_TOKEN, it, "name expected");
+				MSText varName = it.data();
+				MSJava.syntaxAssertion(isNameValidAndAvailable(varName), it, "variable name error");
 				
 				if (arraySize == -1)
 				{
@@ -383,19 +395,19 @@ public void analyzeExpr (NodeIterator it) throws MException
 			else
 			{
 				// variable name
-				MSJava.syntaxAssertion(assumeNotReserved(it.data()), it, "variable name error");
-				{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("New variable: " + it.data() + " <" + currentContext.name + ">").endLine();};
+				MSJava.syntaxAssertion(isNameValidAndAvailable(it.data()), it, "variable name error");
+				{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("New variable: " + it.data() + " <" + currentContext.variables.name + ">").endLine();};
 				currentContext.variables.addMember(this, it.data(), type);
 			}
 		}
 	}
 	else
 	{
-		throw new MException(MC.EC_INTERNAL, "unexpected token");
+		MSJava.assertion(false, EC_PARSE, "unexpected token");
 	}
 }
 
-public void  addStructDef (String name, NodeIterator it) throws MException
+public void  addStructDef (MSText name, NodeIterator it) throws MException
 {
 	int id = typeIDCounter++;
 	
@@ -408,10 +420,10 @@ public void  addStructDef (String name, NodeIterator it) throws MException
 	addStructDef(name, id, sd);
 }
 
-public void  addStructDef (String name, int id, StructDef sd) throws MException
+public void  addStructDef (MSText name, int id, StructDef sd) throws MException
 {
 	MSJava.assertion(!(types.containsKey(name)) && typeStructDefs[sd.typeID] == null,   "addStructDef: type ID reserved");
-	types.put( name, (int)(id & VALUE_TYPE_MASK));
+	types.put( new MSText(name), (int)(id & VALUE_TYPE_MASK));
 	typeStructDefs[sd.typeID] = sd;
 }
 
@@ -426,8 +438,8 @@ public void createStructDef (StructDef sd, NodeIterator it) throws MException
 	{
 		if (!it.hasChild()) continue; // skip an empty expression
 		it.toChild();
-		MSJava.syntaxAssertion((types.containsKey(it.data())),it,  "createStructDef: unknown type: " + it.data());
-		int type = types.get( it.data());
+		MSJava.syntaxAssertion((types.containsKey((it.data()))),it,  "createStructDef: unknown type: " + it.data());
+		int type = types.get( (it.data()));
 		it.toNext();
 
 		if (type == MS_TYPE_CHARS)
@@ -442,18 +454,17 @@ public void createStructDef (StructDef sd, NodeIterator it) throws MException
 			
 			// parse size and calculate array size
 			
-			int charsSize = Integer.parseInt(it.data());
+			int charsSize = MSJava.parseInt32(it.data().getString());
 			
 			it.toParent();
 			it.toParent();
 			
 			it.toNext();
-			String varName = it.data();
-			MSJava.syntaxAssertion(assumeNotReserved(varName), it, "variable name error");
+			MSJava.syntaxAssertion(isNameValidAndAvailable(it.data()), it, "variable name error");
 			
 			StructDef charsType = addCharsType(charsSize);
 			
-			sd.addMember(this, varName, charsType.typeID);				
+			sd.addMember(this, it.data(), charsType.typeID);				
 		}
 		else if (it.type() == NT_SQUARE_BRACKETS)
 		{
@@ -467,7 +478,7 @@ public void createStructDef (StructDef sd, NodeIterator it) throws MException
 			it.toChild();
 			MSJava.syntaxAssertion(!it.hasNext(),it,  "array size expected");
 			MSJava.syntaxAssertion(it.type() == NT_NUMBER_TOKEN, it, "array size (number) expected");
-			int arraySize = Integer.parseInt(it.data());
+			int arraySize = MSJava.parseInt32(it.data().getString());
 			it.toParent();
 			it.toParent();
 			
@@ -480,10 +491,9 @@ public void createStructDef (StructDef sd, NodeIterator it) throws MException
 		else
 		{
 			MSJava.syntaxAssertion(it.type() == NT_NAME_TOKEN,it,  "member name expected");
-			String memberName = it.data();
-			MSJava.syntaxAssertion(!(sd.memberNames.containsKey( memberName)),it,  "duplicate name: " + memberName);
-			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Add struct member: " + memberName).endLine();};
-			sd.addMember(this, memberName, type);
+			MSJava.syntaxAssertion(!(sd.memberNames.containsKey( (it.data()))),it,  "duplicate name: " + it.data());
+			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Add struct member: " + it.data()).endLine();};
+			sd.addMember(this, it.data(), type);
 		}
 		MSJava.syntaxAssertion(!it.hasNext(), it, "break expected");
 		

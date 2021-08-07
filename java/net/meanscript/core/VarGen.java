@@ -1,11 +1,6 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class VarGen extends MC {
  int size;
  int tag;

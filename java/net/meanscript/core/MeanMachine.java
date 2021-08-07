@@ -1,11 +1,6 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class MeanMachine extends MC {
  int stackTop;
  int ipStackTop;
@@ -291,7 +286,7 @@ public void initStep () throws MException
 	}
 	else
 	{
-		throw new MException(MC.EC_INTERNAL, "unknown op. code");
+		MSJava.assertion(false, EC_CODE, "unknown op. code");
 	}
 	instructionPointer += 1 + instrSize(instruction);
 }
@@ -552,7 +547,7 @@ public void pushData (int [] source, int address, int size)
 	// push words from the source
 	for (int i=0; i<size; i++)
 	{
-		{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("push from address " + address + i).endLine();};
+		{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("push from address " + (address + i)).endLine();};
 		push(source[address + i]);
 	}
 }
@@ -562,7 +557,7 @@ public void popStackToTarget (ByteCode bc, int [] target, int size, int address)
 	for (int i=0; i<size; i++)
 	{
 		target[address + i] = stack[stackTop - size + i];
-		{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("write " + stack[stackTop - size + i] + " to address " + address + i).endLine();};
+		{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("write " + stack[stackTop - size + i] + " to address " + (address + i)).endLine();};
 	}
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("clean stack").endLine();};
 	stackTop -= size;

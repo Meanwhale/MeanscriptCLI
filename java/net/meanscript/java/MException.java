@@ -16,15 +16,18 @@ public class MException extends Exception
 
 		if (error == null)
 		{
-			info = msg;
+			if (msg != null && !msg.isEmpty()) info = msg;
+			else info = "<no message>";
 		}
 		else if (error.errorClass == MC.EC_CLASS)
 		{
-			info = error.title + "\n" + msg;
+			info = error.title;
+			if (msg != null && !msg.isEmpty()) info += "\n" + msg;
 		}
 		else 
 		{
-			info = error.errorClass.title + ": " + error.title + "\n" + msg;
+			info = error.errorClass.title + ": " + error.title;
+			if (msg != null && !msg.isEmpty()) info += "\n" + msg;
 		}
 		
 		/*

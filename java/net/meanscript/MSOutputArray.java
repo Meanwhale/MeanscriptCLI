@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSOutputArray extends MSOutputStream {
  byte  buffer [];
  int maxSize;

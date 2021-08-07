@@ -1,11 +1,10 @@
-
 #include "MS.h"
 namespace meanscriptcore {
 using namespace meanscript;
 
-MNode::MNode (int32_t line, int32_t ch, MNode* _parent, int32_t _type, const std::string & _data)
-  :  data(_data)
+MNode::MNode (int32_t line, int32_t ch, MNode* _parent, int32_t _type, MSText* _data)
 {
+	data = _data;
 	lineNumber = line;
 	characterNumber = ch;
 
@@ -42,7 +41,6 @@ void MNode::printTree (MNode* _node, int32_t depth, bool deep)
 	if (node.child != 0 && deep) printTree(node.child, depth + 1, deep);
 	if (node.next != 0) printTree(node.next, depth, deep);
 }
-MNode::~MNode() { delete next; delete child; }
+MNode::~MNode() { delete data; delete next; delete child; }
 
 } // namespace meanscript(core)
-// C++ END

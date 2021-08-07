@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -60,11 +59,24 @@ std::string MSData:: getText (int32_t id)
 	std::string s = readStringFromIntArray((*structCode),  address + 2,  numChars);;
 	return s;
 }
+MSText MSData:: getMSText (int32_t id) 
+{
+	if (id == 0) return MSText("");
+	int32_t address = (*mm).texts[id]; // operation address
+	return MSText((*structCode),address+1);
+}
 
 std::string MSData::getChars (std::string name) 
 {
-	// TODO: check type
-	int32_t address = getMemberAddress(name);
+	int32_t memberTagAddress = getMemberTagAddress(name, false);
+	
+	int32_t charsTag = (*structCode)[memberTagAddress];
+	int32_t charsTypeAddress = (*mm).types[instrValueTypeIndex(charsTag)];
+	int32_t charsTypeTag = (*structCode)[charsTypeAddress];
+	CHECK((charsTypeTag & OPERATION_MASK) == OP_CHARS_DEF, EC_DATA, "not chars");
+	
+	CHECK(memberTagAddress >= 0, EC_DATA, "not found: " CAT name);
+	int32_t address = dataIndex + (*structCode)[memberTagAddress + 1];
 	int32_t numChars = (*dataCode)[address];
 	std::string s = readStringFromIntArray((*dataCode),  address + 1,  numChars);;
 	return s;
@@ -85,15 +97,63 @@ float MSData::getFloat (std::string name)
 
 int32_t MSData::getInt () 
 {
-	ASSERT(getType() >= MS_TYPE_INT, "not an integer");
+	ASSERT(getType() >= MS_TYPE_INT, "not a 32-bit integer");
 	return (*dataCode)[dataIndex];
 }
+
 
 int32_t MSData::getInt (std::string name) 
 {
 	int32_t address = getMemberAddress(name, MS_TYPE_INT);
 	CHECK(address >= 0, EC_DATA, "unknown name");
 	return (*dataCode)[address];
+}
+
+bool MSData::getBool () 
+{
+	ASSERT(getType() >= MS_TYPE_BOOL, "not a bool integer");
+	return (*dataCode)[dataIndex] != 0;
+}
+
+bool MSData::getBool (std::string name) 
+{
+	int32_t address = getMemberAddress(name, MS_TYPE_BOOL);
+	CHECK(address >= 0, EC_DATA, "unknown name");
+	return (*dataCode)[address] != 0;
+}
+
+int64_t MSData::getInt64 () 
+{
+	return getInt64At(dataIndex);
+}
+
+int64_t MSData::getInt64 (std::string name) 
+{
+	int32_t address = getMemberAddress(name, MS_TYPE_INT64);
+	return getInt64At(address);
+}
+int64_t MSData::getInt64At (int address) 
+{
+	int32_t a = (*dataCode)[address];
+	int32_t b = (*dataCode)[address+1];
+	int64_t i64 = intsToInt64(a,b);
+	return i64;
+}
+
+double MSData::getFloat64 () 
+{
+	return getFloat64At(dataIndex);
+}
+
+double MSData::getFloat64 (std::string name) 
+{
+	int32_t address = getMemberAddress(name, MS_TYPE_FLOAT64);
+	return getFloat64At(address);
+}
+double MSData::getFloat64At (int address) 
+{
+	int64_t i64 = getInt64At(address);
+	return ((double&)(*(&i64)));
 }
 
 bool MSData::isArrayItem ()
@@ -154,7 +214,7 @@ int32_t MSData::getMemberTagAddress (std::string name, bool isArray)
 	
 	// go thru members
 	
-	while ((code & OPERATION_MASK) == OP_MEMBER_NAME)
+	while ((code & OPERATION_MASK) == OP_MEMBER_NAME) // TODO: handle the case of "no name"
 	{
 		//VERBOSE("check member name");
 		//VERBOSE("member: " + readStringFromIntArray((*structCode),  i+2,  (*structCode)[i+1]););
@@ -197,7 +257,12 @@ void MSData:: printData (int32_t depth, std::string name)
 		}
 		else if (getType() == MS_TYPE_TEXT)
 		{
-			PRINT(getText((*dataCode)[dataIndex]));
+			MSText tmp = getMSText((*dataCode)[dataIndex]);
+			PRINT(tmp);
+		}
+		else if (getType() == MS_TYPE_INT64)
+		{
+			PRINT(intsToInt64((*dataCode)[dataIndex], (*dataCode)[dataIndex+1]));
 		}
 		else
 		{
@@ -274,4 +339,3 @@ void MSData:: printData (int32_t depth, std::string name)
 MSData::~MSData() { };
 
 } // namespace meanscript(core)
-// C++ END

@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSInputStream
 {
@@ -13,4 +12,3 @@ void readArray (Array<int> & trg, int32_t num);
 virtual ~MSInputStream () {};
 };
 } // namespace meanscript(core)
-// C++ header END

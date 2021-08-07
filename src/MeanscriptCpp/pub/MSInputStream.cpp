@@ -1,4 +1,3 @@
-
 #include "MS.h"
 namespace meanscript {
 using namespace meanscriptcore;
@@ -31,4 +30,3 @@ void MSInputStream:: readArray (Array<int> & trg, int32_t numInts)
 	ASSERT(end(), "all bytes not read");
 }
 } // namespace meanscript(core)
-// C++ END

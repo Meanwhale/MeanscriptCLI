@@ -32,9 +32,6 @@
     <ClInclude Include="Unique.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Link.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Array.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -128,6 +125,9 @@
     <ClInclude Include="core\ClassMaker.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
+    <ClInclude Include="pub\MSText.h">
+      <Filter>Header Files\pub</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MS.cpp">
@@ -219,6 +219,9 @@
     </ClCompile>
     <ClCompile Include="core\ClassMaker.cpp">
       <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="pub\MSText.cpp">
+      <Filter>Source Files\pub</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

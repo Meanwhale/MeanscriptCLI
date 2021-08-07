@@ -1,11 +1,6 @@
 package net.meanscript;
 import net.meanscript.core.*;
 import net.meanscript.java.*;
-
-
-
-
-
 public class MSData extends MC {
 MeanMachine mm;
 int tag,		// instruction code
@@ -18,7 +13,7 @@ int [] dataCode;	// where actual data is
 
 // variables to access from source code by name.
 // value is the address of the variable tag.
-// java.util.TreeMap<String, Integer> globalNames = new java.util.TreeMap<String, Integer>();
+// MAP_STRING_TO_INT(globalNames);
 
 public MSData (MeanMachine _mm, int _tagAddress, int _dataIndex, boolean arrayItem) throws MException
 {
@@ -74,16 +69,29 @@ public String  getText (int id)
 	if (id == 0) return "";
 	int address = mm.texts[id];
 	int numChars = structCode[address + 1];
-	String s = new String(MSJava.intsToBytes(structCode, address + 2, numChars));
+	String s = new String(MSJava.intsToBytes(structCode, address + 2, numChars),java.nio.charset.StandardCharsets.UTF_8);
 	return s;
+}
+public MSText  getMSText (int id) throws MException
+{
+	if (id == 0) return new MSText("");
+	int address = mm.texts[id]; // operation address
+	return new MSText(structCode,address+1);
 }
 
 public String getChars (String name) throws MException
 {
-	// TODO: check type
-	int address = getMemberAddress(name);
+	int memberTagAddress = getMemberTagAddress(name, false);
+	
+	int charsTag = structCode[memberTagAddress];
+	int charsTypeAddress = mm.types[instrValueTypeIndex(charsTag)];
+	int charsTypeTag = structCode[charsTypeAddress];
+	MSJava.assertion((charsTypeTag & OPERATION_MASK) == OP_CHARS_DEF, EC_DATA, "not chars");
+	
+	MSJava.assertion(memberTagAddress >= 0, EC_DATA, "not found: " + name);
+	int address = dataIndex + structCode[memberTagAddress + 1];
 	int numChars = dataCode[address];
-	String s = new String(MSJava.intsToBytes(dataCode, address + 1, numChars));
+	String s = new String(MSJava.intsToBytes(dataCode, address + 1, numChars),java.nio.charset.StandardCharsets.UTF_8);
 	return s;
 }
 
@@ -102,15 +110,63 @@ public float getFloat (String name) throws MException
 
 public int getInt () throws MException
 {
-	MSJava.assertion(getType() >= MS_TYPE_INT,   "not an integer");
+	MSJava.assertion(getType() >= MS_TYPE_INT,   "not a 32-bit integer");
 	return dataCode[dataIndex];
 }
+
 
 public int getInt (String name) throws MException
 {
 	int address = getMemberAddress(name, MS_TYPE_INT);
 	MSJava.assertion(address >= 0, EC_DATA, "unknown name");
 	return dataCode[address];
+}
+
+public boolean getBool () throws MException
+{
+	MSJava.assertion(getType() >= MS_TYPE_BOOL,   "not a bool integer");
+	return dataCode[dataIndex] != 0;
+}
+
+public boolean getBool (String name) throws MException
+{
+	int address = getMemberAddress(name, MS_TYPE_BOOL);
+	MSJava.assertion(address >= 0, EC_DATA, "unknown name");
+	return dataCode[address] != 0;
+}
+
+public long getInt64 () throws MException
+{
+	return getInt64At(dataIndex);
+}
+
+public long getInt64 (String name) throws MException
+{
+	int address = getMemberAddress(name, MS_TYPE_INT64);
+	return getInt64At(address);
+}
+public long getInt64At (int address) throws MException
+{
+	int a = dataCode[address];
+	int b = dataCode[address+1];
+	long i64 = intsToInt64(a,b);
+	return i64;
+}
+
+public double getFloat64 () throws MException
+{
+	return getFloat64At(dataIndex);
+}
+
+public double getFloat64 (String name) throws MException
+{
+	int address = getMemberAddress(name, MS_TYPE_FLOAT64);
+	return getFloat64At(address);
+}
+public double getFloat64At (int address) throws MException
+{
+	long i64 = getInt64At(address);
+	return MSJava.int64FormatToFloat64(i64);
 }
 
 public boolean isArrayItem ()
@@ -171,10 +227,10 @@ public int getMemberTagAddress (String name, boolean isArray) throws MException
 	
 	// go thru members
 	
-	while ((code & OPERATION_MASK) == OP_MEMBER_NAME)
+	while ((code & OPERATION_MASK) == OP_MEMBER_NAME) // TODO: handle the case of "no name"
 	{
 		//{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("check member name").endLine();};
-		//{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("member: " + new String(MSJava.intsToBytes(structCode, i+2, structCode[i+1]))).endLine();};
+		//{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("member: " + new String(MSJava.intsToBytes(structCode, i+2, structCode[i+1]),java.nio.charset.StandardCharsets.UTF_8)).endLine();};
 
 		// compare names
 		if (intStringsWithSizeEquals(nameIntsTmp, 0, structCode, i+1))
@@ -214,7 +270,12 @@ public void  printData (int depth, String name) throws MException
 		}
 		else if (getType() == MS_TYPE_TEXT)
 		{
-			MSJava.printOut.print(getText(dataCode[dataIndex])).endLine();
+			MSText tmp = getMSText(dataCode[dataIndex]);
+			MSJava.printOut.print(tmp).endLine();
+		}
+		else if (getType() == MS_TYPE_INT64)
+		{
+			MSJava.printOut.print(intsToInt64(dataCode[dataIndex], dataCode[dataIndex+1])).endLine();
 		}
 		else
 		{
@@ -231,7 +292,7 @@ public void  printData (int depth, String name) throws MException
 		if ((code & OPERATION_MASK) == OP_CHARS_DEF)
 		{
 			int numChars = dataCode[dataIndex + 0];
-			String s = new String(MSJava.intsToBytes(dataCode, dataIndex + 1, numChars));
+			String s = new String(MSJava.intsToBytes(dataCode, dataIndex + 1, numChars),java.nio.charset.StandardCharsets.UTF_8);
 			MSJava.printOut.print(s).endLine();
 			return;
 		}
@@ -242,7 +303,7 @@ public void  printData (int depth, String name) throws MException
 		while ((code & OPERATION_MASK) == OP_MEMBER_NAME)
 		{
 			
-			String s = new String(MSJava.intsToBytes(structCode, i + 2, structCode[i+1]));
+			String s = new String(MSJava.intsToBytes(structCode, i + 2, structCode[i+1]),java.nio.charset.StandardCharsets.UTF_8);
 	
 			i += instrSize(code) + 1;
 			code = structCode[i];

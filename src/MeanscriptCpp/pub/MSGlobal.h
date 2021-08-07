@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSGlobal
 {
@@ -11,7 +10,7 @@ const int32_t baseStackSize = 1024;
 const int32_t maxFunctions = 256;
 const int32_t registerSize = 256;
 const int32_t maxArraySize = 4096;
-const int32_t maxNameLength = 128;
+const int32_t maxNameLength = 128; // TODO: not a configurable, but according to language spex
 const int32_t codeSize = 65536; // 2^16
 const int32_t stackSize = 65536;
 const int32_t builderValuesSize = 65536;
@@ -28,4 +27,3 @@ void setVerbose(bool);
 bool verboseOn() const { return verbose; };
 };
 } // namespace meanscript(core)
-// C++ header END

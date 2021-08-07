@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSDataArray
 {
@@ -23,4 +22,3 @@ friend class MSData;
 friend class MSCode;
 };
 } // namespace meanscript(core)
-// C++ header END

@@ -1,16 +1,12 @@
 package net.meanscript.core;
 import net.meanscript.java.*;
 import net.meanscript.*;
-
-
-
-
-
 public class Parser extends MC {
 
 
-public static final String letters =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+public static final String letters =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 public static final String numbers =  "1234567890";
+public static final String hexNumbers =  "1234567890abcdefABCDEF";
 public static final String whitespace =  " \t\n\r";
 public static final String linebreak =  "\n\r";
 public static final String expressionBreak =  ",;\n";
@@ -18,21 +14,21 @@ public static final String blockStart =  "([{";
 public static final String blockEnd =  ")]}";
 public static final String op =  "+*<>="; // '-' or '/' will be special cases
 
-private static byte space, name, reference, number, minus, decimalNumber, slash, quote, comment, skipLineBreaks;
+private static byte space, name, reference, number, hex, hexStart, minus, decimalNumber, slash, quote, comment, skipLineBreaks, escapeChar, hexByte;
 
 
-private static byte [] tmp = new byte[512];
+private static byte [] tmp = new byte[4096];
 private static byte [] buffer = new byte[512];
+private static byte [] quoteBuffer = new byte[4096];
 
 private static ByteAutomata baPtr;
 private static boolean goBackwards, running, assignment;
-private static int index, lastStart, textCount = 0, lineNumber, characterNumber;
+private static int index, lastStart, textCount = 0, lineNumber, characterNumber, quoteIndex;
 private static MNode root;
 private static MNode currentBlock;
 private static MNode currentExpr;
 private static MNode currentToken;
 private static TokenTree tokenTree;
-
 
 public static final String [] nodeTypeName = new String[] { "root","expr","sub-call","struct","block","token" };
 
@@ -57,16 +53,7 @@ private static void bwd() throws MException
 	goBackwards = true;
 }
 
-//private static void copy(byte[] dst, byte[] src, int start, int end)
-//{
-//	for (int i = start, n = 0; i < end; i++, n++)
-//	{
-//		dst[n] = src[i];
-//	}
-//}
-
-
-private static String getNewName() throws MException
+private static MSText getNewName() throws MException
 {
 	int start = lastStart;
 	int length = index - start;
@@ -77,14 +64,20 @@ private static String getNewName() throws MException
 	{
 		tmp[i] = buffer[start++ % 512];
 	}
-	
-	return new String(tmp,0,length);
+	return new MSText (tmp, 0, length);
+}
+
+private static MSText getQuoteText() throws MException
+{
+	int start = 0;
+	int length = quoteIndex - start;
+	return new MSText (quoteBuffer, start, length);
 }
 
 
-private static void addExpr()
+private static void addExpr() throws MException
 {
-	MNode expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, "<EXPR>");
+	MNode expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, new MSText ("<EXPR>"));
 	currentExpr.next = expr;
 	currentExpr = expr;
 	currentToken = null;
@@ -94,29 +87,33 @@ private static void addExpr()
 private static void addToken(int tokenType) throws MException
 { 
 	if (tokenType == NT_REFERENCE_TOKEN) lastStart++; // skip '#'
-
-	String data = getNewName();
-
-	{if (MSJava.debug) {{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("TOKEN: " + data).endLine();};}};
-
+	
+	MNode token = null;
+	
 	if (tokenType == NT_TEXT)
 	{
+		MSText data = getQuoteText();
 		// add text to the tree if same text is not already there
 		if (!(tokenTree.texts.containsKey( data)))
 		{
-			tokenTree.texts.put( data, textCount++);
+			tokenTree.texts.put( new MSText(data), textCount++);
 		}
+		token = new MNode(lineNumber, characterNumber, currentExpr, NT_TEXT, data);
 	}
-
-	MNode token = new MNode(lineNumber, characterNumber, currentExpr, tokenType, data);
-
+	else
+	{
+		MSText data = getNewName();
+		{if (MSJava.debug) {{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("TOKEN: " + data).endLine();};}};
+		token = new MNode(lineNumber, characterNumber, currentExpr, tokenType, data);
+	}
+	
 	if (currentToken == null) currentExpr.child = token;
 	else currentToken.next = token;
 	currentExpr.numChildren++;
 	currentToken = token;
 	lastStart = index;
 }
-private static void addOperator(int tokenType, String name)
+private static void addOperator(int tokenType, MSText name)
 { 
 	MNode token = new MNode(lineNumber, characterNumber, currentExpr, tokenType, name);
 	if (currentToken == null) currentExpr.child = token;
@@ -176,22 +173,26 @@ private static void exprBreak() throws MException
 private static void addBlock(int blockType) throws MException
 {
 
-	String blockTypeName = "???";
+	MSText blockTypeName = null;
 	
-	if (blockType == NT_PARENTHESIS) blockTypeName = "<PARENTHESIS>";
-	else if (blockType == NT_SQUARE_BRACKETS) blockTypeName = "<SQUARE_BRACKETS>";
+	if (blockType == NT_PARENTHESIS) blockTypeName = new MSText("<PARENTHESIS>");
+	else if (blockType == NT_SQUARE_BRACKETS) blockTypeName = new MSText("<SQUARE_BRACKETS>");
 	else if (blockType == NT_ASSIGNMENT)
 	{
 		assignment = true;
-		blockTypeName = "<ASSIGNMENT>";
+		blockTypeName = new MSText("<ASSIGNMENT>");
 	}
-	else if (blockType == NT_CODE_BLOCK) blockTypeName = "<CODE_BLOCK>";
+	else if (blockType == NT_CODE_BLOCK) blockTypeName = new MSText("<CODE_BLOCK>");
 	else MSJava.assertion(false,   "invalid block type");
 	
 	{if (MSJava.debug) {{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("add block: " + blockType).endLine();};}};
 	
 	lastStart = -1;
+
+	MSJava.assertion(blockTypeName != null,   "blockTypeName is null");
+
 	MNode block = new MNode(lineNumber, characterNumber, currentExpr, blockType, blockTypeName);
+	
 	if (currentToken == null)
 	{
 		// expression starts with a block, eg. "[1,2]" in "[[1,2],34,56]"
@@ -206,12 +207,11 @@ private static void addBlock(int blockType) throws MException
 	
 	currentBlock = block;
 
-	MNode expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, "<EXPR>");
+	MNode expr = new MNode(lineNumber, characterNumber, currentBlock, NT_EXPR, new MSText("<EXPR>"));
 	currentBlock.child = expr;
 	currentExpr = expr;
 	currentToken = null;
 }
-
 
 private static void parseError(String msg)
 {
@@ -219,6 +219,24 @@ private static void parseError(String msg)
 	MSJava.printOut.print(msg).endLine();
 	baPtr.ok = false;
 	running = false;
+}
+
+private static void addQuoteByte(byte b)
+{
+	if (quoteIndex >= 4096)
+	{
+		parseError("text is too long");
+		return;
+	}
+	quoteBuffer[quoteIndex++] = b;
+}
+
+private static void addHexByte() throws MException
+{
+	byte high = buffer[(lastStart + 1) % 512];
+	byte low = buffer [(lastStart + 2) % 512];
+	byte b = (byte)(((hexCharToByte(high)<<4) & 0xf0) | hexCharToByte(low));
+	addQuoteByte(b);
 }
 
 private static void defineTransitions() throws MException
@@ -230,6 +248,8 @@ private static void defineTransitions() throws MException
 	//member = ba.addState("member");
 	reference = ba.addState("reference");
 	number = ba.addState("number");
+	hexStart = ba.addState("hex start");
+	hex = ba.addState("hex");
 	minus = ba.addState("minus");
 	decimalNumber = ba.addState("decimal number");
 	//expNumber = ba.addState("exp. number");
@@ -237,14 +257,17 @@ private static void defineTransitions() throws MException
 	quote = ba.addState("quote");
 	comment = ba.addState("comment");
 	skipLineBreaks = ba.addState("skip line breaks");
+	escapeChar = ba.addState("escape character");
+	hexByte = ba.addState("hex byte");
 
 	ba.transition(space, whitespace, null);
 	ba.transition(space, letters, () -> { next(name); });
 	ba.transition(space, "#", () -> { next(reference); });
 	ba.transition(space, "-", () -> { next(minus); });
 	ba.transition(space, "/", () -> { next(slash); });
-	ba.transition(space, "\"", () -> { next(quote); });
+	ba.transition(space, "\"", () -> { next(quote); quoteIndex = 0; });
 	ba.transition(space, numbers, () -> { next(number); });
+	ba.transition(space, "0", () -> { next(hexStart); }); // start hex
 	ba.transition(space, expressionBreak, () -> { exprBreak(); });
 	ba.transition(space, "(", () -> { addBlock(NT_PARENTHESIS); next(skipLineBreaks); });
 	ba.transition(space, ")", () -> { endBlock(NT_PARENTHESIS); });
@@ -253,21 +276,18 @@ private static void defineTransitions() throws MException
 	ba.transition(space, "{", () -> { addBlock(NT_CODE_BLOCK); next(skipLineBreaks); });
 	ba.transition(space, "}", () -> { endBlock(NT_CODE_BLOCK); });
 	ba.transition(space, ":", () -> { addBlock(NT_ASSIGNMENT); next(skipLineBreaks); });
-	ba.transition(space, ".", () -> { addOperator(NT_DOT,"."); });
+	ba.transition(space, ".", () -> { addOperator(NT_DOT,new MSText(".")); });
 
 	ba.transition(name, letters, null);
+	ba.transition(name, numbers, null);
 	ba.transition(name, whitespace, () -> { addToken(NT_NAME_TOKEN); next(space); });
 	ba.transition(name, "#", () -> { addToken(NT_REF_TYPE_TOKEN); next(space); });
 	ba.transition(name, expressionBreak, () -> { addToken(NT_NAME_TOKEN); exprBreak(); next(space); });
 	ba.transition(name, blockStart, () -> { addToken(NT_NAME_TOKEN); bwd(); next(space); });
 	ba.transition(name, blockEnd, () -> { addToken(NT_NAME_TOKEN); bwd(); next(space); });
 	ba.transition(name, ":", () -> { addToken(NT_NAME_TOKEN); addBlock(NT_ASSIGNMENT); next(skipLineBreaks); });
-	ba.transition(name, ".", () -> { addToken(NT_NAME_TOKEN); addOperator(NT_DOT,"."); next(space); });
+	ba.transition(name, ".", () -> { addToken(NT_NAME_TOKEN); addOperator(NT_DOT,new MSText(".")); next(space); });
 	
-	//ba.fillTransition(member, () -> { addMember(); bwd(); next(space); });
-	//ba.transition(member, letters, null);
-	//ba.transition(member, ".", () -> { addMember(); next(member); });
-
 	ba.transition(reference, letters, null);
 	ba.transition(reference, whitespace, () -> { addToken(NT_REFERENCE_TOKEN); next(space); });
 	ba.transition(reference, expressionBreak, () -> { addToken(NT_REFERENCE_TOKEN); exprBreak(); next(space); });
@@ -275,11 +295,24 @@ private static void defineTransitions() throws MException
 	ba.transition(reference, blockEnd,   () -> { addToken(NT_REFERENCE_TOKEN); bwd(); next(space); });
 
 	ba.transition(number, numbers, null);
-	ba.transition(number, whitespace, () -> { addToken(NT_NUMBER_TOKEN); next(space); });
-	ba.transition(number, expressionBreak, () -> { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
-	ba.transition(number, blockStart, () -> { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
-	ba.transition(number, blockEnd,   () -> { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(number, whitespace,       () -> { addToken(NT_NUMBER_TOKEN); next(space); });
+	ba.transition(number, expressionBreak,  () -> { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
+	ba.transition(number, blockStart,       () -> { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(number, blockEnd,         () -> { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
 	ba.transition(number, ".", () -> { nextCont(decimalNumber); });
+	
+	ba.transition(hexStart, numbers, () -> { nextCont(number); });
+	ba.transition(hexStart, "x", () -> { next(hex); lastStart++; });
+	ba.transition(hexStart, whitespace,       () -> { addToken(NT_NUMBER_TOKEN); next(space); });
+	ba.transition(hexStart, expressionBreak,  () -> { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
+	ba.transition(hexStart, blockStart,       () -> { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(hexStart, blockEnd,         () -> { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	
+	ba.transition(hex, hexNumbers, null);
+	ba.transition(hex, whitespace,       () -> { addToken(NT_HEX_TOKEN); next(space); });
+	ba.transition(hex, expressionBreak,  () -> { addToken(NT_HEX_TOKEN); exprBreak(); next(space); });
+	ba.transition(hex, blockStart,       () -> { addToken(NT_HEX_TOKEN); bwd(); next(space); });
+	ba.transition(hex, blockEnd,         () -> { addToken(NT_HEX_TOKEN); bwd(); next(space); });
 
 	ba.transition(minus, whitespace, () -> { addToken(NT_MINUS); next(space); });
 	ba.transition(minus, numbers, () -> { nextCont(number); }); // change state without reseting starting index
@@ -298,9 +331,31 @@ private static void defineTransitions() throws MException
 	ba.fillTransition(slash, () -> { addToken(NT_DIV); bwd(); next(space); });
 	ba.transition(slash, "/", () -> { next(comment); });
 
-	ba.fillTransition(quote, null);
+	ba.fillTransition(quote, () -> { addQuoteByte(baPtr.currentInput); });
 	ba.transition(quote, linebreak, () -> { parseError("line break inside a quotation"); });
 	ba.transition(quote, "\"", () -> { lastStart++; addToken(NT_TEXT); next(space); });
+	ba.transition(quote, "\\", () -> { next(escapeChar); });
+	
+	ba.fillTransition(escapeChar, () -> { parseError("invalid escape character in quotes"); });
+	
+	// standard character literals: https://en.cppreference.com/w/cpp/language/escape
+	
+	ba.transition(escapeChar, "'",  () -> { addQuoteByte((byte)0x27); next(quote); });
+	ba.transition(escapeChar, "\"", () -> { addQuoteByte((byte)0x22); next(quote); });
+	ba.transition(escapeChar, "?",  () -> { addQuoteByte((byte)0x3f); next(quote); });
+	ba.transition(escapeChar, "\\", () -> { addQuoteByte((byte)0x5c); next(quote); });
+	ba.transition(escapeChar, "a",  () -> { addQuoteByte((byte)0x07); next(quote); });
+	ba.transition(escapeChar, "b",  () -> { addQuoteByte((byte)0x08); next(quote); });
+	ba.transition(escapeChar, "f",  () -> { addQuoteByte((byte)0x0c); next(quote); });
+	ba.transition(escapeChar, "n",  () -> { addQuoteByte((byte)0x0a); next(quote); });
+	ba.transition(escapeChar, "r",  () -> { addQuoteByte((byte)0x0d); next(quote); });
+	ba.transition(escapeChar, "t",  () -> { addQuoteByte((byte)0x09); next(quote); });
+	ba.transition(escapeChar, "v",  () -> { addQuoteByte((byte)0x0b); next(quote); });
+	
+	ba.transition(escapeChar, "x", () -> { next(hexByte); });
+	
+	ba.fillTransition(hexByte, () -> { parseError("invalid hexadecimal byte"); });
+	ba.transition(hexByte, hexNumbers, () -> { if (index - lastStart >= 2) { addHexByte(); next(quote); } });
 	
 	ba.fillTransition(comment, null);
 	ba.transition(comment, linebreak, () -> { exprBreak(); next(space); });
@@ -310,6 +365,60 @@ private static void defineTransitions() throws MException
 	ba.transition(skipLineBreaks, linebreak, null);
 }
 
+private static boolean validNameChars [];
+private static boolean validNumberChars [];
+private static boolean nameValidatorInitialized = false;
+
+public static boolean  isValidName (MSText name) throws MException
+{
+	// name validator
+	// initialize if needed
+	
+	int length, i;
+	
+	if (!nameValidatorInitialized) {
+		byte[] letterBytes = letters.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		byte[] numberBytes = numbers.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		//byte[] numberBytes = numbers.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		validNameChars = new  boolean[ 256];
+		validNumberChars = new  boolean[ 256];
+		java.util.Arrays.fill(validNameChars,false);
+		java.util.Arrays.fill(validNumberChars,false);
+		
+		String lettersString = letters;
+		length = lettersString.length();
+		for (i=0; i<length; i++) {
+			validNameChars[letterBytes[i]] = true;
+		}
+		String numbersString = numbers;
+		length = numbersString.length();
+		for (i=0; i<length; i++) {
+			validNumberChars[numberBytes[i]] = true;
+		}
+		
+		nameValidatorInitialized = true;
+	}
+	
+	length = name.numBytes();
+	
+	if (length < 1 || length > MSJava.globalConfig.maxNameLength) return false;
+	
+	// first character must be a letter or under-score
+	if (!validNameChars[name.byteAt(0)]) return false;
+	
+	for (i=1; i<length; i++) {
+		byte b = name.byteAt(i);
+		if (!validNameChars[b] && !validNumberChars[b]) return false;
+	}
+
+	return true;
+}
+
+public static boolean  isValidName (String name) throws MException
+{
+	MSText t = new MSText (name);
+	return isValidName(t);
+}
 
 public static TokenTree  Parse (MSInputStream input) throws MException
 {
@@ -324,7 +433,7 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 
 	ba.next((byte)1);
 
-	root = new MNode(1, 1, null, NT_EXPR, "<ROOT>");
+	root = new MNode(1, 1, null, NT_EXPR, new MSText("<ROOT>"));
 	currentExpr = root;
 	currentBlock = null;
 	currentToken = null;
@@ -336,7 +445,7 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 	goBackwards = false;
 	
 	// text ID 0: empty
-	tokenTree.texts.put( "", textCount++);
+	tokenTree.texts.put( new MSText (""), textCount++);
 	
 	lineNumber = 1;
 	characterNumber = 1;
@@ -364,13 +473,16 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 		{
 			goBackwards = false;
 		}
-		{if (MSJava.debug) {{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("[ " + (char)(inputByte) + " ]").endLine();};}};
+		if (MSJava.globalConfig.verboseOn())
+		{
+			MSJava.printOut.print(" [").printCharSymbol(inputByte).print("]\n");
+		}
 
 		running = ba.step(inputByte);
 	}
 
 	if (!goBackwards) index++;
-	ba.step((byte)'\n'); // ended cleanly: last command break
+	if (ba.ok) ba.step((byte)'\n'); // ended cleanly: last command break
 	if (currentBlock != null)
 	{
 		MSJava.printOut.print("closing parenthesis missing at the end").endLine();
@@ -379,8 +491,8 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 	
 	if (!running || !(ba.ok))
 	{
-		MSJava.printOut.print("Parser state [" + ba.stateNames.get( (int)ba.currentState) + "]").endLine();
-		MSJava.printOut.print("Line " + lineNumber + ": \"").endLine();
+		MSJava.errorOut.print("Parser state [" + ba.stateNames.get( (int)ba.currentState) + "]\n");
+		MSJava.errorOut.print("Line " + lineNumber + ": \"");
 		
 		// print nearby code
 		int start = index-1;
@@ -388,14 +500,14 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 			start --;
 		while (++start < index)
 		{
-			{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print((char)(buffer[start % 512])).endLine();};
+			MSJava.errorOut.print("").printCharSymbol((byte)(buffer[start % 512]));
 		}
-		MSJava.printOut.print("\"").endLine();
+		MSJava.errorOut.print("\"\n");
 		
 		baPtr = null;
 		root = null;
 		tokenTree = null;
-		throw new MException(MC.EC_INTERNAL, "Parse error");
+		MSJava.assertion(false, EC_PARSE, null);
 	}
 
 	if (MSJava.globalConfig.verboseOn())

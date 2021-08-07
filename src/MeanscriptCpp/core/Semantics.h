@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscriptcore {
 using namespace meanscript;
 class Semantics
@@ -7,33 +6,33 @@ public:
  int32_t typeIDCounter;
  int32_t maxContexts;
  int32_t numContexts;
- std::map<std::string, int> types;
+ std::map<MSText, int> types;
  StructDef** typeStructDefs;
  Context** contexts;
  Context* globalContext;
  Context* currentContext;
 Semantics();
 ~Semantics();
-Context* findContext(std::string name);
+Context* findContext(MSText* name);
 void analyze(TokenTree* root);
-void addPrimitiveType(std::string name, StructDef* sd, int32_t id);
-void addElementaryType (std::string name, int32_t typeID, int32_t size);
+void addPrimitiveType(MSText* name, StructDef* sd, int32_t id);
+void addElementaryType (const char * name, int32_t typeID, int32_t size);
 StructDef* addCharsType (int32_t numChars);
-bool hasType(std::string name);
+bool hasType(MSText* name);
 bool hasType(int32_t);
 StructDef* getType (int32_t);
-StructDef* getType (std::string);
+StructDef* getType (MSText*);
 StructDef* getType (int32_t, NodeIterator*);
-StructDef* getType (std::string, NodeIterator*);
+StructDef* getType (MSText*, NodeIterator*);
 bool inGlobal();
-bool assumeNotReserved(std::string name);
+bool isNameValidAndAvailable (const std::string & name);
+bool isNameValidAndAvailable(MSText* name);
 void print();
 void analyzeNode(NodeIterator it);
 void analyzeExpr(NodeIterator it);
-void addStructDef (std::string name, NodeIterator it);
-void addStructDef (std::string name, int, StructDef*);
+void addStructDef (MSText* name, NodeIterator it);
+void addStructDef (MSText* name, int, StructDef*);
 void createStructDef (StructDef & sd, NodeIterator it);
 void writeStructDefs (ByteCode* bc);
 };
 } // namespace meanscript(core)
-// C++ header END

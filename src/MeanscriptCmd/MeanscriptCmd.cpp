@@ -70,6 +70,13 @@ enum CommandType
 
 int execute(int argc, char* argv[])
 {  
+
+	//int32_t ints[3];
+	//ints[0] = 0x00000005;
+	//ints[1] = 0x64636261;
+	//ints[2] = 0x00000065;
+	//std::cout << ((const char*)(ints+1)) << std::endl;
+
 	if (argc == 1)
 	{
         printHelp();

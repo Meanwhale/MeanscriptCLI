@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSOutputStream
 {
@@ -10,4 +9,3 @@ void writeInt(int32_t);
 virtual ~MSOutputStream () {};
 };
 } // namespace meanscript(core)
-// C++ header END

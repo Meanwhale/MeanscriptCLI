@@ -1,4 +1,3 @@
-// Auto-generated: do not edit.
 namespace meanscript {
 class MSData
 {
@@ -21,11 +20,20 @@ bool hasArray (std::string);
 std::string getText();
 std::string getText(std::string);
 std::string getText(int32_t);
+MSText getMSText (int32_t id);
 std::string getChars (std::string name);
 float getFloat ();
 float getFloat (std::string name);
 int32_t getInt ();
 int32_t getInt(std::string);
+bool getBool ();
+bool getBool (std::string name);
+int64_t getInt64 ();
+int64_t getInt64 (std::string name);
+int64_t getInt64At (int address);
+double getFloat64 ();
+double getFloat64 (std::string name);
+double getFloat64At (int address);
 bool isArrayItem();
 MSDataArray getArray (std::string name);
 MSData getMember (std::string name);
@@ -43,4 +51,3 @@ friend class MSDataArray;
 friend class MSCode;
 };
 } // namespace meanscript(core)
-// C++ header END
