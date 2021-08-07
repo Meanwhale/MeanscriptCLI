@@ -26,12 +26,14 @@ MSWriter | A writer class for the _MSBuilder_.
 ## Script syntax quick reference
 
 <pre>// basic variable types:
-int a                   // define an integer 'a' with a default value (0)
-int a: 5                // define it with an initial value of 5
-float f: 123.456        // define a floating-point (32-bit decimal) number
-text name: "Jack"       // define an immutable string
-chars [12] ch: "Jill"   // define a mutable, fixed-sized string (max. 12 bytes)
-bool b                  // define a boolean
+int a                       // define a 32-bit integer 'a' with a default value (0)
+int a: 5                    // define it with an initial value of 5
+float f: 123.456            // define a 32-bit floating-point number
+int64 i64: 1234567891234;   // define a 64-bit integer
+float64 f64: 12.123456789;  // define a 64-bit floating-point number
+text name: "Jack"           // define an immutable string
+chars [12] ch: "Jill"       // define a mutable, fixed-sized string (max. 12 bytes)
+bool b                      // define a boolean
 
 // Function calls can be of two formats:
 // 1. Argument list separated with spaces, like on command line:
@@ -66,9 +68,31 @@ team[sum(1,2)].id: 5738  // modify the last person (index = 3)
 func int increase [int foo] { return (sum foo 1) }
 </pre>
 
+### String format
+
+Text strings are in UTF-8 format. Text's byte values can be defined with `\xHH`, where `HH` is a two-digit hexadecimal value, eg.
+<pre>
+text s: "Hello \xD1\xbeorld!"    // "Hello Ѿorld!"
+</pre>
+
+Other supported escape sequences:
+<pre>
+\'    single quote            byte 0x27 in ASCII encoding
+\"    double quote            byte 0x22 in ASCII encoding
+\?    question mark           byte 0x3f in ASCII encoding
+\\    backslash               byte 0x5c in ASCII encoding
+\a    audible bell            byte 0x07 in ASCII encoding
+\b    backspace               byte 0x08 in ASCII encoding
+\f    form feed - new page    byte 0x0c in ASCII encoding
+\n    line feed - new line    byte 0x0a in ASCII encoding
+\r    carriage return         byte 0x0d in ASCII encoding
+\t    horizontal tab          byte 0x09 in ASCII encoding
+\v    vertical tab            byte 0x0b in ASCII encoding
+</pre>
+
 ## Bytecode format
 
-Meanscript bytecode is a list of 32-bit words that can be an operation or data.
+Meanscript bytecode is a list of 32-bit words. One bytecode word can be an operation or data.
 
 32-bit operation content:
 
