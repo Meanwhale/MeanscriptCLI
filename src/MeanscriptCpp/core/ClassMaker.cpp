@@ -383,16 +383,14 @@ void ClassMaker:: makeJavaMembers (MSOutputPrint & os, StructDef* sd, int32_t ad
 	}
 }
 
-void ClassMaker:: makeJava (Array<int> & code, std::string packageName, std::string folderName) 
+void ClassMaker:: makeJava (Array<int> & code, std::string packageName, std::string moduleName, std::string folderName) 
 {
 	findTypes((*semantics), code);
 	createStructDefs((*semantics), code);
 	
 	
 	// create top class
-	
-	std::string moduleName = "ModuleMS";
-	
+		
 	MSFilePrint mods( folderName, moduleName, ".java");;
 	
 	mods.print("package " CAT packageName CAT ";\n");

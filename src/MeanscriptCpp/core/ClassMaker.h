@@ -17,7 +17,7 @@ void makeJavaAcc (MSOutputPrint & os, std::string setterData, int32_t depth, int
 void makeIndexedAddress (MSOutputPrint & os, int32_t baseAddress, int32_t depth);
 void makeIndexCheck (MSOutputPrint & os, int32_t depth);
 void makeJavaMembers (MSOutputPrint & os, StructDef* sd, int32_t addressOffset, int32_t depth);
-void makeJava (Array<int> & code, std::string packageName, std::string folderName);
+void makeJava (Array<int> & code, std::string packageName, std::string moduleName, std::string folderName);
 ~ClassMaker();
 };
 } // namespace meanscript(core)

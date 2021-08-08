@@ -235,7 +235,7 @@ int execute(int argc, char* argv[])
 			outputDir += meanscript::filePathSeparator();
 
 			meanscriptcore::ClassMaker cm;
-			cm.makeJava(m.getMM()->byteCode->code, package, outputDir);
+			cm.makeJava(m.getMM()->byteCode->code, package, module, outputDir);
 
 		}
 		break;
