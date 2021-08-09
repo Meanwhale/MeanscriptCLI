@@ -1,4 +1,4 @@
-# Class Maker
+# Class Maker (Java)
 
 Class maker generates source code for **serializing fixed-sized data structures**.
 
@@ -16,7 +16,16 @@ Use a `MSOutputStream`'s subclass to write the data (array) to a file, network, 
 Use `MSCode` to read data. Internally the data is saved to an integer array, like with `MSBuilder`.
 Generated classes can be used to read data directly from the array.
 
-_This feature is work-in-progress and generates only Java code for now._
+Command line syntax to generate class is
+
+
+```
+mean makejava script.ms module mpackage
+```
+
+where `script.ms` is the Meanscript file, `module` is the name of a management class,
+and `package` is the Java package name. The command uses `MS_INPUT` and `MS_OUTPUT`
+environmental variables to find input and output folders.
 
 ## Simple example
 
