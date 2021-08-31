@@ -4,9 +4,9 @@
 **_Command Line Interface (CLI) and  Application Programming Interface for Java and C++_**
 
 
-meanwhale@gmail.com<br>
-https://twitter.com/TheMeanwhale<br>
-[meanscript.net](http://www.meanscript.net/)
+✉ meanwhale@gmail.com<br>
+🐦 https://twitter.com/TheMeanwhale<br>
+🌐 [meanscript.net](http://www.meanscript.net/)
 
 <hr>
 
