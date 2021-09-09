@@ -9,7 +9,7 @@ public class Common extends MC {
 
 // private static data. common for all MeanScript objects
 
-public void printCallbacks ()
+public void printCallbacks () throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("-------- CALLBACKS:").endLine();};
 	for (int i=0; i < MSJava.globalConfig.maxCallbacks; i++)
@@ -19,15 +19,15 @@ public void printCallbacks ()
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("").endLine();};
 }
 
-private static void trueCallback(MeanMachine mm, MArgs args)
+private static void trueCallback(MeanMachine mm, MArgs args) throws MException
 {
 	mm.callbackReturn(MS_TYPE_BOOL, 1);
 }
-private static void falseCallback(MeanMachine mm, MArgs args)
+private static void falseCallback(MeanMachine mm, MArgs args) throws MException
 {
 	mm.callbackReturn(MS_TYPE_BOOL, 0);
 }
-private static void sumCallback(MeanMachine mm, MArgs args)
+private static void sumCallback(MeanMachine mm, MArgs args) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("//////////////// SUM ////////////////").endLine();};
 	mm.callbackReturn(MS_TYPE_INT, mm.stack[args.baseIndex] + mm.stack[args.baseIndex+1]);
@@ -50,7 +50,7 @@ private static void ifCallback(MeanMachine mm, MArgs args) throws MException
 		mm.gosub(mm.stack[args.baseIndex+1]);
 	} else {if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("don't do!").endLine();};
 }
-private static void subCallback(MeanMachine mm, MArgs args)
+private static void subCallback(MeanMachine mm, MArgs args) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("//////////////// SUBTRACTION ////////////////").endLine();};
 	int a = mm.stack[args.baseIndex];
@@ -59,29 +59,29 @@ private static void subCallback(MeanMachine mm, MArgs args)
 	mm.callbackReturn(MS_TYPE_INT, a - b);
 }
 
-private static void printIntCallback(MeanMachine mm, MArgs args)
+private static void printIntCallback(MeanMachine mm, MArgs args) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("//////////////// PRINT ////////////////").endLine();};
 	MSJava.userOut.print(mm.stack[args.baseIndex]).endLine();
 }
 
-private static void printTextCallback(MeanMachine mm, MArgs args)
+private static void printTextCallback(MeanMachine mm, MArgs args) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("//////////////// PRINT TEXT ////////////////").endLine();};
 	
 	int address = mm.texts[mm.stack[args.baseIndex]];
 	int numChars = mm.getStructCode()[address + 1];
-	MSJava.userOut.print("").printIntsToChars(mm.getStructCode(), address + 2, numChars).endLine();
+	MSJava.userOut.print("").printIntsToChars(mm.getStructCode(), address + 2, numChars, false).endLine();
 }
 
-private static void printCharsCallback(MeanMachine mm, MArgs args)
+private static void printCharsCallback(MeanMachine mm, MArgs args) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("//////////////// PRINT CHARS  ////////////////").endLine();};
 	int numChars = mm.stack[args.baseIndex];
-	MSJava.userOut.print("").printIntsToChars(mm.stack, args.baseIndex + 1, numChars);
+	MSJava.userOut.print("").printIntsToChars(mm.stack, args.baseIndex + 1, numChars, false);
 }
 
-private static void printFloatCallback(MeanMachine mm, MArgs args)
+private static void printFloatCallback(MeanMachine mm, MArgs args) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("//////////////// PRINT FLOAT ////////////////").endLine();};
 	MSJava.userOut.print(MSJava.intFormatToFloat(mm.stack[args.baseIndex]));
@@ -99,13 +99,13 @@ public int  createCallback (MSText name, MJCallbackAction func, int returnType, 
 
 public void initialize (Semantics sem) throws MException
 {
-	sem.addElementaryType("int",     MS_TYPE_INT,     1);
-	sem.addElementaryType("int64",   MS_TYPE_INT64,   2);
-	sem.addElementaryType("float",   MS_TYPE_FLOAT,   1);
-	sem.addElementaryType("float64", MS_TYPE_FLOAT64, 2);
-	sem.addElementaryType("text",    MS_TYPE_TEXT,    1);
-	sem.addElementaryType("bool",    MS_TYPE_BOOL,    1);
-	sem.addElementaryType("chars",   MS_TYPE_CHARS,  -1); // special, dynamic type
+	sem.addElementaryType(MS_TYPE_INT,     1);
+	sem.addElementaryType(MS_TYPE_INT64,   2);
+	sem.addElementaryType(MS_TYPE_FLOAT,   1);
+	sem.addElementaryType(MS_TYPE_FLOAT64, 2);
+	sem.addElementaryType(MS_TYPE_TEXT,    1);
+	sem.addElementaryType(MS_TYPE_BOOL,    1);
+	sem.addElementaryType(MS_TYPE_CHARS,  -1); // special, dynamic type
 	
 	createCallbacks(sem);
 }

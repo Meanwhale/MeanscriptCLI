@@ -97,7 +97,19 @@ public static final String [] keywords = new String[] {
 	"struct",
 	"return",
 	"global"
-	};
+};
+public static final String [] primitiveNames = new String[] {
+	"",
+	"int",
+	"int64",
+	"float",
+	"float64",
+	"text",
+	"bool",
+	"",
+	"",
+	"chars",
+};
 
   public static final String HORIZONTAL_LINE = "------------------------------------------";
 //public static final String HORIZONTAL_LINE = "__________________________________________\n";
@@ -165,7 +177,7 @@ public static int instrSize(int instruction)
 {
 	return (int)(instruction & SIZE_MASK) >> SIZE_SHIFT;
 }
-public static int instrValueTypeIndex(int instruction)
+public static int instrValueTypeID(int instruction)
 {
 	return (int)(instruction & VALUE_TYPE_MASK) >> VALUE_TYPE_SHIFT;
 }
@@ -182,7 +194,7 @@ public static long intsToInt64(int high, int low) {
 	return x;
 }
 
-public static void printData(int [] data, int top, int index, boolean code) throws MException
+public static void printBytecode(int [] data, int top, int index, boolean code) throws MException
 {
 	int tagIndex = 0;
 	for (int i=0; i<top; i++)
@@ -299,7 +311,7 @@ public static byte hexCharToByte(byte c) throws MException
 	if (code >= '0' && code <= '9') return (byte)(code - '0');
 	if (code >= 'a' && code <= 'f') return (byte)(0xa + code - 'a');
 	if (code >= 'A' && code <= 'F') return (byte)(0xa + code - 'A');
-	MSJava.errorOut.print("invalid literal: ").printCharSymbol(c).endLine();
+	MSJava.errorOut.print("invalid literal: ").printCharSymbol((((int) c) & 0xff)).endLine();
 	MSJava.assertion(false, EC_PARSE, "wrong hex character");
 	return 0;
 }

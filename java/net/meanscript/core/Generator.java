@@ -680,6 +680,7 @@ public void singleArgumentPush (int targetTag, NodeIterator it, int arrayItemCou
 			// copy chars
 			int maxChars = arrayItemCount;
 			StructDef sd = sem.typeStructDefs[targetType];
+			MSJava.syntaxAssertion(sd.isCharsDef(), it, "chars type expected");
 			bc.addInstructionWithData(OP_PUSH_CHARS, 3, MS_TYPE_TEXT, textID);
 			bc.addWord(maxChars);
 			bc.addWord(sd.structSize);

@@ -43,8 +43,9 @@ public void addPrimitiveType (MSText name, StructDef sd, int id) throws MExcepti
 	
 }
 
-public void addElementaryType (String name, int typeID, int size) throws MException
+public void addElementaryType (int typeID, int size) throws MException
 {
+	String name = primitiveNames[typeID];
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Add elementary type [" + typeID + "] " + name).endLine();};
 	types.put( new MSText(name), typeID);
 	MSText tmp = new MSText (name);

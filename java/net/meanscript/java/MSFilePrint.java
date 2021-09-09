@@ -35,46 +35,10 @@ public class MSFilePrint extends net.meanscript.MSOutputPrint
 		}
 	}
 
+
 	@Override
-	public MSOutputPrint printChar(byte x)
+	public MSOutputPrint print(char x) throws MException
 	{
-		try {
-			fw.write((char)x);
-		} catch (IOException e) {
-			MSJava.errorOut.print("file write error");
-			return null;
-		}
-		return this;
-	}
-	
-	@Override
-	public MSOutputPrint print(byte x)
-{
-		try {
-			fw.write(x);
-		} catch (IOException e) {
-			MSJava.errorOut.print("file write error");
-			return null;
-		}
-		return this;
-	}
-
-	@Override
-	public MSOutputPrint print(int x)
-{
-		try {
-			fw.write(String.valueOf(x));
-		} catch (IOException e) {
-			MSJava.errorOut.print("file write error");
-			return null;
-		}
-		return this;
-	}
-
-
-	@Override
-	public MSOutputPrint print(String x)
-{
 		try {
 			fw.write(x);
 		} catch (IOException e) {
@@ -86,10 +50,10 @@ public class MSFilePrint extends net.meanscript.MSOutputPrint
 
 
 	@Override
-	public MSOutputPrint print(float x)
+	public MSOutputPrint print(String x) throws MException
 	{
 		try {
-			fw.write(String.valueOf(x));
+			fw.write(x);
 		} catch (IOException e) {
 			MSJava.errorOut.print("file write error");
 			return null;
@@ -97,41 +61,6 @@ public class MSFilePrint extends net.meanscript.MSOutputPrint
 		return this;
 	}
 
-	@Override
-	public MSOutputPrint print(boolean x) {
-
-		try {
-			fw.write(String.valueOf(x));
-		} catch (IOException e) {
-			MSJava.errorOut.print("file write error");
-			return null;
-		}
-		return this;
-	}
-
-	@Override
-	public MSOutputPrint print(long x) {
-
-		try {
-			fw.write(String.valueOf(x));
-		} catch (IOException e) {
-			MSJava.errorOut.print("file write error");
-			return null;
-		}
-		return this;
-	}
-
-	@Override
-	public MSOutputPrint print(double x) {
-
-		try {
-			fw.write(String.valueOf(x));
-		} catch (IOException e) {
-			MSJava.errorOut.print("file write error");
-			return null;
-		}
-		return this;
-	}
 
 
 }

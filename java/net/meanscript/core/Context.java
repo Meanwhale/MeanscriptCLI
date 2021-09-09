@@ -23,7 +23,7 @@ public Context (MSText _name, int _functionID, int _returnType) throws MExceptio
 	codeEndAddress = -1;
 }
 
-public void print ()
+public void print () throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("Context.print(): TODO").endLine();};
 }

@@ -9,9 +9,16 @@ public MSInputStream ()
 }
 
 public abstract int  getByteCount ();
-public abstract byte  readByte () throws MException;
+public abstract int  readByte () throws MException;
 public abstract boolean  end ();
 public abstract void  close ();
+
+public int readByteWithCheck () throws MException
+{
+	int i = readByte();
+	MSJava.assertion(i != -1, EC_DATA, "input error (readByteWithCheck)");
+	return i;
+}
 
 public int  readInt () throws MException
 {

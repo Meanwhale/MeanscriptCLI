@@ -12,6 +12,10 @@ public static final int [] vecStructCode = new int [] {
   
 private static String testStructs = "struct vec [int x, int y]; struct person [vec pos, text name, int age];";
 
+private static String simpleVariableScript = "int a: 5; int64 short: -1; int64 long: 1234567891234; text b: \"x\";chars [12] ch: \"asds\";float c:-123.456; float64 d: 12.123456789; bool b1: true; bool b2: false; text utf: \"A\\xc3\\x84\"";
+
+private static String complexStructs = "struct vec [int x, int y, chars[7] name]\nstruct person [chars[32] name, vec [4] corner, vec pos, float age]\nstruct group [text title, person [3] member]";
+
 private static void msText() throws MException
 {
 	
@@ -84,19 +88,6 @@ private static void consistency() throws MException
 	String s = "A";
 	MSJava.assertion(s.length() == 1,EC_TEST,"");
 	
-	// OLD: now msText test does this
-	// converting string to bytes and bytes to string
-	//int stringToIntsWithSize(String text, int [] code, int top, int maxSize)
-	//int [] intArray;
-	//{intArray = new int[3]; };
-	//stringToIntsWithSize("abcde", intArray,0,3);
-	////STRING_TO_INT_ARRAY(intArray, "abcde");
-	//MSJava.assertion(intArray.length == 2,EC_TEST,"");
-	//MSJava.assertion(intArray[0] == 1684234849,EC_TEST,"");
-	//MSJava.assertion(intArray[1] == 101,EC_TEST,"");
-	//s = new String(MSJava.intsToBytes(intArray, 0, 5),java.nio.charset.StandardCharsets.UTF_8);
-	//MSJava.assertion((s.equals("abcde")),EC_TEST,"");
-	
 	// int64 conversions
 
 	long max = -9023372036854775808l;
@@ -112,13 +103,10 @@ private static void consistency() throws MException
 	MSJava.assertion(f64 == f64x,EC_TEST,"");
 }
 
-private static void simpleVariable() throws MException
+
+
+private static void simpleVariableCheck(MSCode m) throws MException
 {
-	// long max: 9223372036854775807
-	String s = "int a: 5; int64 short: -1; int64 long: 1234567891234; text b: \"x\";chars [12] ch: \"asds\";";
-	s += "float c:-123.456; float64 d: 12.123456789; bool b1: true; bool b2: false";
-	MSCode m = new MSCode();
-	m.compileAndRun(s);
 	MSJava.assertion(m.hasData("a"),EC_TEST,"");
 	MSJava.assertion(m.getInt("a") == 5,EC_TEST,"");
 	MSJava.assertion(m.getInt64("long") == 1234567891234l,EC_TEST,"");
@@ -129,7 +117,21 @@ private static void simpleVariable() throws MException
 	MSJava.assertion(m.getFloat64("d") == 12.123456789,EC_TEST,"");
 	MSJava.assertion(m.getBool("b1") == true,EC_TEST,"");
 	MSJava.assertion(m.getBool("b2") == false,EC_TEST,"");
-	m = null;
+	
+	String utf = m.getText("utf");
+	MSJava.assertion(utf.length() == 2,EC_TEST,""); // A + A with umlauts
+	MSText txt = new MSText (utf);
+	MSJava.assertion(txt.numBytes() == 3,EC_TEST,"");
+	MSJava.assertion(txt.byteAt(0) == 0x41 && txt.byteAt(1) == 0xc3 && txt.byteAt(2) == 0x84,EC_TEST,"");
+}
+
+private static void simpleVariable() throws MException
+{
+	// long max: 9223372036854775807
+	
+	MSCode m = new MSCode ();
+	m.compileAndRun(simpleVariableScript);
+	simpleVariableCheck(m);
 }
 
 private static void structAssignment() throws MException
@@ -323,7 +325,38 @@ private static void inputOutputStream() throws MException
 }
 
 
-private static void readOnly() throws MException
+private static void scriptOutput() throws MException
+{
+	String s = complexStructs;
+	s += "\ngroup g\ng.member[2].corner[0].x: 123\ng.member[2].corner[0].name: \"Jii\"\n";
+	s += simpleVariableScript;
+	MSCode m = new MSCode ();
+	m.compileAndRun(s);
+	
+	MSOutputPrintArray output = new MSOutputPrintArray ();
+	m.dataOutputPrint(output); // write only data, not structs
+	
+	// debug:
+	MSJava.printOut.print("\n----------SCRIPT OUTPUT TEST\n").endLine();
+	m.dataOutputPrint(MSJava.printOut);
+	
+	s = complexStructs;
+	s += "\n";
+	s += output.getString();
+	
+	m.compileAndRun(s);
+	m.dataOutputPrint(MSJava.printOut);
+	
+	// compare values from original script and output script
+	MSJava.assertion((m.getData("g").getArray("member").getAt(2).getArray("corner").getAt(0).getChars("name").equals( "Jii")),EC_TEST,"");
+	
+	simpleVariableCheck(m);
+	
+	MSJava.printOut.print("\n----------SCRIPT OUTPUT TEST ENDS\n").endLine();
+}
+
+
+private static void writeReadOnlyData() throws MException
 {
 	String code = "int a: 5";
 	MSInputArray input = new MSInputArray(code);
@@ -373,7 +406,8 @@ public static void  runAll () throws MException
 	MSJava.printOut.print("TEST " +  "varArray" ); varArray(); MSJava.printOut.print(": OK").endLine();;
 	MSJava.printOut.print("TEST " +  "structArray" ); structArray(); MSJava.printOut.print(": OK").endLine();;
 	MSJava.printOut.print("TEST " +  "inputOutputStream" ); inputOutputStream(); MSJava.printOut.print(": OK").endLine();;
-	MSJava.printOut.print("TEST " +  "readOnly" ); readOnly(); MSJava.printOut.print(": OK").endLine();;
+	MSJava.printOut.print("TEST " +  "writeReadOnlyData" ); writeReadOnlyData(); MSJava.printOut.print(": OK").endLine();;
+	MSJava.printOut.print("TEST " +  "scriptOutput" ); scriptOutput(); MSJava.printOut.print(": OK").endLine();;
 
 
 	MSJava.printOut.print("TEST ERROR " +  "parseError" ).endLine(); if (parseError()) MSJava.printOut.print(": OK").endLine(); else throw new MException(MC.EC_INTERNAL, "ERROR TEST FAIL");;

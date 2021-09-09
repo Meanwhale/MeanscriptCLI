@@ -10,55 +10,19 @@ public class Printer extends net.meanscript.MSOutputPrint
 
 		System.out.print((char)x);
 	}
-
-	@Override
-	public MSOutputPrint printChar(byte x) {
-		System.out.print((char)x);
-		return this;
-	}
-	@Override
-	public MSOutputPrint print(byte x) {
-		System.out.print((char)x);
-		return this;
-	}
-	@Override
-	public MSOutputPrint print(int x) {
-
-		System.out.print(x);
-		return this;
-	}
-
 	@Override
 	public MSOutputPrint print(String x) {
 
 		System.out.print(x);
 		return this;
 	}
-
 	@Override
-	public MSOutputPrint print(float x) {
+	public MSOutputPrint print(char x) {
 
 		System.out.print(x);
 		return this;
 	}
 
-	@Override
-	public MSOutputPrint print(boolean x) {
-		System.out.print(x);
-		return this;
-	}
-
-	@Override
-	public MSOutputPrint print(long x) {
-		System.out.print(x);
-		return this;
-	}
-
-	@Override
-	public MSOutputPrint print(double x) {
-		System.out.print(x);
-		return this;
-	}
 
 }
 // Java END

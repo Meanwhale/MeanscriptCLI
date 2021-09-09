@@ -168,10 +168,13 @@ public void init () throws MException
 	textCounter = 1; // 0 is empty
 	done = false;
 	
-	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print(HORIZONTAL_LINE).endLine();};
-	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("START INITIALIZING").endLine();};
-	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print(HORIZONTAL_LINE).endLine();};
-	if (MSJava.globalConfig.verboseOn()) printData(byteCode.code, byteCode.codeTop, -1, true);
+	if (MSJava.globalConfig.verboseOn())
+	{
+		MSJava.printOut.print(HORIZONTAL_LINE).endLine();
+		MSJava.printOut.print("START INITIALIZING").endLine();
+		MSJava.printOut.print(HORIZONTAL_LINE).endLine();
+		printBytecode(byteCode.code, byteCode.codeTop, -1, true);
+	}
 
 	while (running())
 	{
@@ -348,15 +351,18 @@ public void step () throws MException
 		int textID = bc.code[instructionPointer + 1];
 		int maxChars = bc.code[instructionPointer + 2];
 		int structSize = bc.code[instructionPointer + 3];
-		
-		int textIndex = texts[textID];
-		int textChars = bc.code[textIndex + 1];
-		int textDataSize = instrSize(bc.code[textIndex]);
-		MSJava.assertion(textChars <= maxChars, EC_CODE, "text too long");
-		MSJava.assertion(textDataSize <= structSize, EC_CODE, "text data too long");
-		//{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("SIZE: " + textChars + " MAX: " + maxChars).endLine();};
-		
-		pushData(bc.code, textIndex + 1, textDataSize);
+		int textDataSize = 0;
+		if (textID != 0)
+		{
+			int textIndex = texts[textID];
+			int textChars = bc.code[textIndex + 1];
+			textDataSize = instrSize(bc.code[textIndex]);
+			MSJava.assertion(textChars <= maxChars, EC_CODE, "text too long");
+			MSJava.assertion(textDataSize <= structSize, EC_CODE, "text data too long");
+			//{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("SIZE: " + textChars + " MAX: " + maxChars).endLine();};
+			
+			pushData(bc.code, textIndex + 1, textDataSize);
+		}
 		// fill the rest
 		for (int i=0; i < (structSize - textDataSize); i++) push(0);
 	}
@@ -542,7 +548,7 @@ public void step () throws MException
 }
 
 
-public void pushData (int [] source, int address, int size)
+public void pushData (int [] source, int address, int size) throws MException
 {
 	// push words from the source
 	for (int i=0; i<size; i++)
@@ -552,7 +558,7 @@ public void pushData (int [] source, int address, int size)
 	}
 }
 
-public void popStackToTarget (ByteCode bc, int [] target, int size, int address)
+public void popStackToTarget (ByteCode bc, int [] target, int size, int address) throws MException
 {
 	for (int i=0; i<size; i++)
 	{
@@ -563,13 +569,13 @@ public void popStackToTarget (ByteCode bc, int [] target, int size, int address)
 	stackTop -= size;
 }
 
-public void push (int data)
+public void push (int data) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("push stack: " + data).endLine();};
 	stack[stackTop++] = data;
 }
 
-public void callbackReturn (int type, int value)
+public void callbackReturn (int type, int value) throws MException
 {
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print(HORIZONTAL_LINE).endLine();};
 	     {if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("        return " + value).endLine();};
@@ -603,7 +609,7 @@ public void  writeReadOnlyData (MSOutputStream output) throws MException
 	output.writeInt(makeInstruction(OP_END_INIT,0,0));
 }
 
-public void printGlobals()
+public void printGlobals() throws MException
 {
 	MSJava.printOut.print("GLOBALS: ").endLine();
 	if (globalsSize == 0)
@@ -632,7 +638,7 @@ public void printDetails() throws MException
 	
 	MSJava.printOut.print("\nSTACK").endLine();
 	MSJava.printOut.print(HORIZONTAL_LINE).endLine();
-	printData(stack, stackTop, -1, false);
+	printBytecode(stack, stackTop, -1, false);
 }
 
 public void printCode() throws MException
@@ -641,14 +647,14 @@ public void printCode() throws MException
 	MSJava.printOut.print(HORIZONTAL_LINE).endLine();
 	MSJava.printOut.print("index     code/data (32 bits)").endLine();
 	MSJava.printOut.print(HORIZONTAL_LINE).endLine();
-	printData(byteCode.code, byteCode.codeTop, instructionPointer, true);
+	printBytecode(byteCode.code, byteCode.codeTop, instructionPointer, true);
 }
 
 
 public void dataPrint() throws MException
 {
 	MSJava.printOut.print(HORIZONTAL_LINE).endLine();
-	globals.printData(0, "<globals>");
+	globals.printData(MSJava.printOut, 0, "");
 	MSJava.printOut.print(HORIZONTAL_LINE).endLine();
 }
 

@@ -7,6 +7,7 @@ public class MNode {
  int lineNumber;
  int characterNumber;
  MSText data;
+ long numeralValue;
  MNode next = null;
  MNode child = null;
  MNode parent = null;
@@ -14,6 +15,17 @@ public class MNode {
 public MNode (int line, int ch, MNode _parent, int _type, MSText _data)
 {
 	data = _data;
+	lineNumber = line;
+	characterNumber = ch;
+
+	parent = _parent;
+	type = _type;
+	numChildren = 0;
+}
+public MNode (int line, int ch, MNode _parent, int _type, long _numeralValue)
+{
+	data = null;
+	numeralValue = _numeralValue;
 	lineNumber = line;
 	characterNumber = ch;
 

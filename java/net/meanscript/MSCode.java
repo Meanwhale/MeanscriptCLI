@@ -178,6 +178,11 @@ public void printData () throws MException
 	else MSJava.printOut.print("printDetails: MSCode is not initialized").endLine();
 }
 
+public void dataOutputPrint (MSOutputPrint output) throws MException
+{
+	mm.globals.printData(output,0,"");
+}
+
 public ByteCode compile (MSInputStream input) throws MException
 {
 	reset();

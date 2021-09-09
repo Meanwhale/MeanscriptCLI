@@ -29,10 +29,11 @@ public int  getByteCount ()
 }
 
 @Override
-public byte  readByte () throws MException
+public int  readByte () throws MException
 {
-	MSJava.assertion(!end(), EC_DATA, "readInt: buffer overflow");
-	return buffer[index++];
+	//MSJava.assertion(!end(), EC_DATA, "readInt: buffer overflow");
+	if (end()) return -1;
+	return (((int) buffer[index++]) & 0xff);
 }
 
 @Override

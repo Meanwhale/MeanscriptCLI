@@ -73,10 +73,10 @@ public int dataSize()
 {
 	return data.length;
 }
-public byte byteAt(int index)  throws MException
+public int byteAt(int index)  throws MException
 {
 	MSJava.assertion(index >= 0 && index <= data[0],  "index overflow");
-	return (byte)((data[(index / 4) + 1]) >> ((index % 4) * 8) & 0x000000ff);
+	return ((data[(index / 4) + 1]) >> ((index % 4) * 8) & 0x000000ff);
 }
 public int write(int [] trg, int start)  throws MException
 {

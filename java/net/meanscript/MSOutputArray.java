@@ -27,7 +27,7 @@ public void  writeByte (byte b) throws MException
 	buffer[index++] = b;
 }
 
-public void  print ()
+public void  print () throws MException
 {
 	MSJava.printOut.print("TODO").endLine();
 }

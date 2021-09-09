@@ -268,7 +268,7 @@ public void print () throws MException
 	}
 	else
 	{
-		if (MSJava.globalConfig.verboseOn()) printData(code, codeTop, -1, true);
+		if (MSJava.globalConfig.verboseOn()) printBytecode(code, codeTop, -1, true);
 	}
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print(HORIZONTAL_LINE).endLine();};
 }

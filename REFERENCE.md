@@ -9,20 +9,6 @@ Check out the unit tests for use examples:
 
 https://github.com/Meanwhale/MeanscriptCLI/blob/master/src/MeanscriptCpp/core/MeanscriptUnitTest.cpp
 
-## Public interface classes
-
-class | description
-------|------------
-MSBuilder | Create bytecode data and data structures from source code.
-MSCode | Read and access script and bytecode data.
-MSData | Any type of variable or structure.
-MSDataArray | Array of data, i.e. _MSData_ objects of certain type.
-MSGlobal | Global constant values for the engine.
-MSInputStream, MSOutputStream | An abstract interfaces for input/output.
-MSInputArray, MSOutputArray | Array holders for streaming data.
-MSOutputPrint | An abstract _MSOutputStream_ interface to print data.
-MSWriter | A writer class for the _MSBuilder_.
-
 ## Script syntax quick reference
 
 <pre>// basic variable types:
@@ -33,7 +19,7 @@ int64 i64: 1234567891234;   // define a 64-bit integer
 float64 f64: 12.123456789;  // define a 64-bit floating-point number
 text name: "Jack"           // define an immutable string
 chars [12] ch: "Jill"       // define a mutable, fixed-sized string (max. 12 bytes)
-bool b                      // define a boolean
+bool b: true                // define a boolean ('true' or 'false')
 
 // Function calls can be of two formats:
 // 1. Argument list separated with spaces, like on command line:
@@ -254,3 +240,17 @@ PUSH_GLOBAL_REF             Push a global reference
 MULTIPLY_GLOBAL_ARRAY_INDEX Multiply to calculate an array item address
 INIT_GLOBALS                Initialize all global values
 </pre>
+
+## Public interface classes
+
+class | description
+------|------------
+MSBuilder | Create bytecode data and data structures from source code.
+MSCode | Read and access script and bytecode data.
+MSData | Any type of variable or structure.
+MSDataArray | Array of data, i.e. _MSData_ objects of certain type.
+MSGlobal | Global constant values for the engine.
+MSInputStream, MSOutputStream | An abstract interfaces for input/output.
+MSInputArray, MSOutputArray | Array holders for streaming data.
+MSOutputPrint | An abstract _MSOutputStream_ interface to print data.
+MSWriter | A writer class for the _MSBuilder_.

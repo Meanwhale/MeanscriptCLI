@@ -79,14 +79,32 @@ public MSText  getMSText (int id) throws MException
 	return new MSText(structCode,address+1);
 }
 
+public boolean isChars (int typeID)
+{
+	int charsTypeAddress = mm.types[typeID];
+	int charsTypeTag = structCode[charsTypeAddress];
+	return (charsTypeTag & OPERATION_MASK) == OP_CHARS_DEF;
+}
+
+public int getCharsSize (int typeID)
+{
+	int index = mm.types[typeID];
+	int typeTagID = structCode[index] & VALUE_TYPE_MASK;
+	int potentialCharsTag = structCode[mm.types[typeTagID]];
+	if ((potentialCharsTag & OPERATION_MASK) == OP_CHARS_DEF)
+	{
+		return structCode[mm.types[typeTagID] + 1];
+	}
+	else return -1;
+}
+
 public String getChars (String name) throws MException
 {
 	int memberTagAddress = getMemberTagAddress(name, false);
 	
 	int charsTag = structCode[memberTagAddress];
-	int charsTypeAddress = mm.types[instrValueTypeIndex(charsTag)];
-	int charsTypeTag = structCode[charsTypeAddress];
-	MSJava.assertion((charsTypeTag & OPERATION_MASK) == OP_CHARS_DEF, EC_DATA, "not chars");
+	int typeID = instrValueTypeID(charsTag);
+	MSJava.assertion(isChars(typeID), EC_DATA, "not chars");
 	
 	MSJava.assertion(memberTagAddress >= 0, EC_DATA, "not found: " + name);
 	int address = dataIndex + structCode[memberTagAddress + 1];
@@ -256,34 +274,71 @@ public int getMemberTagAddress (String name, boolean isArray) throws MException
 	return -1;
 }
 
-public void  printData (int depth, String name) throws MException
+public void  printType (MSOutputPrint op, int typeID) throws MException
 {
-		
-	for (int x=0; x<depth; x++) MSJava.printOut.print("    ");
-	MSJava.printOut.print(name);
+	if (typeID < MAX_MS_TYPES) op.print(primitiveNames[typeID]);
+	else
+	{
+		int charsSizeOrNegative = getCharsSize(typeID);
+		if (charsSizeOrNegative >= 0)
+		{
+			op.print("chars[");
+			op.print(charsSizeOrNegative);
+			op.print("]");
+		}
+		else
+		{
+			int index = mm.types[typeID];
+			MSText typeName = new MSText (structCode,index+1);
+			op.print(typeName);
+		}
+	}
+}
+
+public void  printData (MSOutputPrint op, int depth, String name) throws MException
+{
+	//for (int x=0; x<depth; x++) op.print("    ");
 	
 	if (!isStruct())
 	{
-		if (getType() == MS_TYPE_FLOAT)
+		if (depth != 1) op.print(name);
+		op.print(": ");
+		if (getType() == MS_TYPE_INT)
 		{
-			MSJava.printOut.print(MSJava.intFormatToFloat(dataCode[dataIndex])).endLine();
+			op.print(dataCode[dataIndex]);
+		}
+		else if (getType() == MS_TYPE_INT64)
+		{
+			op.print(intsToInt64(dataCode[dataIndex], dataCode[dataIndex+1]));
+		}
+		else if (getType() == MS_TYPE_FLOAT)
+		{
+			op.print(MSJava.intFormatToFloat(dataCode[dataIndex]));
+		}
+		else if (getType() == MS_TYPE_FLOAT64)
+		{
+			op.print(getFloat64At(dataIndex));
 		}
 		else if (getType() == MS_TYPE_TEXT)
 		{
 			MSText tmp = getMSText(dataCode[dataIndex]);
-			MSJava.printOut.print(tmp).endLine();
+			op.print("\"");
+			op.printIntsToChars(tmp.getData(), 1, tmp.numBytes(), true);
+			op.print("\"");
 		}
-		else if (getType() == MS_TYPE_INT64)
+		else if (getType() == MS_TYPE_BOOL)
 		{
-			MSJava.printOut.print(intsToInt64(dataCode[dataIndex], dataCode[dataIndex+1])).endLine();
+			if (dataCode[dataIndex] == 0) op.print("false");
+			else op.print("true");
 		}
 		else
 		{
-			MSJava.printOut.print(dataCode[dataIndex]).endLine();
+			MSJava.assertion(false, EC_DATA, "printData: unhandled data type: " + getType());
 		}
+		op.print("\n");
 	}
 	else
-	{
+	{	
 		// NOTE: similar to getMemberTagAddress()
 		
 		int i = mm.types[getType()];
@@ -292,50 +347,68 @@ public void  printData (int depth, String name) throws MException
 		if ((code & OPERATION_MASK) == OP_CHARS_DEF)
 		{
 			int numChars = dataCode[dataIndex + 0];
-			String s = new String(MSJava.intsToBytes(dataCode, dataIndex + 1, numChars),java.nio.charset.StandardCharsets.UTF_8);
-			MSJava.printOut.print(s).endLine();
+			if (depth != 1) op.print(name);
+			op.print(": \"");
+			op.printIntsToChars(dataCode, dataIndex + 1, numChars, true);
+			op.print("\"\n");
 			return;
 		}
-		MSJava.printOut.print("").endLine();
+		if (depth == 1) op.print("\n");
+					
 		MSJava.assertion((code & OPERATION_MASK) == OP_STRUCT_DEF,   "printData: struct def. expected");
+				
 		i += instrSize(code) + 1;
 		code = structCode[i];
 		while ((code & OPERATION_MASK) == OP_MEMBER_NAME)
 		{
-			
 			String s = new String(MSJava.intsToBytes(structCode, i + 2, structCode[i+1]),java.nio.charset.StandardCharsets.UTF_8);
 	
 			i += instrSize(code) + 1;
 			code = structCode[i];
 			
+			// print type name
+			
+			if (depth == 0) 
+			{
+				int typeID = (int)(code & VALUE_TYPE_MASK);
+				printType(op, typeID);
+				op.print(" ");
+				op.print(s);
+			}
+			
 			if ((code & OPERATION_MASK) == OP_STRUCT_MEMBER)
 			{
 				int dataAddress = dataIndex + structCode[i + 1];
 				MSData d = new MSData (mm, i, dataAddress, false);
-				s += ": ";
-				d.printData(depth + 1, s);
+				if (depth > 0) d.printData(op, depth + 1, name + "." + s);
+				else d.printData(op, depth + 1, s);
 			}
 			else if ((code & OPERATION_MASK) == OP_ARRAY_MEMBER)
 			{
 				int dataAddress = dataIndex + structCode[i + 1];
 				MSDataArray a = new MSDataArray (mm, i, dataAddress);
 					
-				for (int x=0; x<depth+1; x++) MSJava.printOut.print("    ");
-				MSJava.printOut.print(s);
-				MSJava.printOut.print(": ");
+				//for (int x=0; x<depth+1; x++) op.print("    ");
+				//op.print(s);
+				
 				
 				// iterate thru array items
 
-				MSJava.printOut.print("").endLine();
 				for (int n=0; n<a.getArrayItemCount(); n++)
 				{
 					MSData d = a.getAt(n);
-					for (int x=0; x<depth; x++) MSJava.printOut.print("  ");
+					//for (int x=0; x<depth; x++) op.print("  ");
+
+
+					String tmp = "";
+					if (depth > 0) tmp = name + "." + s;
+					else tmp = s;	
+					
 					String indexText = "" +  n;;
-					String tmp = "[";
+					tmp += "[";
 					tmp += indexText;
-					tmp += "] ";
-					d.printData(depth + 1, tmp);
+					tmp += "]";
+					d.printData(op, depth + 1, tmp);
 				}
 			}
 			else
@@ -345,7 +418,7 @@ public void  printData (int depth, String name) throws MException
 
 			i += instrSize(code) + 1;
 			code = structCode[i];
-		}	
+		}
 	}
 }
 
