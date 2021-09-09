@@ -4,8 +4,9 @@
 **_Command Line Interface (CLI) and  Application Programming Interface for Java and C++_**
 
 
-meanwhale@gmail.com<br>
-https://twitter.com/TheMeanwhale
+✉ meanwhale@gmail.com<br>
+🐦 https://twitter.com/TheMeanwhale<br>
+🌐 [meanscript.net](http://www.meanscript.net/)
 
 <hr>
 
@@ -21,7 +22,7 @@ while keeping it compact and easy to use. It's working with C++, C#, and Java.
 * **Scripting language** to store and transfer data using variables, data structures, and functions.
 * **Bytecode format** translated from a script or generated from source code.
 * **Command line interface** (CLI) to compile and run code from a terminal.
-* **C++ and Java library** to translate scripts, and read and write bytecode data from C++ and Java source code.
+* **C++ and Java library** to read and write bytecode or scripted data from C++ and Java source code.
 * **Generate Java code** to read and write data structures.
 
 
