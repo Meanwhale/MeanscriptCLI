@@ -11,7 +11,7 @@ public MSInputStream ()
 public abstract int  getByteCount ();
 public abstract int  readByte () throws MException;
 public abstract boolean  end ();
-public abstract void  close ();
+public abstract void  close ()  throws MException;
 
 public int readByteWithCheck () throws MException
 {

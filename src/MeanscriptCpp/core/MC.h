@@ -82,7 +82,19 @@ constexpr char const * keywords [] = {
  "struct",
  "return",
  "global"
- };
+};
+constexpr char const * primitiveNames [] = {
+ "",
+ "int",
+ "int64",
+ "float",
+ "float64",
+ "text",
+ "bool",
+ "",
+ "",
+ "chars",
+};
   constexpr char const * HORIZONTAL_LINE = "------------------------------------------";
 //INITIALIZED_CONST_STRING(HORIZONTAL_LINE,"__________________________________________\n");
 constexpr uint32_t OPERATION_MASK = 0xff000000;
@@ -118,11 +130,11 @@ extern const meanscript::MSError E_UNEXPECTED_CHAR;
 int32_t makeInstruction (int32_t operation, int32_t size, int32_t valueType);
 std::string getOpName(int32_t instruction);
 int32_t instrSize(int32_t instruction);
-int32_t instrValueTypeIndex(int32_t instruction);
+int32_t instrValueTypeID(int32_t instruction);
 int32_t int64highBits(int64_t x);
 int32_t int64lowBits(int64_t x);
 int64_t intsToInt64(int32_t high, int32_t low);
-void printData(Array<int> & data, int32_t top, int32_t index, bool code);
+void printBytecode(Array<int> & data, int32_t top, int32_t index, bool code);
 int32_t stringToIntsWithSize(const std::string & text, Array<int> & code, int32_t top, int32_t maxSize);
 bool intStringsWithSizeEquals(Array<int> & a, int32_t aOffset, Array<int> & b, int32_t bOffset);
 void intsToBytes(Array<int> & ints, int32_t intsOffset, Array<uint8_t> & bytes, int32_t bytesOffset, int32_t bytesLength);

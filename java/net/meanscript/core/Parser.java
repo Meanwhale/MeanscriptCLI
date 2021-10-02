@@ -488,14 +488,15 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 	if (ba.ok) ba.step((byte)'\n'); // ended cleanly: last command break
 	if (currentBlock != null)
 	{
-		MSJava.printOut.print("closing parenthesis missing at the end").endLine();
+		if (assignment) MSJava.printOut.print("unexpected end of file in assignment").endLine();
+		else MSJava.printOut.print("unexpected end of file: closing parenthesis missing").endLine();
 		ba.ok = false;
 	}
 	
 	if (!running || !(ba.ok))
 	{
 		MSJava.errorOut.print("Parser state [" + ba.stateNames.get( (int)ba.currentState) + "]\n");
-		MSJava.errorOut.print("Line " + lineNumber + ": \"");
+		MSJava.errorOut.print("Line " + lineNumber + ": \n        ");
 		
 		// print nearby code
 		int start = index-1;
@@ -505,7 +506,7 @@ public static TokenTree  Parse (MSInputStream input) throws MException
 		{
 			MSJava.errorOut.print("").printCharSymbol((((int) buffer[start % 512]) & 0xff));
 		}
-		MSJava.errorOut.print("\"\n");
+		MSJava.errorOut.print("\n");
 		
 		baPtr = null;
 		root = null;

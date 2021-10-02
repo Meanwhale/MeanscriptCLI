@@ -114,10 +114,10 @@ private static void simpleVariableCheck(MSCode m) throws MException
 	MSJava.assertion((m.getText("b").equals( "x")),EC_TEST,"");
 	MSJava.assertion((m.getChars("ch").equals( "asds")),EC_TEST,"");
 	MSJava.assertion(m.getFloat("c") == -123.456f,EC_TEST,"");
-	MSJava.assertion(m.getFloat64("d") == 12.123456789,EC_TEST,"");
 	MSJava.assertion(m.getBool("b1") == true,EC_TEST,"");
 	MSJava.assertion(m.getBool("b2") == false,EC_TEST,"");
 	
+	MSJava.assertion(m.getFloat64("d") == 12.123456789,EC_TEST,"");
 	String utf = m.getText("utf");
 	MSJava.assertion(utf.length() == 2,EC_TEST,""); // A + A with umlauts
 	MSText txt = new MSText (utf);

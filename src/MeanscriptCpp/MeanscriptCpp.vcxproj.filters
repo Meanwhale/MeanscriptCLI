@@ -128,6 +128,9 @@
     <ClInclude Include="pub\MSText.h">
       <Filter>Header Files\pub</Filter>
     </ClInclude>
+    <ClInclude Include="pub\MSOutputPrintArray.h">
+      <Filter>Header Files\pub</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MS.cpp">
@@ -221,6 +224,9 @@
       <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="pub\MSText.cpp">
+      <Filter>Source Files\pub</Filter>
+    </ClCompile>
+    <ClCompile Include="pub\MSOutputPrintArray.cpp">
       <Filter>Source Files\pub</Filter>
     </ClCompile>
   </ItemGroup>

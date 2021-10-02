@@ -10,6 +10,10 @@ constexpr int vecStructCode [] = {
   
 const char * testStructs = "struct vec [int x, int y]; struct person [vec pos, text name, int age];";
 
+const char * simpleVariableScript = "int a: 5; int64 short: -1; int64 long: 1234567891234; text b: \"x\";chars [12] ch: \"asds\";float c:-123.456; float64 d: 12.123456789; bool b1: true; bool b2: false; text utf: \"A\\xc3\\x84\"";
+
+const char * complexStructs = "struct vec [int x, int y, chars[7] name]\nstruct person [chars[32] name, vec [4] corner, vec pos, float age]\nstruct group [text title, person [3] member]";
+
 void msText() 
 {
 	
@@ -80,19 +84,6 @@ void consistency()
 	std::string s = "A";
 	TEST(s.size() == 1);
 	
-	// OLD: now msText test does this
-	// converting string to bytes and bytes to string
-	//int32_t stringToIntsWithSize(const std::string & text, Array<int> & code, int32_t top, int32_t maxSize)
-	//Array<int> intArray;
-	//{ intArray.reset(3); intArray.fill(0); intArray.description = ""; };
-	//stringToIntsWithSize("abcde", intArray,0,3);
-	////STRING_TO_INT_ARRAY(intArray, "abcde");
-	//TEST(intArray.length() == 2);
-	//TEST(intArray[0] == 1684234849);
-	//TEST(intArray[1] == 101);
-	//s = readStringFromIntArray(intArray,  0,  5);;
-	//TEST((compareStrings(s,"abcde")));
-	
 	// int64 conversions
 
 	int64_t max = -9023372036854775808l;
@@ -108,23 +99,29 @@ void consistency()
 	TEST(f64 == f64x);
 }
 
+
+
+void simpleVariableCheck(MSCode & m) 
+{
+	TEST(m.hasData("a"));
+	TEST(m.getInt("a") == 5);
+	TEST(m.getInt64("long") == 1234567891234l);
+	TEST(m.getInt64("short") == -1l);
+	TEST((compareStrings(m.getText("b"), "x")));
+	TEST((compareStrings(m.getChars("ch"), "asds")));
+	TEST(m.getFloat("c") == -123.456f);
+	TEST(m.getBool("b1") == true);
+	TEST(m.getBool("b2") == false);
+	
+}
+
 void simpleVariable() 
 {
 	// long max: 9223372036854775807
-	std::string s = "int a: 5; int64 short: -1; int64 long: 1234567891234; text b: \"x\";chars [12] ch: \"asds\";";
-	s += "float c:-123.456; float64 d: 12.123456789; bool b1: true; bool b2: false";
-	MSCode* m = new MSCode();
-	(*m).compileAndRun(s);
-	TEST((*m).hasData("a"));
-	TEST((*m).getInt("a") == 5);
-	TEST((*m).getInt64("long") == 1234567891234l);
-	TEST((*m).getInt64("short") == -1l);
-	TEST((compareStrings((*m).getText("b"), "x")));
-	TEST((compareStrings((*m).getChars("ch"), "asds")));
-	TEST((*m).getFloat("c") == -123.456f);
-	TEST((*m).getBool("b1") == true);
-	TEST((*m).getBool("b2") == false);
-	{ delete m; m = 0; };
+	
+	MSCode m;
+	m.compileAndRun(simpleVariableScript);
+	simpleVariableCheck(m);
 }
 
 void structAssignment() 
@@ -316,7 +313,38 @@ void inputOutputStream()
 }
 
 
-void readOnly() 
+void scriptOutput() 
+{
+	std::string s = complexStructs;
+	s += "\ngroup g\ng.member[2].corner[0].x: 123\ng.member[2].corner[0].name: \"Jii\"\n";
+	s += simpleVariableScript;
+	MSCode m;
+	m.compileAndRun(s);
+	
+	MSOutputPrintArray output;
+	m.dataOutputPrint(output); // write only data, not structs
+	
+	// debug:
+	PRINT("\n----------SCRIPT OUTPUT TEST\n");
+	m.dataOutputPrint(PRINT_STREAM);
+	
+	s = complexStructs;
+	s += "\n";
+	s += output.getString();
+	
+	m.compileAndRun(s);
+	m.dataOutputPrint(PRINT_STREAM);
+	
+	// compare values from original script and output script
+	TEST((compareStrings(m.getData("g").getArray("member").getAt(2).getArray("corner").getAt(0).getChars("name"), "Jii")));
+	
+	simpleVariableCheck(m);
+	
+	PRINT("\n----------SCRIPT OUTPUT TEST ENDS\n");
+}
+
+
+void writeReadOnlyData() 
 {
 	std::string code = "int a: 5";
 	MSInputArray* input = new MSInputArray(code);
@@ -366,7 +394,8 @@ void MeanscriptUnitTest:: runAll ()
 	PRINTN("TEST " CAT  "varArray" ); varArray(); PRINT(": OK");;
 	PRINTN("TEST " CAT  "structArray" ); structArray(); PRINT(": OK");;
 	PRINTN("TEST " CAT  "inputOutputStream" ); inputOutputStream(); PRINT(": OK");;
-	PRINTN("TEST " CAT  "readOnly" ); readOnly(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "writeReadOnlyData" ); writeReadOnlyData(); PRINT(": OK");;
+	PRINTN("TEST " CAT  "scriptOutput" ); scriptOutput(); PRINT(": OK");;
 
 }
 

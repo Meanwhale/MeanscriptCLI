@@ -42,7 +42,7 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 {
 	return (int32_t)(instruction & SIZE_MASK) >> SIZE_SHIFT;
 }
- int32_t instrValueTypeIndex(int32_t instruction)
+ int32_t instrValueTypeID(int32_t instruction)
 {
 	return (int32_t)(instruction & VALUE_TYPE_MASK) >> VALUE_TYPE_SHIFT;
 }
@@ -59,7 +59,7 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	return x;
 }
 
- void printData(Array<int> & data, int32_t top, int32_t index, bool code) 
+ void printBytecode(Array<int> & data, int32_t top, int32_t index, bool code) 
 {
 	int32_t tagIndex = 0;
 	for (int32_t i=0; i<top; i++)
@@ -176,7 +176,7 @@ const meanscript::MSError 	E_UNEXPECTED_CHAR(			EC_PARSE, 		"Unexpected characte
 	if (code >= '0' && code <= '9') return (uint8_t)(code - '0');
 	if (code >= 'a' && code <= 'f') return (uint8_t)(0xa + code - 'a');
 	if (code >= 'A' && code <= 'F') return (uint8_t)(0xa + code - 'A');
-	ERROR_PRINT("invalid literal: ").printCharSymbol(c).endLine();
+	ERROR_PRINT("invalid literal: ").printCharSymbol((((int) c) & 0xff)).endLine();
 	CHECK(false, EC_PARSE, "wrong hex character");
 	return 0;
 }

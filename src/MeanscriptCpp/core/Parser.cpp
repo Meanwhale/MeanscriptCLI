@@ -13,7 +13,7 @@ const char * blockStart =  "([{";
 const char * blockEnd =  ")]}";
 const char * op =  "+*<>="; // '-' or '/' will be special cases
 
-uint8_t space, name, reference, number, hex, hexStart, minus, decimalNumber, slash, quote, comment, skipLineBreaks, escapeChar, hexByte;
+uint8_t space, name, reference, number, hex, minus, decimalNumber, slash, quote, comment, skipLineBreaks, escapeChar, hexByte, zero;
 
 
 Array<uint8_t> tmp(4096);
@@ -22,7 +22,7 @@ Array<uint8_t> quoteBuffer(4096);
 
 ByteAutomata* baPtr;
 bool goBackwards, running, assignment;
-int32_t index, lastStart, textCount = 0, lineNumber, characterNumber, quoteIndex;
+int32_t index, lastStart, textCount = 0, lineNumber, characterNumber, quoteIndex, parsedSign, parsedNumber;
 MNode* root;
 MNode* currentBlock;
 MNode* currentExpr;
@@ -32,14 +32,14 @@ TokenTree* tokenTree;
 constexpr char const * nodeTypeName [] = { "root","expr","sub-call","struct","block","token" };
 
 
-void next(uint8_t state)
+void next(uint8_t state) 
 {
 	lastStart = index;
 
 	(*baPtr).next(state);
 }
 
-void nextCont(uint8_t state)
+void nextCont(uint8_t state) 
 {
 	// continue with same token,
 	// so don't reset the start index
@@ -215,7 +215,7 @@ void addBlock(int32_t blockType)
 	currentToken = 0;
 }
 
-void parseError(const char * msg)
+void parseError(const char * msg) 
 {
 	PRINTN("Parse error: ");
 	PRINT(msg);
@@ -223,14 +223,14 @@ void parseError(const char * msg)
 	running = false;
 }
 
-void addQuoteByte(uint8_t b)
+void addQuoteByte(int32_t i) 
 {
 	if (quoteIndex >= 4096)
 	{
 		parseError("text is too long");
 		return;
 	}
-	quoteBuffer[quoteIndex++] = b;
+	quoteBuffer[quoteIndex++] = (uint8_t)i;
 }
 
 void addHexByte() 
@@ -250,7 +250,6 @@ void defineTransitions()
 	//member = ba.addState("member");
 	reference = ba.addState("reference");
 	number = ba.addState("number");
-	hexStart = ba.addState("hex start");
 	hex = ba.addState("hex");
 	minus = ba.addState("minus");
 	decimalNumber = ba.addState("decimal number");
@@ -261,6 +260,7 @@ void defineTransitions()
 	skipLineBreaks = ba.addState("skip line breaks");
 	escapeChar = ba.addState("escape character");
 	hexByte = ba.addState("hex byte");
+	zero = ba.addState("zero");
 
 	ba.transition(space, whitespace, 0);
 	ba.transition(space, letters, []() { next(name); });
@@ -269,7 +269,7 @@ void defineTransitions()
 	ba.transition(space, "/", []() { next(slash); });
 	ba.transition(space, "\"", []() { next(quote); quoteIndex = 0; });
 	ba.transition(space, numbers, []() { next(number); });
-	ba.transition(space, "0", []() { next(hexStart); }); // start hex
+	ba.transition(space, "0", []() { next(zero); }); // start hex
 	ba.transition(space, expressionBreak, []() { exprBreak(); });
 	ba.transition(space, "(", []() { addBlock(NT_PARENTHESIS); next(skipLineBreaks); });
 	ba.transition(space, ")", []() { endBlock(NT_PARENTHESIS); });
@@ -303,12 +303,13 @@ void defineTransitions()
 	ba.transition(number, blockEnd,         []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
 	ba.transition(number, ".", []() { nextCont(decimalNumber); });
 	
-	ba.transition(hexStart, numbers, []() { nextCont(number); });
-	ba.transition(hexStart, "x", []() { next(hex); lastStart++; });
-	ba.transition(hexStart, whitespace,       []() { addToken(NT_NUMBER_TOKEN); next(space); });
-	ba.transition(hexStart, expressionBreak,  []() { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
-	ba.transition(hexStart, blockStart,       []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
-	ba.transition(hexStart, blockEnd,         []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(zero, numbers,          []() { nextCont(number); });
+	ba.transition(zero, "x",              []() { next(hex); lastStart++; });
+	ba.transition(zero, ".",              []() { next(decimalNumber); lastStart++; });
+	ba.transition(zero, whitespace,       []() { addToken(NT_NUMBER_TOKEN); next(space); });
+	ba.transition(zero, expressionBreak,  []() { addToken(NT_NUMBER_TOKEN); exprBreak(); next(space); });
+	ba.transition(zero, blockStart,       []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
+	ba.transition(zero, blockEnd,         []() { addToken(NT_NUMBER_TOKEN); bwd(); next(space); });
 	
 	ba.transition(hex, hexNumbers, 0);
 	ba.transition(hex, whitespace,       []() { addToken(NT_HEX_TOKEN); next(space); });
@@ -317,8 +318,8 @@ void defineTransitions()
 	ba.transition(hex, blockEnd,         []() { addToken(NT_HEX_TOKEN); bwd(); next(space); });
 
 	ba.transition(minus, whitespace, []() { addToken(NT_MINUS); next(space); });
-	ba.transition(minus, numbers, []() { nextCont(number); }); // change state without reseting starting index
-	ba.transition(minus, ".", []() { nextCont(decimalNumber); });
+	ba.transition(minus, numbers, []() { parsedSign = -1; nextCont(number); }); // change state without reseting starting index
+	ba.transition(minus, ".", []() { parsedSign = -1; nextCont(decimalNumber); });
 
  	ba.transition(decimalNumber, numbers, 0);
 	ba.transition(decimalNumber, whitespace, []() { addToken(NT_NUMBER_TOKEN); next(space); });
@@ -340,7 +341,7 @@ void defineTransitions()
 	
 	ba.fillTransition(escapeChar, []() { parseError("invalid escape character in quotes"); });
 	
-	// standard character literals: https://en.cppreference.com/w/cpp/language/escape
+	// standard escape character literals: https://en.cppreference.com/w/cpp/language/escape
 	
 	ba.transition(escapeChar, "'",  []() { addQuoteByte((uint8_t)0x27); next(quote); });
 	ba.transition(escapeChar, "\"", []() { addQuoteByte((uint8_t)0x22); next(quote); });
@@ -409,7 +410,7 @@ bool Parser:: isValidName (MSText* name)
 	if (!validNameChars[(*name).byteAt(0)]) return false;
 	
 	for (i=1; i<length; i++) {
-		uint8_t b = (*name).byteAt(i);
+		int32_t b = (*name).byteAt(i);
 		if (!validNameChars[b] && !validNumberChars[b]) return false;
 	}
 
@@ -445,13 +446,15 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 	running = true;
 	assignment = false;
 	goBackwards = false;
+	parsedSign = 0;
+	parsedNumber = 0;
 	
 	// text ID 0: empty
 	(*tokenTree).texts.insert(std::make_pair( MSText (""), textCount++));;
 	
 	lineNumber = 1;
 	characterNumber = 1;
-	uint8_t inputByte = 0;
+	int32_t inputByte = 0;
 	index = 0;
 
 	while ((!input.end() || goBackwards) && running && ba.ok)
@@ -460,8 +463,8 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 		{
 			index ++;
 			inputByte = input.readByte();
-			buffer[index % 512] = inputByte;
-			if (inputByte=='\n')
+			buffer[index % 512] = (uint8_t)inputByte;
+			if (inputByte == 10) // line break
 			{
 				lineNumber ++;
 				characterNumber = 1;
@@ -487,14 +490,15 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 	if (ba.ok) ba.step((uint8_t)'\n'); // ended cleanly: last command break
 	if (currentBlock != 0)
 	{
-		PRINT("closing parenthesis missing at the end");
+		if (assignment) PRINT("unexpected end of file in assignment");
+		else PRINT("unexpected end of file: closing parenthesis missing");
 		ba.ok = false;
 	}
 	
 	if (!running || !(ba.ok))
 	{
 		ERROR_PRINT("Parser state [" CAT ba.stateNames[ (int32_t)ba.currentState] CAT "]\n");
-		ERROR_PRINT("Line " CAT lineNumber CAT ": \"");
+		ERROR_PRINT("Line " CAT lineNumber CAT ": \n        ");
 		
 		// print nearby code
 		int32_t start = index-1;
@@ -502,9 +506,9 @@ TokenTree* Parser:: Parse (MSInputStream & input)
 			start --;
 		while (++start < index)
 		{
-			ERROR_PRINT("").printCharSymbol((uint8_t)(buffer[start % 512]));
+			ERROR_PRINT("").printCharSymbol((((int) buffer[start % 512]) & 0xff));
 		}
-		ERROR_PRINT("\"\n");
+		ERROR_PRINT("\n");
 		
 		{ delete baPtr; baPtr = 0; };
 		{ delete root; root = 0; };

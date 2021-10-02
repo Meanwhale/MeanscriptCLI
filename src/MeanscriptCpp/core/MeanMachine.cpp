@@ -144,10 +144,13 @@ void MeanMachine::init ()
 	textCounter = 1; // 0 is empty
 	done = false;
 	
-	VERBOSE(HORIZONTAL_LINE);
-	VERBOSE("START INITIALIZING");
-	VERBOSE(HORIZONTAL_LINE);
-	if (globalConfig.verboseOn()) printData((*byteCode).code, (*byteCode).codeTop, -1, true);
+	if (globalConfig.verboseOn())
+	{
+		PRINT(HORIZONTAL_LINE);
+		PRINT("START INITIALIZING");
+		PRINT(HORIZONTAL_LINE);
+		printBytecode((*byteCode).code, (*byteCode).codeTop, -1, true);
+	}
 
 	while (running())
 	{
@@ -326,15 +329,18 @@ void MeanMachine::step ()
 		int32_t textID = bc.code[instructionPointer + 1];
 		int32_t maxChars = bc.code[instructionPointer + 2];
 		int32_t structSize = bc.code[instructionPointer + 3];
-		
-		int32_t textIndex = texts[textID];
-		int32_t textChars = bc.code[textIndex + 1];
-		int32_t textDataSize = instrSize(bc.code[textIndex]);
-		CHECK(textChars <= maxChars, EC_CODE, "text too long");
-		CHECK(textDataSize <= structSize, EC_CODE, "text data too long");
-		//VERBOSE("SIZE: " CAT textChars CAT " MAX: " CAT maxChars);
-		
-		pushData(bc.code, textIndex + 1, textDataSize);
+		int32_t textDataSize = 0;
+		if (textID != 0)
+		{
+			int32_t textIndex = texts[textID];
+			int32_t textChars = bc.code[textIndex + 1];
+			textDataSize = instrSize(bc.code[textIndex]);
+			CHECK(textChars <= maxChars, EC_CODE, "text too long");
+			CHECK(textDataSize <= structSize, EC_CODE, "text data too long");
+			//VERBOSE("SIZE: " CAT textChars CAT " MAX: " CAT maxChars);
+			
+			pushData(bc.code, textIndex + 1, textDataSize);
+		}
 		// fill the rest
 		for (int32_t i=0; i < (structSize - textDataSize); i++) push(0);
 	}
@@ -520,7 +526,7 @@ void MeanMachine::step ()
 }
 
 
-void MeanMachine::pushData (Array<int> & source, int32_t address, int32_t size)
+void MeanMachine::pushData (Array<int> & source, int32_t address, int32_t size) 
 {
 	// push words from the source
 	for (int32_t i=0; i<size; i++)
@@ -530,7 +536,7 @@ void MeanMachine::pushData (Array<int> & source, int32_t address, int32_t size)
 	}
 }
 
-void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t size, int32_t address)
+void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t size, int32_t address) 
 {
 	for (int32_t i=0; i<size; i++)
 	{
@@ -541,13 +547,13 @@ void MeanMachine::popStackToTarget (ByteCode & bc, Array<int> & target, int32_t 
 	stackTop -= size;
 }
 
-void MeanMachine::push (int32_t data)
+void MeanMachine::push (int32_t data) 
 {
 	VERBOSE("push stack: " CAT data);
 	stack[stackTop++] = data;
 }
 
-void MeanMachine::callbackReturn (int32_t type, int32_t value)
+void MeanMachine::callbackReturn (int32_t type, int32_t value) 
 {
 	VERBOSE(HORIZONTAL_LINE);
 	     VERBOSE("        return " CAT value);
@@ -581,7 +587,7 @@ void MeanMachine:: writeReadOnlyData (MSOutputStream & output)
 	output.writeInt(makeInstruction(OP_END_INIT,0,0));
 }
 
-void MeanMachine::printGlobals()
+void MeanMachine::printGlobals() 
 {
 	PRINT("GLOBALS: ");
 	if (globalsSize == 0)
@@ -610,7 +616,7 @@ void MeanMachine::printDetails()
 	
 	PRINT("\nSTACK");
 	PRINT(HORIZONTAL_LINE);
-	printData(stack, stackTop, -1, false);
+	printBytecode(stack, stackTop, -1, false);
 }
 
 void MeanMachine::printCode() 
@@ -619,14 +625,14 @@ void MeanMachine::printCode()
 	PRINT(HORIZONTAL_LINE);
 	PRINT("index     code/data (32 bits)");
 	PRINT(HORIZONTAL_LINE);
-	printData((*byteCode).code, (*byteCode).codeTop, instructionPointer, true);
+	printBytecode((*byteCode).code, (*byteCode).codeTop, instructionPointer, true);
 }
 
 
 void MeanMachine::dataPrint() 
 {
 	PRINT(HORIZONTAL_LINE);
-	(*globals).printData(0, "<globals>");
+	(*globals).printData(PRINT_STREAM, 0, "");
 	PRINT(HORIZONTAL_LINE);
 }
 

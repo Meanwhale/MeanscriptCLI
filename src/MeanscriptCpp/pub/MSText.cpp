@@ -60,10 +60,10 @@ int32_t MSText::dataSize() const
 {
 	return data.length();
 }
-uint8_t MSText::byteAt(int32_t index) const 
+int32_t MSText::byteAt(int32_t index) const 
 {
 	ASSERT(index >= 0 && index <= data[0],"index overflow");
-	return (uint8_t)((data[(index / 4) + 1]) >> ((index % 4) * 8) & 0x000000ff);
+	return ((data[(index / 4) + 1]) >> ((index % 4) * 8) & 0x000000ff);
 }
 int32_t MSText::write(Array<int> & trg, int start) const 
 {

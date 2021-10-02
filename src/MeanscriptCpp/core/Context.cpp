@@ -14,7 +14,7 @@ Context::Context (MSText* _name, int32_t _functionID, int32_t _returnType)
 	codeEndAddress = -1;
 }
 
-void Context::print ()
+void Context::print () 
 {
 	VERBOSE("Context.print(): TODO");
 }

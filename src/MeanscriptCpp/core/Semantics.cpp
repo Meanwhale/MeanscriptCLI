@@ -34,8 +34,9 @@ void Semantics::addPrimitiveType (MSText* name, StructDef* sd, int32_t id)
 	
 }
 
-void Semantics::addElementaryType (const char * name, int32_t typeID, int32_t size) 
+void Semantics::addElementaryType (int32_t typeID, int32_t size) 
 {
+	std::string name = primitiveNames[typeID];
 	VERBOSE("Add elementary type [" CAT typeID CAT "] " CAT name);
 	types.insert(std::make_pair( MSText(name), typeID));;
 	MSText tmp (name);

@@ -5,14 +5,14 @@ class ByteAutomata
 public:
  bool ok;
  Array<uint8_t> tr;
- uint8_t currentInput;
+ int32_t currentInput;
  uint8_t currentState;
  std::map<int, std::string> stateNames;
  void (*actions[128])();
  uint8_t stateCounter;
  uint8_t actionCounter; // 0 = end
 // running:
- uint8_t inputByte = 0;
+ int32_t inputByte = 0;
  int32_t index = 0;
  int32_t lineNumber = 0;
  bool stayNextStep = false;
@@ -30,9 +30,9 @@ void print();
 void stay();
 void printError();
 std::string getString(int32_t,int32_t);
-bool step(uint8_t input);
+bool step(int32_t input);
 int32_t getIndex();
-uint8_t getInputByte();
+int32_t getInputByte();
 void run(meanscript::MSInputStream & input);
 ~ByteAutomata();
 };

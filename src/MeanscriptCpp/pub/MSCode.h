@@ -37,6 +37,7 @@ MSDataArray getArray (std::string name);
 void printCode();
 void printDetails();
 void printData();
+void dataOutputPrint(MSOutputPrint & output);
 void writeReadOnlyData(MSOutputStream & output);
 void writeCode(MSOutputStream & output);
 void checkInit();

@@ -6,6 +6,7 @@ public class MSOutputPrintArray extends MSOutputPrint {
  int maxSize;
  int index;
 
+
 public MSOutputPrintArray ()
 {
 	maxSize = MSJava.globalConfig.outputArraySize;
@@ -14,9 +15,9 @@ public MSOutputPrintArray ()
 }
 
 @Override
-public void close ()
+public void close () throws MException
 {
-	index = -1;
+	writeByte((byte)0);
 }
 
 @Override
@@ -28,14 +29,14 @@ public void  writeByte (byte b) throws MException
 }
 
 @Override
-public MSOutputPrintArray  print (char x) throws MException
+public MSOutputPrint  print (char x) throws MException
 {
 	writeByte((byte)x);
 	return this;
 }
 
 @Override
-public MSOutputPrintArray  print (String x) throws MException
+public MSOutputPrint  print (String x) throws MException
 {
 	byte buffer [];
 	buffer = x.getBytes(java.nio.charset.StandardCharsets.UTF_8);

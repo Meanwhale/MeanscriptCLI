@@ -8,7 +8,7 @@ constexpr int32_t BUFFER_SIZE = 512;
 ByteAutomata::ByteAutomata()
 {
 	ok = true;
-	currentInput = 0;
+	currentInput = -1;
 	currentState = 0;
 	stateCounter = 0;
 	actionCounter = 0;
@@ -16,7 +16,7 @@ ByteAutomata::ByteAutomata()
 	for (int32_t i=0; i<MAX_STATES * 256; i++) tr[i] = (uint8_t)0xff;
 	for (int32_t i=0; i<128; i++) actions[i] = 0;
 
-	inputByte = 0;
+	inputByte = -1;
 	index = 0;
 	lineNumber = 0;	
 	stayNextStep = false;
@@ -27,7 +27,7 @@ ByteAutomata::ByteAutomata()
 
 ByteAutomata::~ByteAutomata() { }
 
-void ByteAutomata::print ()
+void ByteAutomata::print () 
 {
 	for (int32_t i = 0; i <= stateCounter; i++)
 	{
@@ -89,7 +89,7 @@ uint8_t ByteAutomata:: addAction (void (* action)())
 }
 
 
-void ByteAutomata::next (uint8_t nextState)
+void ByteAutomata::next (uint8_t nextState) 
 {
 	currentState = nextState;
 
@@ -98,7 +98,7 @@ void ByteAutomata::next (uint8_t nextState)
 
 // NOTE: don't use exceptions. On error, use error print and set ok = false
 
-bool ByteAutomata::step (uint8_t input) 
+bool ByteAutomata::step (int32_t input) 
 {
 	currentInput = input;
 	int32_t index = (currentState * 256) + input;
@@ -107,7 +107,7 @@ bool ByteAutomata::step (uint8_t input)
 	if (actionIndex == 0) return true; // stay on same state and do nothing else
 	if (actionIndex == 0xff||actionIndex < 0)
 	{
-		ERROR_PRINT("unexpected char: ").printCharSymbol(input).print("").print(" code = ").print((((int) input) & 0xff)).endLine();
+		ERROR_PRINT("unexpected char: ").printCharSymbol(input).print("").print(" code = ").print(input).endLine();
 
 		ok = false;
 		return false; // end
@@ -128,7 +128,7 @@ int32_t ByteAutomata::getIndex ()
 	return index;
 }
 
-uint8_t ByteAutomata::getInputByte ()
+int32_t ByteAutomata::getInputByte ()
 {
 	return inputByte;
 }
@@ -156,7 +156,7 @@ std::string ByteAutomata::getString (int32_t start, int32_t length)
 
 void ByteAutomata::run (MSInputStream & input) 
 {
-	inputByte = 0;
+	inputByte = -1;
 	index = 0;
 	lineNumber = 1;
 	stayNextStep = false;
@@ -168,8 +168,8 @@ void ByteAutomata::run (MSInputStream & input)
 		{
 			index ++;
 			inputByte = input.readByte();
-			buffer[index % BUFFER_SIZE] = inputByte;
-			if (inputByte == '\n') lineNumber++;
+			buffer[index % BUFFER_SIZE] = (uint8_t)inputByte;
+			if (inputByte == 10) lineNumber++; // line break
 		}
 		else
 		{
@@ -181,7 +181,7 @@ void ByteAutomata::run (MSInputStream & input)
 	if (!stayNextStep) index++;
 }
 
-void ByteAutomata::printError ()
+void ByteAutomata::printError () 
 {
 	ERROR_PRINT("ERROR: parser state [" CAT stateNames[ (int32_t)currentState] CAT "]");
 	ERROR_PRINT("Line " CAT lineNumber CAT ": \"");

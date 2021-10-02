@@ -12,6 +12,17 @@ MNode::MNode (int32_t line, int32_t ch, MNode* _parent, int32_t _type, MSText* _
 	type = _type;
 	numChildren = 0;
 }
+MNode::MNode (int32_t line, int32_t ch, MNode* _parent, int32_t _type, int64_t _numeralValue)
+{
+	data = 0;
+	numeralValue = _numeralValue;
+	lineNumber = line;
+	characterNumber = ch;
+
+	parent = _parent;
+	type = _type;
+	numChildren = 0;
+}
 
 int32_t MNode::line ()
 {

@@ -15,12 +15,12 @@
 #define CATHEX ).printHex(
 #define DEBUG(x) {x;}
 #define ERROR_PRINT(a) errorPrinter().print(a).endLine()
-#define ERROR_PRINTN(a) errorPrinter().print(a)
 #define PRINT(a) printer().print(a).endLine()
 #define PRINTN(a) printer().print(a)
 #define VERBOSE(a) {if(globalConfig.verboseOn()) printer().print(a).endLine();}
 #define VERBOSEN(a) {if(globalConfig.verboseOn()) printer().print(a);}
 #define USER_PRINT PRINT
+#define PRINT_STREAM printer()
 
 void msAssert(bool b, const char*);
 void msAssert(bool b, const char*, const char*, const char*, int);
@@ -128,10 +128,11 @@ namespace meanscriptcore
 #define _INCLUDE_GENERATED_
 #include "core/ByteAutomata.h"
 #include "core/ByteCode.h"
-#include "core/StructDef.h" // switched place
-#include "pub/MSInputStream.h" // switched place
-#include "pub/MSOutputStream.h" // switched place
-#include "pub/MSOutputPrint.h" // switched place
+#include "core/StructDef.h"
+#include "pub/MSInputStream.h"
+#include "pub/MSOutputStream.h"
+#include "pub/MSOutputPrint.h"
+#include "pub/MSOutputPrintArray.h"
 #include "core/ClassMaker.h"
 #include "core/Context.h"
 #include "core/Common.h"
@@ -190,28 +191,24 @@ namespace meanscript
 	public:
 		MStdOutPrint(std::ostream&);
 		virtual void writeByte(uint8_t) override;
-		virtual MSOutputPrint& print(uint8_t) override;
 		virtual MSOutputPrint& print(const char*) override;
 		virtual MSOutputPrint& print(std::string) override;
-		virtual MSOutputPrint& print(int32_t) override;
-		virtual MSOutputPrint& print(float) override;
-		virtual MSOutputPrint& print(double) override;
-		virtual MSOutputPrint& print(int64_t) override;
 		virtual void close() override;
+
+		// Inherited via MSOutputPrint
+		virtual MSOutputPrint& print(char) override;
 	};
 
 	class MSNullPrint : public MSOutputPrint {
 	public:
 		MSNullPrint();
 		virtual void writeByte(uint8_t) override;
-		virtual MSOutputPrint& print(uint8_t) override;
 		virtual MSOutputPrint& print(const char *) override;
 		virtual MSOutputPrint& print(std::string) override;
-		virtual MSOutputPrint& print(int32_t) override;
-		virtual MSOutputPrint& print(float) override;
-		virtual MSOutputPrint& print(double) override;
-		virtual MSOutputPrint& print(int64_t) override;
 		virtual void close() override;
+
+		// Inherited via MSOutputPrint
+		virtual MSOutputPrint& print(char) override;
 	};
 
 	extern MStdOutPrint verboseOut;
@@ -259,14 +256,12 @@ namespace meanscript
 
 		// Inherited via MSOutputPrint
 		virtual void writeByte(uint8_t) override;
-		virtual MSOutputPrint& print(uint8_t) override;
-		virtual MSOutputPrint& print(int32_t) override;
 		virtual MSOutputPrint& print(const char *) override;
 		virtual MSOutputPrint& print(std::string) override;
-		virtual MSOutputPrint& print(float) override;
-		virtual MSOutputPrint& print(double) override;
-		virtual MSOutputPrint& print(int64_t) override;
 		virtual void close() override;
+
+		// Inherited via MSOutputPrint
+		virtual MSOutputPrint& print(char) override;
 	};
 
 	class MSFileInStream : public MSInputStream {
@@ -284,9 +279,11 @@ namespace meanscript
 		MSFileInStream(const char *);
 		~MSFileInStream() { close(); delete fi; }
 		virtual int getByteCount() override;
-		virtual uint8_t readByte() override;
 		virtual bool end() override;
 		virtual void close() override;
+
+		// Inherited via MSInputStream
+		virtual int32_t readByte() override;
 	};
 	
 	MSFileInStream getInput(const char * fileName, bool usePathVar = false);

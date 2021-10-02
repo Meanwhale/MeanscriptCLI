@@ -10,7 +10,7 @@ MSInputArray(MSOutputArray*);
 MSInputArray(std::string & s);
 //CLASS_NAME(INT_ARRAY_REF arr);
 int32_t getByteCount() override;
-uint8_t readByte() override;
+int32_t readByte() override;
 bool end() override;
 void close() override;
 virtual ~MSInputArray () {};

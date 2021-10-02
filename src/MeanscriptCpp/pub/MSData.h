@@ -21,6 +21,8 @@ std::string getText();
 std::string getText(std::string);
 std::string getText(int32_t);
 MSText getMSText (int32_t id);
+bool isChars (int32_t typeID);
+int32_t getCharsSize (int32_t typeID);
 std::string getChars (std::string name);
 float getFloat ();
 float getFloat (std::string name);
@@ -40,6 +42,8 @@ MSData getMember (std::string name);
 int32_t getMemberAddress (std::string name, int32_t type);
 int32_t getMemberAddress (std::string name);
 int32_t getMemberTagAddress (std::string name, bool isArray);
+void printType (MSOutputPrint & op, int32_t typeID);
+void printData (MSOutputPrint & op, int32_t depth, std::string name);
 void printData(int32_t depth, std::string name);
 ~MSData();
 private: // hide

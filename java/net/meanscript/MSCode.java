@@ -181,6 +181,7 @@ public void printData () throws MException
 public void dataOutputPrint (MSOutputPrint output) throws MException
 {
 	mm.globals.printData(output,0,"");
+	output.close();
 }
 
 public ByteCode compile (MSInputStream input) throws MException

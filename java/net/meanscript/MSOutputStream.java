@@ -7,7 +7,7 @@ public MSOutputStream ()
 {
 }
 public abstract void  writeByte (byte b) throws MException;
-public abstract void  close ();
+public abstract void  close () throws MException;
 
 public void  writeInt (int i) throws MException
 {

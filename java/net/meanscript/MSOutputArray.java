@@ -14,7 +14,7 @@ public MSOutputArray ()
 }
 
 @Override
-public void close ()
+public void close () throws MException
 {
 	index = -1;
 }

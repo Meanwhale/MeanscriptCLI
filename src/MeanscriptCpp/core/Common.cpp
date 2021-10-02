@@ -4,7 +4,7 @@ using namespace meanscript;
 
 // private static data. common for all MeanScript objects
 
-void Common::printCallbacks ()
+void Common::printCallbacks () 
 {
 	VERBOSE("-------- CALLBACKS:");
 	for (int32_t i=0; i < globalConfig.maxCallbacks; i++)
@@ -14,15 +14,15 @@ void Common::printCallbacks ()
 	VERBOSE("");
 }
 
-void trueCallback(MeanMachine & mm, MArgs & args)
+void trueCallback(MeanMachine & mm, MArgs & args) 
 {
 	mm.callbackReturn(MS_TYPE_BOOL, 1);
 }
-void falseCallback(MeanMachine & mm, MArgs & args)
+void falseCallback(MeanMachine & mm, MArgs & args) 
 {
 	mm.callbackReturn(MS_TYPE_BOOL, 0);
 }
-void sumCallback(MeanMachine & mm, MArgs & args)
+void sumCallback(MeanMachine & mm, MArgs & args) 
 {
 	VERBOSE("//////////////// SUM ////////////////");
 	mm.callbackReturn(MS_TYPE_INT, mm.stack[args.baseIndex] + mm.stack[args.baseIndex+1]);
@@ -45,7 +45,7 @@ void ifCallback(MeanMachine & mm, MArgs & args)
 		mm.gosub(mm.stack[args.baseIndex+1]);
 	} else VERBOSE("don't do!");
 }
-void subCallback(MeanMachine & mm, MArgs & args)
+void subCallback(MeanMachine & mm, MArgs & args) 
 {
 	VERBOSE("//////////////// SUBTRACTION ////////////////");
 	int32_t a = mm.stack[args.baseIndex];
@@ -54,29 +54,29 @@ void subCallback(MeanMachine & mm, MArgs & args)
 	mm.callbackReturn(MS_TYPE_INT, a - b);
 }
 
-void printIntCallback(MeanMachine & mm, MArgs & args)
+void printIntCallback(MeanMachine & mm, MArgs & args) 
 {
 	VERBOSE("//////////////// PRINT ////////////////");
 	USER_PRINT(mm.stack[args.baseIndex]).endLine();
 }
 
-void printTextCallback(MeanMachine & mm, MArgs & args)
+void printTextCallback(MeanMachine & mm, MArgs & args) 
 {
 	VERBOSE("//////////////// PRINT TEXT ////////////////");
 	
 	int32_t address = mm.texts[mm.stack[args.baseIndex]];
 	int32_t numChars = (*mm.getStructCode())[address + 1];
-	USER_PRINT("").printIntsToChars((*mm.getStructCode()), address + 2, numChars).endLine();
+	USER_PRINT("").printIntsToChars((*mm.getStructCode()), address + 2, numChars, false).endLine();
 }
 
-void printCharsCallback(MeanMachine & mm, MArgs & args)
+void printCharsCallback(MeanMachine & mm, MArgs & args) 
 {
 	VERBOSE("//////////////// PRINT CHARS  ////////////////");
 	int32_t numChars = mm.stack[args.baseIndex];
-	USER_PRINT("").printIntsToChars(mm.stack, args.baseIndex + 1, numChars);
+	USER_PRINT("").printIntsToChars(mm.stack, args.baseIndex + 1, numChars, false);
 }
 
-void printFloatCallback(MeanMachine & mm, MArgs & args)
+void printFloatCallback(MeanMachine & mm, MArgs & args) 
 {
 	VERBOSE("//////////////// PRINT FLOAT ////////////////");
 	USER_PRINT(((float&)(*(&mm.stack[args.baseIndex]))));
@@ -94,13 +94,13 @@ int32_t Common:: createCallback (MSText name, void (*func)(MeanMachine &, MArgs 
 
 void Common::initialize (Semantics & sem) 
 {
-	sem.addElementaryType("int",     MS_TYPE_INT,     1);
-	sem.addElementaryType("int64",   MS_TYPE_INT64,   2);
-	sem.addElementaryType("float",   MS_TYPE_FLOAT,   1);
-	sem.addElementaryType("float64", MS_TYPE_FLOAT64, 2);
-	sem.addElementaryType("text",    MS_TYPE_TEXT,    1);
-	sem.addElementaryType("bool",    MS_TYPE_BOOL,    1);
-	sem.addElementaryType("chars",   MS_TYPE_CHARS,  -1); // special, dynamic type
+	sem.addElementaryType(MS_TYPE_INT,     1);
+	sem.addElementaryType(MS_TYPE_INT64,   2);
+	sem.addElementaryType(MS_TYPE_FLOAT,   1);
+	sem.addElementaryType(MS_TYPE_FLOAT64, 2);
+	sem.addElementaryType(MS_TYPE_TEXT,    1);
+	sem.addElementaryType(MS_TYPE_BOOL,    1);
+	sem.addElementaryType(MS_TYPE_CHARS,  -1); // special, dynamic type
 	
 	createCallbacks(sem);
 }

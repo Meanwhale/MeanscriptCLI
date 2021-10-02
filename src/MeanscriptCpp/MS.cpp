@@ -42,30 +42,13 @@ namespace meanscript
 		os << s;
 		return *this;
 	}
-	MSOutputPrint& MStdOutPrint::print(std::int32_t i) {
-		os<<i;
-		return *this;
-	}
-	MSOutputPrint& MStdOutPrint::print(std::uint8_t i) {
-		if (i>=32) os<<(char)i; // don't try to print control char's
-		else os<<'?';
-		return *this;
-	}
-	MSOutputPrint& MStdOutPrint::print(float f) {
-		os<<f;
-		return *this;
-	}
-	MSOutputPrint& MStdOutPrint::print(double d)
-	{
-		os << d;
-		return *this;
-	}
-	MSOutputPrint& MStdOutPrint::print(std::int64_t l)
-	{
-		os << l;
-		return *this;
-	}
 	void MStdOutPrint::close() { }
+
+	MSOutputPrint& MStdOutPrint::print(char c)
+	{
+		os << c;
+		return *this;
+	}
 
 	// Null, empty print
 
@@ -80,22 +63,12 @@ namespace meanscript
 	MSOutputPrint& MSNullPrint::print(std::string) {
 		return *this;
 	}
-	MSOutputPrint& MSNullPrint::print(std::int32_t) {
-		return *this;
-	}
-	MSOutputPrint& MSNullPrint::print(std::uint8_t i) {
-		return *this;
-	}
-	MSOutputPrint& MSNullPrint::print(float) {
-		return *this;
-	}
-	MSOutputPrint& MSNullPrint::print(double) {
-		return *this;
-	}
-	MSOutputPrint& MSNullPrint::print(int64_t) {
-		return *this;
-	}
 	void MSNullPrint::close() { }
+
+	MSOutputPrint& MSNullPrint::print(char)
+	{
+		return *this;
+	}
 
 	// file input/output
 	
@@ -194,18 +167,6 @@ namespace meanscript
 		*fo << x;
 	}
 
-	MSOutputPrint& MSFilePrint::print(uint8_t x)
-	{
-		*fo << x;
-		return (*this);
-	}
-
-	MSOutputPrint& MSFilePrint::print(int32_t x)
-	{
-		*fo << x;
-		return (*this);
-	}
-
 	MSOutputPrint& MSFilePrint::print(const char * x)
 	{
 		*fo << x;
@@ -217,21 +178,7 @@ namespace meanscript
 		return (*this);
 	}
 
-	MSOutputPrint& MSFilePrint::print(float x)
-	{
-		*fo << x;
-		return (*this);
-	}
-
-
-	MSOutputPrint& MSFilePrint::print(double x)
-	{
-		*fo << x;
-		return (*this);
-	}
-
-
-	MSOutputPrint& MSFilePrint::print(int64_t x)
+	MSOutputPrint& MSFilePrint::print(char x)
 	{
 		*fo << x;
 		return (*this);
@@ -243,6 +190,7 @@ namespace meanscript
 		fo->flush();
 		fo->close();
 	}
+
 
 	// MS file input stream
 	
@@ -261,17 +209,19 @@ namespace meanscript
 	int MSFileInStream::getByteCount() {
 		return size;
 	}
-	uint8_t MSFileInStream::readByte() {
-		char c;
-		fi->read(&c, 1);
-		return (uint8_t) c;
-	}
 	bool MSFileInStream::end() {
 		return fi->peek() == EOF;
 	}
 	void MSFileInStream::close() {
 		if (!fi->is_open()) return;
 		fi->close();
+	}
+
+	int32_t MSFileInStream::readByte()
+	{
+		char c;
+		fi->read(&c, 1);
+		return (int32_t)c;
 	}
 
 	// Utils
@@ -332,20 +282,22 @@ namespace meanscript
 	}
 	std::string readStringFromIntArray(Array<int>& data, int offset, int count)
 	{	
-		char* bytes = new char[count];
-
-	    int shift = 0;
-	    for (int i = 0; i < count;)
-	    {
-	        bytes[i] = (byte)((data[offset + (i/4)] >> shift) & 0x000000FF);
-
-	        i++;
-	        if (i % 4 == 0) shift = 0;
-	        else shift += 8;
-	    }
-		std::string s(bytes, count);
-		delete[] bytes;
-		return s;
+		if (count == 0)	return std::string("");
+		return std::string((const char*)(data.get() + offset));
+		//char* bytes = new char[count];
+		//
+	    //int shift = 0;
+	    //for (int i = 0; i < count;)
+	    //{
+	    //    bytes[i] = (byte)((data[offset + (i/4)] >> shift) & 0x000000FF);
+		//
+	    //    i++;
+	    //    if (i % 4 == 0) shift = 0;
+	    //    else shift += 8;
+	    //}
+		//std::string s(bytes, count);
+		//delete[] bytes;
+		//return s;
 	}
 	void stringToIntBits(Array<int>& bits, std::string text)
 	{

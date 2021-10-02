@@ -25,10 +25,11 @@ int32_t MSInputArray:: getByteCount ()
 }
 
 
-uint8_t MSInputArray:: readByte () 
+int32_t MSInputArray:: readByte () 
 {
-	CHECK(!end(), EC_DATA, "readInt: buffer overflow");
-	return buffer[index++];
+	//CHECK(!end(), EC_DATA, "readInt: buffer overflow");
+	if (end()) return -1;
+	return (((int) buffer[index++]) & 0xff);
 }
 
 
@@ -38,7 +39,7 @@ bool MSInputArray:: end ()
 }
 
 
-void MSInputArray:: close ()
+void MSInputArray:: close () 
 {
 }
 

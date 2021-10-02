@@ -10,7 +10,7 @@ MSOutputArray::MSOutputArray ()
 }
 
 
-void MSOutputArray::close ()
+void MSOutputArray::close () 
 {
 	index = -1;
 }
@@ -23,7 +23,7 @@ void MSOutputArray:: writeByte (uint8_t b)
 	buffer[index++] = b;
 }
 
-void MSOutputArray:: print ()
+void MSOutputArray:: print () 
 {
 	PRINT("TODO");
 }

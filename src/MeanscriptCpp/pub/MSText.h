@@ -21,7 +21,7 @@ bool match (const char * s);
 Array<int> & getData ();
 int32_t numBytes () const;
 int32_t dataSize () const;
-uint8_t byteAt (int32_t index) const;
+int32_t byteAt (int32_t index) const;
 int32_t write (Array<int> & trg, int start) const ;
 void makeCopy ( const Array<int> & src, int start);
 int32_t compare (const MSText & text) const;

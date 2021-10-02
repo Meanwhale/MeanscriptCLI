@@ -3,7 +3,8 @@ import net.meanscript.core.*;
 import net.meanscript.java.*;
 public abstract class MSOutputPrint extends MSOutputStream {
 
-public abstract void  writeByte (byte x) throws MException; // see up about output
+// write byte as an ASCII char, e.g. writeByte(64) writes "@", and not "64"
+public abstract void  writeByte (byte x) throws MException;
 public abstract MSOutputPrint  print (char x) throws MException;
 public abstract MSOutputPrint  print (String x) throws MException;
 
@@ -12,7 +13,7 @@ public MSOutputPrint ()
 }
 
 @Override
-public void close ()
+public void close () throws MException
 {
 }
 
@@ -40,13 +41,13 @@ public MSOutputPrint print(long x) throws MException
 
 public MSOutputPrint print(float x) throws MException
 {
-	String s = x;
+	String s = ""+x;
 	print(s);
 	return this;
 }
 public MSOutputPrint print(double x) throws MException
 {
-	String s = x;
+	String s = ""+x;
 	print(s);
 	return this;
 }
@@ -122,6 +123,7 @@ public MSOutputPrint  printHex (int h) throws MException
 
 public MSOutputPrint print (MSText text) throws MException
 {
+	if (text == null) return print("null");
 	return printIntsToChars(text.getData(), 1, text.numBytes(), false);
 }
 

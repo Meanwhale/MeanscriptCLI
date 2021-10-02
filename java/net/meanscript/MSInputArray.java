@@ -43,7 +43,7 @@ public boolean  end ()
 }
 
 @Override
-public void  close ()
+public void  close () throws MException
 {
 }
 

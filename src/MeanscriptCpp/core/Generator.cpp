@@ -670,6 +670,7 @@ void Generator::singleArgumentPush (int32_t targetTag, NodeIterator & it, int32_
 			// copy chars
 			int32_t maxChars = arrayItemCount;
 			StructDef* sd = sem.typeStructDefs[targetType];
+			SYNTAX((*sd).isCharsDef(), it, "chars type expected");
 			bc.addInstructionWithData(OP_PUSH_CHARS, 3, MS_TYPE_TEXT, textID);
 			bc.addWord(maxChars);
 			bc.addWord((*sd).structSize);

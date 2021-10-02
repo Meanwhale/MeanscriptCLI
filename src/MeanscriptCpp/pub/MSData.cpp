@@ -66,14 +66,32 @@ MSText MSData:: getMSText (int32_t id)
 	return MSText((*structCode),address+1);
 }
 
+bool MSData::isChars (int32_t typeID)
+{
+	int32_t charsTypeAddress = (*mm).types[typeID];
+	int32_t charsTypeTag = (*structCode)[charsTypeAddress];
+	return (charsTypeTag & OPERATION_MASK) == OP_CHARS_DEF;
+}
+
+int32_t MSData::getCharsSize (int32_t typeID)
+{
+	int32_t index = (*mm).types[typeID];
+	int32_t typeTagID = (*structCode)[index] & VALUE_TYPE_MASK;
+	int32_t potentialCharsTag = (*structCode)[(*mm).types[typeTagID]];
+	if ((potentialCharsTag & OPERATION_MASK) == OP_CHARS_DEF)
+	{
+		return (*structCode)[(*mm).types[typeTagID] + 1];
+	}
+	else return -1;
+}
+
 std::string MSData::getChars (std::string name) 
 {
 	int32_t memberTagAddress = getMemberTagAddress(name, false);
 	
 	int32_t charsTag = (*structCode)[memberTagAddress];
-	int32_t charsTypeAddress = (*mm).types[instrValueTypeIndex(charsTag)];
-	int32_t charsTypeTag = (*structCode)[charsTypeAddress];
-	CHECK((charsTypeTag & OPERATION_MASK) == OP_CHARS_DEF, EC_DATA, "not chars");
+	int32_t typeID = instrValueTypeID(charsTag);
+	CHECK(isChars(typeID), EC_DATA, "not chars");
 	
 	CHECK(memberTagAddress >= 0, EC_DATA, "not found: " CAT name);
 	int32_t address = dataIndex + (*structCode)[memberTagAddress + 1];
@@ -243,34 +261,71 @@ int32_t MSData::getMemberTagAddress (std::string name, bool isArray)
 	return -1;
 }
 
-void MSData:: printData (int32_t depth, std::string name) 
+void MSData:: printType (MSOutputPrint & op, int32_t typeID) 
 {
-		
-	for (int32_t x=0; x<depth; x++) PRINTN("    ");
-	PRINTN(name);
+	if (typeID < MAX_MS_TYPES) op.print(primitiveNames[typeID]);
+	else
+	{
+		int32_t charsSizeOrNegative = getCharsSize(typeID);
+		if (charsSizeOrNegative >= 0)
+		{
+			op.print("chars[");
+			op.print(charsSizeOrNegative);
+			op.print("]");
+		}
+		else
+		{
+			int32_t index = (*mm).types[typeID];
+			MSText typeName ((*structCode),index+1);
+			op.print(typeName);
+		}
+	}
+}
+
+void MSData:: printData (MSOutputPrint & op, int32_t depth, std::string name) 
+{
+	//for (int32_t x=0; x<depth; x++) op.print("    ");
 	
 	if (!isStruct())
 	{
-		if (getType() == MS_TYPE_FLOAT)
+		if (depth != 1) op.print(name);
+		op.print(": ");
+		if (getType() == MS_TYPE_INT)
 		{
-			PRINT(((float&)(*(&(*dataCode)[dataIndex]))));
+			op.print((*dataCode)[dataIndex]);
+		}
+		else if (getType() == MS_TYPE_INT64)
+		{
+			op.print(intsToInt64((*dataCode)[dataIndex], (*dataCode)[dataIndex+1]));
+		}
+		else if (getType() == MS_TYPE_FLOAT)
+		{
+			op.print(((float&)(*(&(*dataCode)[dataIndex]))));
+		}
+		else if (getType() == MS_TYPE_FLOAT64)
+		{
+			op.print(getFloat64At(dataIndex));
 		}
 		else if (getType() == MS_TYPE_TEXT)
 		{
 			MSText tmp = getMSText((*dataCode)[dataIndex]);
-			PRINT(tmp);
+			op.print("\"");
+			op.printIntsToChars(tmp.getData(), 1, tmp.numBytes(), true);
+			op.print("\"");
 		}
-		else if (getType() == MS_TYPE_INT64)
+		else if (getType() == MS_TYPE_BOOL)
 		{
-			PRINT(intsToInt64((*dataCode)[dataIndex], (*dataCode)[dataIndex+1]));
+			if ((*dataCode)[dataIndex] == 0) op.print("false");
+			else op.print("true");
 		}
 		else
 		{
-			PRINT((*dataCode)[dataIndex]);
+			CHECK(false, EC_DATA, "printData: unhandled data type: " CAT getType());
 		}
+		op.print("\n");
 	}
 	else
-	{
+	{	
 		// NOTE: similar to getMemberTagAddress()
 		
 		int32_t i = (*mm).types[getType()];
@@ -279,50 +334,68 @@ void MSData:: printData (int32_t depth, std::string name)
 		if ((code & OPERATION_MASK) == OP_CHARS_DEF)
 		{
 			int32_t numChars = (*dataCode)[dataIndex + 0];
-			std::string s = readStringFromIntArray((*dataCode),  dataIndex + 1,  numChars);;
-			PRINT(s);
+			if (depth != 1) op.print(name);
+			op.print(": \"");
+			op.printIntsToChars((*dataCode), dataIndex + 1, numChars, true);
+			op.print("\"\n");
 			return;
 		}
-		PRINT("");
+		if (depth == 1) op.print("\n");
+					
 		ASSERT((code & OPERATION_MASK) == OP_STRUCT_DEF, "printData: struct def. expected");
+				
 		i += instrSize(code) + 1;
 		code = (*structCode)[i];
 		while ((code & OPERATION_MASK) == OP_MEMBER_NAME)
 		{
-			
 			std::string s = readStringFromIntArray((*structCode),  i + 2,  (*structCode)[i+1]);;
 	
 			i += instrSize(code) + 1;
 			code = (*structCode)[i];
 			
+			// print type name
+			
+			if (depth == 0) 
+			{
+				int32_t typeID = (int32_t)(code & VALUE_TYPE_MASK);
+				printType(op, typeID);
+				op.print(" ");
+				op.print(s);
+			}
+			
 			if ((code & OPERATION_MASK) == OP_STRUCT_MEMBER)
 			{
 				int32_t dataAddress = dataIndex + (*structCode)[i + 1];
 				MSData d = MSData (mm, i, dataAddress, false);
-				s += ": ";
-				d.printData(depth + 1, s);
+				if (depth > 0) d.printData(op, depth + 1, name + "." + s);
+				else d.printData(op, depth + 1, s);
 			}
 			else if ((code & OPERATION_MASK) == OP_ARRAY_MEMBER)
 			{
 				int32_t dataAddress = dataIndex + (*structCode)[i + 1];
 				MSDataArray a = MSDataArray (mm, i, dataAddress);
 					
-				for (int32_t x=0; x<depth+1; x++) PRINTN("    ");
-				PRINTN(s);
-				PRINTN(": ");
+				//for (int32_t x=0; x<depth+1; x++) op.print("    ");
+				//op.print(s);
+				
 				
 				// iterate thru array items
 
-				PRINT("");
 				for (int32_t n=0; n<a.getArrayItemCount(); n++)
 				{
 					MSData d = a.getAt(n);
-					for (int32_t x=0; x<depth; x++) PRINTN("  ");
+					//for (int32_t x=0; x<depth; x++) op.print("  ");
+
+
+					std::string tmp = "";
+					if (depth > 0) tmp = name + "." + s;
+					else tmp = s;	
+					
 					std::string indexText = std::to_string( n);
-					std::string tmp = "[";
+					tmp += "[";
 					tmp += indexText;
-					tmp += "] ";
-					d.printData(depth + 1, tmp);
+					tmp += "]";
+					d.printData(op, depth + 1, tmp);
 				}
 			}
 			else
@@ -332,7 +405,7 @@ void MSData:: printData (int32_t depth, std::string name)
 
 			i += instrSize(code) + 1;
 			code = (*structCode)[i];
-		}	
+		}
 	}
 }
 

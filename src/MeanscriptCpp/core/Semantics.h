@@ -16,7 +16,7 @@ Semantics();
 Context* findContext(MSText* name);
 void analyze(TokenTree* root);
 void addPrimitiveType(MSText* name, StructDef* sd, int32_t id);
-void addElementaryType (const char * name, int32_t typeID, int32_t size);
+void addElementaryType (int32_t typeID, int32_t size);
 StructDef* addCharsType (int32_t numChars);
 bool hasType(MSText* name);
 bool hasType(int32_t);

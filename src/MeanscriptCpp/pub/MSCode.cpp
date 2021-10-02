@@ -172,6 +172,12 @@ void MSCode::printData ()
 	else PRINT("printDetails: MSCode is not initialized");
 }
 
+void MSCode::dataOutputPrint (MSOutputPrint & output) 
+{
+	(*(*mm).globals).printData(output,0,"");
+	output.close();
+}
+
 ByteCode* MSCode::compile (MSInputStream & input) 
 {
 	reset();

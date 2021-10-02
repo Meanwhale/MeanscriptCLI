@@ -392,16 +392,14 @@ public void  makeJavaMembers (MSOutputPrint os, StructDef sd, int addressOffset,
 	}
 }
 
-public void  makeJava (int [] code, String packageName, String folderName) throws MException
+public void  makeJava (int [] code, String packageName, String moduleName, String folderName) throws MException
 {
 	findTypes(semantics, code);
 	createStructDefs(semantics, code);
 	
 	
 	// create top class
-	
-	String moduleName = "ModuleMS";
-	
+		
 	MSFilePrint mods = new MSFilePrint( folderName +  moduleName +  ".java");;
 	
 	mods.print("package " + packageName + ";\n");

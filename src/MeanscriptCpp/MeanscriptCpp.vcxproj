@@ -122,6 +122,7 @@
     <ClInclude Include="pub\MSInputStream.h" />
     <ClInclude Include="pub\MSOutputArray.h" />
     <ClInclude Include="pub\MSOutputPrint.h" />
+    <ClInclude Include="pub\MSOutputPrintArray.h" />
     <ClInclude Include="pub\MSOutputStream.h" />
     <ClInclude Include="pub\MSText.h" />
     <ClInclude Include="pub\MSWriter.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="pub\MSInputStream.cpp" />
     <ClCompile Include="pub\MSOutputArray.cpp" />
     <ClCompile Include="pub\MSOutputPrint.cpp" />
+    <ClCompile Include="pub\MSOutputPrintArray.cpp" />
     <ClCompile Include="pub\MSOutputStream.cpp" />
     <ClCompile Include="pub\MSText.cpp" />
     <ClCompile Include="pub\MSWriter.cpp" />

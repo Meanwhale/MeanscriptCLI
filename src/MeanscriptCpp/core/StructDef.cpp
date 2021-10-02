@@ -257,7 +257,7 @@ void StructDef::print ()
 	}
 	else
 	{
-		if (globalConfig.verboseOn()) printData(code, codeTop, -1, true);
+		if (globalConfig.verboseOn()) printBytecode(code, codeTop, -1, true);
 	}
 	VERBOSE(HORIZONTAL_LINE);
 }
