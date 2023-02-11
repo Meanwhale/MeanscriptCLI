@@ -253,6 +253,9 @@ private static void msBuilder() throws MException
 	// simple global values
 	builder.addInt("aa", 123);
 	builder.addInt64("long", -1234567891234l);
+	builder.addFloat("f32", -1);
+	builder.addFloat64("f64", -12.123456789);
+	builder.addBool("b", true);
 	builder.addText("key","value");
 	builder.addChars("cdata",13,"cdatavalue");
 	builder.addInt("bb", 456);
@@ -280,17 +283,21 @@ private static void msBuilder() throws MException
 	
 	if (MSJava.globalConfig.verboseOn()) ms.printData();
 	
+	MSJava.assertion(ms.getInt("aa") == 123,EC_TEST,"");
 	MSJava.assertion(ms.getInt64("long") == -1234567891234l,EC_TEST,"");
-	MSJava.assertion(ms.getInt("bb") == 456,EC_TEST,"");
+	MSJava.assertion(ms.getFloat("f32") == -1,EC_TEST,"");
+	MSJava.assertion(ms.getFloat64("f64") == -12.123456789,EC_TEST,"");
+	MSJava.assertion(ms.getBool("b"),EC_TEST,"");
 	MSJava.assertion((ms.getText("key").equals("value")),EC_TEST,"");
 	MSJava.assertion((ms.getChars("cdata").equals("cdatavalue")),EC_TEST,"");
+	MSJava.assertion(ms.getInt("bb") == 456,EC_TEST,"");
 	
 	MSData bossData = ms.getData("boss");
 	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print(bossData.getType()).endLine();};
 	MSJava.assertion(bossData.getInt("age") == 42,EC_TEST,"");
 	MSJava.assertion(bossData.getInt64("i64") == -1,EC_TEST,"");
 	MSJava.assertion(bossData.getFloat("f") == -1,EC_TEST,"");
-	MSJava.assertion(bossData.getFloat64("f64") == -1,EC_TEST,"");
+	MSJava.assertion(bossData.getFloat64("f64") == -1,EC_TEST,""); // EIKÖ TOIMI?
 	MSJava.assertion(bossData.getBool("b") == true,EC_TEST,"");
 	MSJava.assertion((ms.getData("boss").getText("name").equals( "Jaska")),EC_TEST,"");
 	MSJava.assertion((ms.getData("boss").getChars("code").equals( "abcdefg")),EC_TEST,"");

@@ -67,6 +67,46 @@ public void addInt64 (String name, long value) throws MException
 	values[address] = int64highBits(value);
 	values[address+1] = int64lowBits(value);
 }
+/*
+
+CD INT MS_TYPE_FLOAT		= 3;
+
+CD INT MS_TYPE_FLOAT64		= 4;
+
+CD INT MS_TYPE_BOOL			= 6;*/
+
+public void addFloat (String name, float value) throws MException
+{
+	structLock = true;
+	MSJava.assertion(semantics.isNameValidAndAvailable(name),   "variable name error");
+	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New float: " + name).endLine();};
+	MSText tn = new MSText (name);
+	int address = variables.addMember(semantics, tn, MS_TYPE_FLOAT);
+	values[address] = MSJava.floatToIntFormat(value);
+}
+
+public void addFloat64 (String name, double value) throws MException
+{
+	structLock = true;
+	MSJava.assertion(semantics.isNameValidAndAvailable(name),   "variable name error");
+	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New float64: " + name).endLine();};
+	MSText tn = new MSText (name);
+	int address = variables.addMember(semantics, tn, MS_TYPE_FLOAT64);
+	long tmp = MSJava.float64ToInt64Format(value);
+	values[address]     = int64highBits(tmp);
+	values[address + 1] = int64lowBits(tmp);
+	
+}
+
+public void addBool (String name, boolean value) throws MException
+{
+	structLock = true;
+	MSJava.assertion(semantics.isNameValidAndAvailable(name),   "variable name error");
+	{if(MSJava.globalConfig.verboseOn()) MSJava.printOut.print("BUILDER: New bool: " + name).endLine();};
+	MSText tn = new MSText (name);
+	int address = variables.addMember(semantics, tn, MS_TYPE_BOOL);
+	values[address] = value ? 1 : 0;
+}
 
 public int createText (String value) throws MException
 {
